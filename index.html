@@ -310,35 +310,7 @@
                 0 8px 20px rgba(0, 0, 0, 0.15);
         }
 
-        .slide-info {
-            position: fixed;
-            bottom: 32px;
-            right: 32px;
-            background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            color: #e2e8f0;
-            padding: 16px 24px;
-            border-radius: 32px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            z-index: 20;
-            box-shadow: 
-                0 12px 40px rgba(0, 0, 0, 0.4),
-                0 4px 12px rgba(0, 0, 0, 0.2);
-            animation: slideInfoPulse 6s ease-in-out infinite;
-            letter-spacing: 0.025em;
-        }
 
-        @keyframes slideInfoPulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.02);
-            }
-        }
 
         .slide-progress {
             position: fixed;
@@ -1045,15 +1017,7 @@
             }
 
             createSlideInfo() {
-                // Remove existing slide info if any
-                const existing = document.querySelector('.slide-info');
-                if (existing) existing.remove();
-
-                const slideInfo = document.createElement('div');
-                slideInfo.className = 'slide-info';
-                slideInfo.id = 'slide-info';
-                slideInfo.textContent = `${this.currentSlideIndex + 1} of ${this.slides.length}`;
-                document.body.appendChild(slideInfo);
+                // Slide info functionality removed
             }
 
             createProgressBar() {
@@ -1073,10 +1037,7 @@
             }
 
             updateSlideInfo() {
-                const slideInfo = document.getElementById('slide-info');
-                if (slideInfo) {
-                    slideInfo.textContent = `${this.currentSlideIndex + 1} of ${this.slides.length}`;
-                }
+                // Slide info functionality removed
             }
 
             startProgressAnimation() {
