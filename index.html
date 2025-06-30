@@ -1082,11 +1082,17 @@
             startProgressAnimation() {
                 const progressBar = document.getElementById('slide-progress-bar');
                 if (progressBar) {
+                    // Clear any existing transition and reset to 0% immediately
+                    progressBar.style.transition = 'none';
                     progressBar.style.width = '0%';
+                    
+                    // Force a reflow to ensure the reset takes effect
+                    progressBar.offsetHeight;
+                    
                     // Start animation after a brief delay
                     setTimeout(() => {
-                        progressBar.style.width = '100%';
                         progressBar.style.transition = 'width 60s linear';
+                        progressBar.style.width = '100%';
                     }, 100);
                 }
             }
