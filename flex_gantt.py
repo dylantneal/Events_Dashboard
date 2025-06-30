@@ -7,8 +7,8 @@ Enhanced for dashboard kiosk system with image optimization and manifest generat
 Now supports rolling 3-month window for automatic dashboard updates.
 
 Features:
-- Automatic ICW event filtering for monthly charts (events with "ICW" in the name are excluded from monthly views)
-- Weekly and daily charts include all events including ICW for complete visibility
+- Automatic event filtering for all charts: "Marriott In-House Events 2025" events are excluded from all views
+- ICW event filtering for monthly charts only (ICW events excluded from monthly views but included in weekly/daily for complete visibility)
 - Color-coded bars by sales team member (Darren=Green, Dylan=Orange, Sarah=Pink, Eder=Purple, David=Blue)
 - Enhanced visual styling with larger titles, better fonts, and professional appearance
 - Sales team legend automatically generated
@@ -318,9 +318,11 @@ def gantt_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path) -> No
     mask = (df["Event Start Date"] <= mend) & (df["Event End Date"] >= mstart)
     sub = df.loc[mask].copy()
     
-    # Filter out events containing "ICW" in the name
+    # Filter out events containing "ICW" or "Marriott In-House Events 2025" in the name
     icw_mask = ~sub["Event Name"].str.contains("ICW", case=False, na=False)
-    sub = sub.loc[icw_mask]
+    marriott_mask = ~sub["Event Name"].str.contains("Marriott In-House Events 2025", case=False, na=False)
+    combined_mask = icw_mask & marriott_mask
+    sub = sub.loc[combined_mask]
     
     if sub.empty:
         print(f"[{mname}]  No events in sheet for this month (after filtering).")
@@ -363,13 +365,30 @@ def gantt_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path) -> No
     
     # Enhanced styling
     ax.set_xlim(mstart - pd.Timedelta(hours=12), mend + pd.Timedelta(hours=36))
-    ax.xaxis.set_major_locator(mdates.WeekdayLocator(byweekday=mdates.MO, interval=1))
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     
-    # Modern grid styling
-    ax.grid(axis="x", linestyle="-", linewidth=1.2, alpha=0.2, color='#64748b')
-    ax.grid(axis="x", which='minor', linestyle=":", linewidth=0.8, alpha=0.15, color='#94a3b8')
+    # Use daily ticks to show day numbers
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%d"))  # Just day numbers
+    
+    # Add week indicators with Monday markers (more prominent)
+    ax.xaxis.set_minor_locator(mdates.WeekdayLocator(byweekday=mdates.MO))
+    
+    # Modern grid styling with enhanced week indicators
+    ax.grid(axis="x", linestyle="-", linewidth=0.8, alpha=0.15, color='#94a3b8')  # Daily grid lines
+    ax.grid(axis="x", which='minor', linestyle="-", linewidth=2.0, alpha=0.4, color='#475569')  # Week boundaries
     ax.set_axisbelow(True)
+    
+    # Add subtle week boundary indicators and alternating backgrounds
+    week_dates = pd.date_range(mstart, mend, freq='W-MON')
+    for i, date in enumerate(week_dates):
+        if mstart <= date <= mend:
+            # Week boundary line
+            ax.axvline(x=date, color='#334155', linewidth=2.5, alpha=0.6, zorder=1)
+            
+            # Alternating week background (every other week gets subtle shading)
+            if i % 2 == 1:
+                week_end = min(date + pd.Timedelta(days=6, hours=23, minutes=59), mend)
+                ax.axvspan(date, week_end, color='#f1f5f9', alpha=0.3, zorder=0)
     
     # Enhanced labels and title with modern typography
     ax.set_xlabel("Date", fontsize=16, fontweight='600', color='#1e293b', 
@@ -384,8 +403,8 @@ def gantt_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path) -> No
     title_text.set_bbox(dict(boxstyle="round,pad=0.5", facecolor='#f1f5f9', 
                             alpha=0.8, edgecolor='none'))
     
-    # Enhanced x-axis formatting
-    plt.xticks(rotation=45, fontsize=12, color='#475569', fontweight='500')
+    # Enhanced x-axis formatting - no rotation needed for day numbers
+    plt.xticks(rotation=0, fontsize=11, color='#475569', fontweight='500')
     
     # Better y-axis formatting for event names
     ax.tick_params(axis='y', labelsize=11, colors='#334155', pad=8)
@@ -444,10 +463,15 @@ def gantt_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path) -> No
     # Report filtering results
     total_events = len(df.loc[(df["Event Start Date"] <= mend) & (df["Event End Date"] >= mstart)])
     filtered_events = len(sub)
-    icw_filtered = total_events - filtered_events
+    
+    # Calculate individual filter counts
+    all_month_events = df.loc[(df["Event Start Date"] <= mend) & (df["Event End Date"] >= mstart)].copy()
+    icw_filtered = len(all_month_events[all_month_events["Event Name"].str.contains("ICW", case=False, na=False)])
+    marriott_filtered = len(all_month_events[all_month_events["Event Name"].str.contains("Marriott In-House Events 2025", case=False, na=False)])
+    total_filtered = total_events - filtered_events
     
     print(f"Saved {outfile}")
-    print(f"  Events shown: {filtered_events}, ICW events filtered: {icw_filtered}")
+    print(f"  Events shown: {filtered_events}, Filtered: {total_filtered} (ICW: {icw_filtered}, Marriott In-House: {marriott_filtered})")
 
 
 def gantt_for_week(df: pd.DataFrame, outdir: Path) -> None:
@@ -461,8 +485,10 @@ def gantt_for_week(df: pd.DataFrame, outdir: Path) -> None:
     mask = (df["Event Start Date"] <= week_end) & (df["Event End Date"] >= week_start)
     sub = df.loc[mask].copy()
     
-    # Note: ICW events are included in weekly charts for complete visibility
-    # Monthly charts still exclude ICW events
+    # Filter out Marriott In-House Events 2025 (but keep ICW events for complete visibility)
+    # Monthly charts exclude both ICW and Marriott In-House events
+    marriott_mask = ~sub["Event Name"].str.contains("Marriott In-House Events 2025", case=False, na=False)
+    sub = sub.loc[marriott_mask]
     
     if sub.empty:
         print(f"[This Week]  No events happening this week.")
@@ -590,8 +616,12 @@ def gantt_for_week(df: pd.DataFrame, outdir: Path) -> None:
     total_events = len(df.loc[(df["Event Start Date"] <= week_end) & (df["Event End Date"] >= week_start)])
     filtered_events = len(sub)
     
+    # Calculate Marriott In-House events filtered
+    all_week_events = df.loc[(df["Event Start Date"] <= week_end) & (df["Event End Date"] >= week_start)].copy()
+    marriott_filtered = len(all_week_events[all_week_events["Event Name"].str.contains("Marriott In-House Events 2025", case=False, na=False)])
+    
     print(f"Saved {outfile}")
-    print(f"  Weekly events shown: {filtered_events} (includes ICW events)")
+    print(f"  Weekly events shown: {filtered_events} (includes ICW events, excludes {marriott_filtered} Marriott In-House events)")
     print(f"  Week period: {week_display}")
 
 
@@ -606,8 +636,10 @@ def gantt_for_day(df: pd.DataFrame, outdir: Path) -> None:
     mask = (df["Event Start Date"] <= day_end) & (df["Event End Date"] >= day_start)
     sub = df.loc[mask].copy()
     
-    # Note: ICW events are included in daily charts for complete visibility
-    # Monthly charts still exclude ICW events
+    # Filter out Marriott In-House Events 2025 (but keep ICW events for complete visibility)
+    # Monthly charts exclude both ICW and Marriott In-House events
+    marriott_mask = ~sub["Event Name"].str.contains("Marriott In-House Events 2025", case=False, na=False)
+    sub = sub.loc[marriott_mask]
     
     if sub.empty:
         print(f"[Today]  No events happening today.")
@@ -736,8 +768,12 @@ def gantt_for_day(df: pd.DataFrame, outdir: Path) -> None:
     total_events = len(df.loc[(df["Event Start Date"] <= day_end) & (df["Event End Date"] >= day_start)])
     filtered_events = len(sub)
     
+    # Calculate Marriott In-House events filtered
+    all_day_events = df.loc[(df["Event Start Date"] <= day_end) & (df["Event End Date"] >= day_start)].copy()
+    marriott_filtered = len(all_day_events[all_day_events["Event Name"].str.contains("Marriott In-House Events 2025", case=False, na=False)])
+    
     print(f"Saved {outfile}")
-    print(f"  Daily events shown: {filtered_events} (includes ICW events)")
+    print(f"  Daily events shown: {filtered_events} (includes ICW events, excludes {marriott_filtered} Marriott In-House events)")
     print(f"  Day: {day_display}")
 
 
