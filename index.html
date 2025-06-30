@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="config.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #f8fafc;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 35%, #334155 100%);
+            position: relative;
+            animation: subtleShift 60s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes subtleShift {
+            0% { 
+                background: linear-gradient(135deg, #0f172a 0%, #1e293b 35%, #334155 100%);
+            }
+            12.5% {
+                background: linear-gradient(135deg, #101823 0%, #1d2832 35%, #303c4e 100%);
+            }
+            25% {
+                background: linear-gradient(135deg, #111927 0%, #1f2937 35%, #374151 100%);
+            }
+            37.5% {
+                background: linear-gradient(135deg, #181f2e 0%, #282f3f 35%, #3e4954 100%);
+            }
+            50% { 
+                background: linear-gradient(135deg, #1e293b 0%, #334155 35%, #475569 100%);
+            }
+            62.5% {
+                background: linear-gradient(135deg, #1c2536 0%, #2f3c4e 35%, #434f5f 100%);
+            }
+            75% {
+                background: linear-gradient(135deg, #1a202c 0%, #2d3748 35%, #4a5568 100%);
+            }
+            87.5% {
+                background: linear-gradient(135deg, #151d29 0%, #252f3d 35%, #39455a 100%);
+            }
+            100% { 
+                background: linear-gradient(135deg, #0f172a 0%, #1e293b 35%, #334155 100%);
+            }
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+            animation: backgroundPulse 25s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes backgroundPulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            25% {
+                opacity: 0.95;
+                transform: scale(1.01);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.05);
+            }
+            75% {
+                opacity: 0.9;
+                transform: scale(1.02);
+            }
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(148,163,184,0.03)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>') repeat;
+            animation: gridMove 60s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(10px, 10px); }
+        }
+
+        .header {
+            background: linear-gradient(180deg, 
+                rgba(15, 23, 42, 0.95) 0%,
+                rgba(15, 23, 42, 0.9) 50%,
+                rgba(15, 23, 42, 0.85) 100%);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 24px 48px;
+            display: grid;
+            grid-template-columns: 280px 1fr 280px;
+            align-items: center;
+            z-index: 10;
+            position: relative;
+            min-height: 90px;
+            box-shadow: 
+                0 1px 0 0 rgba(255, 255, 255, 0.05) inset,
+                0 1px 3px 0 rgba(0, 0, 0, 0.1),
+                0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .weather {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            justify-self: start;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            padding: 16px 20px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .weather:hover {
+            transform: translateY(-1px) scale(1.02);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .weather-icon {
+            font-size: 2.25rem;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+            animation: weatherBob 6s ease-in-out infinite;
+        }
+
+        @keyframes weatherBob {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-2px) rotate(1deg); }
+            50% { transform: translateY(-4px) rotate(0deg); }
+            75% { transform: translateY(-2px) rotate(-1deg); }
+        }
+
+        .weather-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .weather-temp {
+            font-size: 1.875rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.02em;
+        }
+
+        .weather-location {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .clock-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-self: center;
+            position: relative;
+        }
+
+        .clock {
+            font-size: 3.5rem;
+            font-weight: 300;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            margin-bottom: 6px;
+            text-shadow: 
+                0 0 40px rgba(59, 130, 246, 0.4),
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                0 2px 4px rgba(0, 0, 0, 0.2);
+            position: relative;
+            padding: 18px 28px;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(255, 255, 255, 0.02) 100%);
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .clock::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 20px;
+            padding: 1px;
+            background: linear-gradient(135deg, 
+                rgba(59, 130, 246, 0.3),
+                rgba(147, 51, 234, 0.2),
+                rgba(6, 182, 212, 0.3));
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            -webkit-mask-composite: xor;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .clock:hover::before {
+            opacity: 1;
+        }
+
+        .clock:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        .date-container {
+            display: flex;
+            flex-direction: column;
+            align-items: end;
+            justify-self: end;
+            text-align: right;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            padding: 16px 20px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .date-container:hover {
+            transform: translateY(-1px) scale(1.02);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .date {
+            font-size: 1.625rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.1;
+            margin-bottom: 4px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.01em;
+        }
+
+        .day {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .slide-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 32px 32px 32px;
+            position: relative;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .slide {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 92vw;
+            max-height: 82vh;
+            width: auto;
+            height: auto;
+            border-radius: 24px;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.12) 0%, 
+                rgba(255, 255, 255, 0.08) 50%,
+                rgba(255, 255, 255, 0.04) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(148, 163, 184, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: slideFloat 6s ease-in-out infinite;
+            padding: 24px;
+        }
+
+        @keyframes slideFloat {
+            0%, 100% { 
+                transform: translate(-50%, -50%) translateY(0px);
+                box-shadow: 
+                    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                    0 8px 32px rgba(0, 0, 0, 0.3),
+                    0 0 0 1px rgba(148, 163, 184, 0.1),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            }
+            50% { 
+                transform: translate(-50%, -50%) translateY(-8px);
+                box-shadow: 
+                    0 35px 70px -12px rgba(0, 0, 0, 0.6),
+                    0 15px 45px rgba(0, 0, 0, 0.4),
+                    0 0 0 1px rgba(59, 130, 246, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            }
+        }
+
+        .slide.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 2;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .slide img {
+            display: block;
+            max-width: calc(92vw - 48px);
+            max-height: calc(82vh - 48px);
+            width: auto;
+            height: auto;
+            border-radius: 16px;
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.2),
+                0 4px 12px rgba(0, 0, 0, 0.1),
+                0 0 40px rgba(59, 130, 246, 0.15),
+                0 0 80px rgba(6, 182, 212, 0.1);
+            margin: 0 auto;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            padding: 2px;
+        }
+
+        .slide:hover {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.15) 0%, 
+                rgba(255, 255, 255, 0.1) 50%,
+                rgba(255, 255, 255, 0.06) 100%);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%) scale(1.02);
+        }
+
+        .slide:hover img {
+            transform: scale(1.01);
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.3),
+                0 8px 20px rgba(0, 0, 0, 0.15),
+                0 0 60px rgba(59, 130, 246, 0.25),
+                0 0 120px rgba(6, 182, 212, 0.15);
+        }
+
+        .slide-info {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            background: linear-gradient(135deg, 
+                rgba(15, 23, 42, 0.95) 0%, 
+                rgba(30, 41, 59, 0.9) 50%,
+                rgba(51, 65, 85, 0.85) 100%);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            color: #e2e8f0;
+            padding: 16px 24px;
+            border-radius: 32px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            z-index: 20;
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.4),
+                0 4px 12px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            animation: slideInfoPulse 4s ease-in-out infinite;
+            letter-spacing: 0.025em;
+        }
+
+        @keyframes slideInfoPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 
+                    0 12px 40px rgba(0, 0, 0, 0.4),
+                    0 4px 12px rgba(0, 0, 0, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            }
+            50% {
+                transform: scale(1.03);
+                box-shadow: 
+                    0 16px 50px rgba(59, 130, 246, 0.3),
+                    0 8px 20px rgba(0, 0, 0, 0.25),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            }
+        }
+
+        .slide-progress {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, 
+                rgba(148, 163, 184, 0.1) 0%,
+                rgba(100, 116, 139, 0.15) 50%,
+                rgba(148, 163, 184, 0.1) 100%);
+            z-index: 20;
+            overflow: hidden;
+        }
+
+        .slide-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, 
+                #3b82f6 0%, 
+                #06b6d4 25%, 
+                #8b5cf6 50%, 
+                #06b6d4 75%, 
+                #3b82f6 100%);
+            background-size: 200% 100%;
+            width: 0%;
+            transition: width 1s linear;
+            position: relative;
+            overflow: hidden;
+            animation: gradientShift 3s ease-in-out infinite;
+            box-shadow: 
+                0 0 20px rgba(59, 130, 246, 0.5),
+                0 0 40px rgba(6, 182, 212, 0.3);
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { 
+                background-position: 0% 50%; 
+                filter: hue-rotate(0deg);
+            }
+            50% { 
+                background-position: 100% 50%; 
+                filter: hue-rotate(15deg);
+            }
+        }
+
+        .slide-progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.4), 
+                transparent);
+            animation: progressShimmer 2.5s infinite;
+        }
+
+        @keyframes progressShimmer {
+            0% { 
+                left: -100%; 
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% { 
+                left: 100%; 
+                opacity: 0;
+            }
+        }
+
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .floating-element {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float linear infinite;
+        }
+
+        .floating-element:nth-child(2n) {
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.5) 0%, transparent 70%);
+            width: 3px;
+            height: 3px;
+        }
+
+        .floating-element:nth-child(3n) {
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.4) 0%, transparent 70%);
+            animation-direction: reverse;
+            width: 5px;
+            height: 5px;
+        }
+
+        .floating-element:nth-child(4n) {
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.5) 0%, transparent 70%);
+            width: 2px;
+            height: 2px;
+        }
+
+        .floating-element:nth-child(5n) {
+            background: radial-gradient(circle, rgba(245, 101, 101, 0.4) 0%, transparent 70%);
+            animation-direction: reverse;
+            width: 6px;
+            height: 6px;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(100vh) translateX(-50px);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-100px) translateX(50px);
+                opacity: 0;
+            }
+        }
+
+        .glass-effect {
+            position: relative;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+        }
+
+        .glass-effect::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            font-size: 1.125rem;
+            color: #94a3b8;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(148, 163, 184, 0.2);
+            border-top: 3px solid #3b82f6;
+            border-right: 3px solid #06b6d4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 32px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 1400px) {
+            .header {
+                padding: 20px 40px;
+                grid-template-columns: 240px 1fr 240px;
+                min-height: 80px;
+            }
+            
+            .clock {
+                font-size: 3rem;
+                padding: 16px 24px;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .header {
+                padding: 18px 32px;
+                grid-template-columns: 200px 1fr 200px;
+                min-height: 75px;
+            }
+            
+            .clock {
+                font-size: 2.75rem;
+                padding: 14px 20px;
+            }
+            
+            .date {
+                font-size: 1.5rem;
+            }
+            
+            .weather-temp {
+                font-size: 1.75rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .header {
+                padding: 16px 28px;
+                grid-template-columns: 1fr;
+                gap: 20px;
+                text-align: center;
+                min-height: auto;
+            }
+            
+            .weather, .date-container {
+                justify-self: center;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .clock {
+                font-size: 2.5rem;
+                padding: 12px 18px;
+            }
+            
+            .date {
+                font-size: 1.4rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 14px 20px;
+                gap: 16px;
+            }
+            
+            .clock {
+                font-size: 2.25rem;
+                padding: 10px 16px;
+            }
+            
+            .weather-temp {
+                font-size: 1.625rem;
+            }
+            
+            .date {
+                font-size: 1.25rem;
+            }
+            
+            .weather, .date-container {
+                padding: 10px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-elements" id="floatingElements"></div>
+    
+    <div class="header">
+        <div class="weather" id="weather">
+            <span class="weather-icon">🌤️</span>
+            <div class="weather-info">
+                <div class="weather-temp" id="weather-temp">--°</div>
+                <div class="weather-location">Chicago</div>
+            </div>
+        </div>
+
+        <div class="clock-container">
+            <div class="clock" id="clock">--:--:--</div>
+        </div>
+
+        <div class="date-container">
+            <div class="date" id="date">--</div>
+            <div class="day" id="day">--</div>
+        </div>
+    </div>
+
+    <div class="slide-container" id="slideContainer">
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Loading slides...</div>
+        </div>
+    </div>
+
+    <script>
+        class Dashboard {
+            constructor() {
+                this.slides = [];
+                this.currentSlideIndex = 0;
+                this.slideInterval = null;
+                this.weatherInterval = null;
+                this.clockInterval = null;
+                this.hourlyChimeInterval = null;
+                this.manifestUrl = 'slides/slides.json';
+                
+                // API Configuration - Set via environment or config
+                // For production, set this via a config file or environment variable
+                this.openWeatherApiKey = window.OPENWEATHER_API_KEY || 'YOUR_API_KEY_HERE';
+                this.openWeatherApiUrl = 'https://api.openweathermap.org/data/2.5/weather';
+                
+                // Audio context for hourly chime
+                this.audioContext = null;
+                this.lastChimeHour = -1;
+                
+                this.init();
+            }
+
+            async init() {
+                this.startClock();
+                this.startDate();
+                this.setupHourlyChime();
+                this.createFloatingElements();
+                await this.loadWeather();
+                await this.loadSlides();
+                this.startSlideShow();
+                this.startWeatherUpdates();
+                this.startSlideReloader();
+            }
+
+            startSlideReloader() {
+                // Check for new slides every 2 minutes
+                setInterval(() => {
+                    this.reloadSlides();
+                }, 120000); // 2 minutes
+            }
+
+            createFloatingElements() {
+                const container = document.getElementById('floatingElements');
+                if (!container) return;
+
+                // Create 35 floating elements
+                for (let i = 0; i < 35; i++) {
+                    setTimeout(() => {
+                        const element = document.createElement('div');
+                        element.className = 'floating-element';
+                        
+                        // Random starting position
+                        element.style.left = Math.random() * 100 + '%';
+                        
+                        // Random animation duration between 20-45 seconds
+                        const duration = 20 + Math.random() * 25;
+                        element.style.animationDuration = duration + 's';
+                        
+                        // Random delay
+                        element.style.animationDelay = Math.random() * 10 + 's';
+                        
+                        container.appendChild(element);
+                        
+                        // Remove and recreate element after animation
+                        setTimeout(() => {
+                            if (element.parentNode) {
+                                element.parentNode.removeChild(element);
+                            }
+                            // Recreate element for continuous effect
+                            this.createSingleFloatingElement();
+                        }, (duration + 5) * 1000);
+                        
+                    }, i * 1000); // Stagger creation
+                }
+            }
+
+            createSingleFloatingElement() {
+                const container = document.getElementById('floatingElements');
+                if (!container) return;
+
+                const element = document.createElement('div');
+                element.className = 'floating-element';
+                element.style.left = Math.random() * 100 + '%';
+                
+                const duration = 20 + Math.random() * 25;
+                element.style.animationDuration = duration + 's';
+                
+                container.appendChild(element);
+                
+                setTimeout(() => {
+                    if (element.parentNode) {
+                        element.parentNode.removeChild(element);
+                    }
+                    // Continue the cycle
+                    setTimeout(() => this.createSingleFloatingElement(), Math.random() * 5000);
+                }, duration * 1000);
+            }
+
+            startClock() {
+                const updateClock = () => {
+                    const now = new Date();
+                    const timeString = now.toLocaleTimeString('en-US', {
+                        hour12: true,
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    document.getElementById('clock').textContent = timeString;
+                    
+                    // Check for hourly chime
+                    this.checkHourlyChime(now);
+                };
+                
+                updateClock();
+                this.clockInterval = setInterval(updateClock, 1000);
+            }
+
+            setupHourlyChime() {
+                try {
+                    // Initialize Web Audio API
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    console.log('Audio context initialized for hourly chime');
+                } catch (error) {
+                    console.warn('Web Audio API not supported:', error);
+                }
+            }
+
+            checkHourlyChime(now) {
+                const currentHour = now.getHours();
+                const currentMinute = now.getMinutes();
+                const currentSecond = now.getSeconds();
+                
+                // Trigger chime at exactly the top of each hour (00:00:00)
+                if (currentMinute === 0 && currentSecond === 0 && currentHour !== this.lastChimeHour) {
+                    this.playHourlyChime();
+                    this.lastChimeHour = currentHour;
+                    console.log(`Hourly chime played at ${currentHour}:00`);
+                }
+            }
+
+            playHourlyChime() {
+                if (!this.audioContext) return;
+                
+                try {
+                    // Resume audio context if it's suspended (required by some browsers)
+                    if (this.audioContext.state === 'suspended') {
+                        this.audioContext.resume();
+                    }
+                    
+                    // Create a pleasant chime sound using multiple tones
+                    const now = this.audioContext.currentTime;
+                    
+                    // First chime note (higher pitch)
+                    this.playChimeNote(880, now, 0.3, 0.8); // A5
+                    
+                    // Second chime note (lower pitch) - slightly delayed
+                    this.playChimeNote(660, now + 0.15, 0.3, 0.6); // E5
+                    
+                    // Visual feedback - briefly highlight the clock
+                    this.flashClock();
+                    
+                } catch (error) {
+                    console.warn('Error playing hourly chime:', error);
+                }
+            }
+
+            playChimeNote(frequency, startTime, duration, volume = 0.5) {
+                if (!this.audioContext) return;
+                
+                // Create oscillator for the tone
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                // Set up the tone
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(frequency, startTime);
+                
+                // Set up volume envelope (attack, sustain, release)
+                gainNode.gain.setValueAtTime(0, startTime);
+                gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.05); // Quick attack
+                gainNode.gain.exponentialRampToValueAtTime(volume * 0.3, startTime + duration * 0.7); // Sustain
+                gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration); // Release
+                
+                // Connect and play
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                oscillator.start(startTime);
+                oscillator.stop(startTime + duration);
+            }
+
+            flashClock() {
+                const clock = document.getElementById('clock');
+                if (!clock) return;
+                
+                // Add a subtle flash effect
+                clock.style.transition = 'text-shadow 0.1s ease';
+                clock.style.textShadow = '0 0 20px #00eaff, 0 0 4px #fff';
+                
+                // Reset after a brief moment
+                setTimeout(() => {
+                    clock.style.textShadow = '';
+                    clock.style.transition = '';
+                }, 300);
+            }
+
+            startDate() {
+                const updateDate = () => {
+                    const now = new Date();
+                    const dateString = now.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    const dayString = now.toLocaleDateString('en-US', {
+                        weekday: 'long'
+                    });
+                    document.getElementById('date').textContent = dateString;
+                    document.getElementById('day').textContent = dayString;
+                };
+                
+                updateDate();
+                setInterval(updateDate, 60000);
+            }
+
+            async loadWeather() {
+                try {
+                    console.log('Loading weather...');
+                    
+                    // Try to get cached weather first
+                    const cached = localStorage.getItem('dashboard_weather');
+                    const cacheTime = localStorage.getItem('dashboard_weather_time');
+                    
+                    if (cached && cacheTime) {
+                        const age = Date.now() - parseInt(cacheTime);
+                        if (age < 600000) { // 10 minute cache
+                            console.log('Using cached weather data');
+                            this.displayWeather(JSON.parse(cached));
+                            return;
+                        }
+                    }
+
+                    // Chicago coordinates
+                    const lat = 41.8781;
+                    const lon = -87.6298;
+
+                    if (this.openWeatherApiKey === 'YOUR_API_KEY_HERE' || !this.openWeatherApiKey) {
+                        console.log('No OpenWeatherMap API key, using Open-Meteo fallback');
+                        // Fallback to Open-Meteo if no API key
+                        const response = await fetch(
+                            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=America/Chicago`
+                        );
+                        
+                        if (!response.ok) {
+                            throw new Error(`Open-Meteo API failed: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                        console.log('Open-Meteo response:', data);
+                        
+                        const weather = {
+                            temp: Math.round(data.current.temperature_2m),
+                            code: data.current.weather_code,
+                            unit: 'F'
+                        };
+
+                        localStorage.setItem('dashboard_weather', JSON.stringify(weather));
+                        localStorage.setItem('dashboard_weather_time', Date.now().toString());
+                        this.displayWeather(weather);
+                    } else {
+                        console.log('Using OpenWeatherMap API');
+                        // Use OpenWeatherMap for more accurate current weather
+                        const response = await fetch(
+                            `${this.openWeatherApiUrl}?lat=${lat}&lon=${lon}&appid=${this.openWeatherApiKey}&units=imperial`
+                        );
+                        
+                        if (!response.ok) {
+                            throw new Error(`OpenWeatherMap API failed: ${response.status} ${response.statusText}`);
+                        }
+                        
+                        const data = await response.json();
+                        console.log('OpenWeatherMap response:', data);
+                        
+                        const weather = {
+                            temp: Math.round(data.main.temp),
+                            condition: data.weather[0].main,
+                            description: data.weather[0].description,
+                            icon: data.weather[0].icon,
+                            unit: 'F'
+                        };
+
+                        localStorage.setItem('dashboard_weather', JSON.stringify(weather));
+                        localStorage.setItem('dashboard_weather_time', Date.now().toString());
+                        this.displayWeather(weather);
+                    }
+                } catch (error) {
+                    console.error('Weather loading failed:', error);
+                    document.getElementById('weather-temp').textContent = '--°';
+                    
+                    // Show error in console for debugging
+                    if (error.message.includes('OpenWeatherMap')) {
+                        console.error('OpenWeatherMap API error. Check your API key and quota.');
+                    }
+                }
+            }
+
+            displayWeather(weather) {
+                const weatherTemp = document.getElementById('weather-temp');
+                const weatherIcon = document.querySelector('.weather-icon');
+                
+                console.log('Displaying weather:', weather);
+                
+                weatherTemp.textContent = `${weather.temp}°${weather.unit}`;
+                
+                // Icon mapping for OpenWeatherMap or fallback
+                let icon = '🌤️';
+                if (weather.icon) {
+                    // OpenWeatherMap icons
+                    const iconMap = {
+                        '01d': '☀️', '01n': '🌙',
+                        '02d': '🌤️', '02n': '☁️',
+                        '03d': '☁️', '03n': '☁️',
+                        '04d': '☁️', '04n': '☁️',
+                        '09d': '🌧️', '09n': '🌧️',
+                        '10d': '🌦️', '10n': '🌧️',
+                        '11d': '⛈️', '11n': '⛈️',
+                        '13d': '❄️', '13n': '❄️',
+                        '50d': '🌫️', '50n': '🌫️'
+                    };
+                    icon = iconMap[weather.icon] || '🌤️';
+                } else if (weather.code !== undefined) {
+                    // Open-Meteo fallback
+                    const iconMap = {
+                        0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️', 
+                        45: '🌫️', 48: '🌫️', 
+                        51: '🌧️', 53: '🌧️', 55: '🌧️', 
+                        61: '🌧️', 63: '🌧️', 65: '🌧️', 
+                        71: '❄️', 73: '❄️', 75: '❄️', 
+                        95: '⛈️'
+                    };
+                    icon = iconMap[weather.code] || '🌤️';
+                }
+                
+                weatherIcon.textContent = icon;
+            }
+
+            startWeatherUpdates() {
+                this.weatherInterval = setInterval(() => {
+                    this.loadWeather();
+                }, 600000); // Update every 10 minutes
+            }
+
+            async loadSlides() {
+                console.log('Loading slides...');
+                let slides = [];
+                
+                try {
+                    // First, try to load from manifest
+                    console.log('Attempting to load manifest from:', this.manifestUrl);
+                    const response = await fetch(this.manifestUrl + '?t=' + Date.now());
+                    if (response.ok) {
+                        const manifest = await response.json();
+                        slides = manifest.slides || [];
+                        console.log('Successfully loaded slides from manifest:', slides);
+                    } else {
+                        console.log('Manifest not available, using known slides');
+                    }
+                } catch (manifestError) {
+                    console.log('Manifest loading failed, using known slides');
+                }
+                
+                // If no slides from manifest, use known working slides
+                if (slides.length === 0) {
+                    slides = [
+                        'gantt_2025_07.png',
+                        'gantt_2025_08.png', 
+                        'gantt_2025_09.png',
+                        'gantt_daily_2025_06_30.png',
+                        'gantt_weekly_2025_06_30.png'
+                    ];
+                    console.log('Using known slides:', slides);
+                }
+
+                // Verify slides exist
+                const validSlides = [];
+                for (const slide of slides) {
+                    try {
+                        const img = new Image();
+                        img.src = `slides/${slide}`;
+                        await new Promise((resolve, reject) => {
+                            img.onload = () => resolve();
+                            img.onerror = () => reject();
+                            setTimeout(() => reject(), 5000); // 5 second timeout
+                        });
+                        validSlides.push(slide);
+                        console.log('✓ Verified slide:', slide);
+                    } catch (error) {
+                        console.log('✗ Could not load slide:', slide);
+                    }
+                }
+
+                if (validSlides.length === 0) {
+                    this.showError('No slides could be loaded. Please check the slides directory.');
+                    return;
+                }
+
+                this.slides = validSlides;
+                console.log(`Successfully loaded ${this.slides.length} slides:`, this.slides);
+                
+                this.createSlideElements();
+                this.preloadImages();
+                
+                // Hide any existing error message
+                this.hideError();
+            }
+
+            hideError() {
+                const container = document.getElementById('slideContainer');
+                const errorElement = container.querySelector('.error');
+                if (errorElement) {
+                    errorElement.remove();
+                }
+                const loadingElement = container.querySelector('.loading');
+                if (loadingElement) {
+                    loadingElement.remove();
+                }
+            }
+
+            createSlideElements() {
+                const container = document.getElementById('slideContainer');
+                container.innerHTML = '';
+
+                this.slides.forEach((slide, index) => {
+                    const slideDiv = document.createElement('div');
+                    slideDiv.className = `slide ${index === 0 ? 'active' : ''}`;
+                    slideDiv.innerHTML = `
+                        <img src="slides/${slide}" alt="Gantt Chart ${index + 1}" loading="lazy">
+                    `;
+                    container.appendChild(slideDiv);
+                });
+
+                // Add slide info counter
+                this.createSlideInfo();
+                this.createProgressBar();
+            }
+
+            createSlideInfo() {
+                // Remove existing slide info if any
+                const existing = document.querySelector('.slide-info');
+                if (existing) existing.remove();
+
+                const slideInfo = document.createElement('div');
+                slideInfo.className = 'slide-info';
+                slideInfo.id = 'slide-info';
+                slideInfo.textContent = `${this.currentSlideIndex + 1} of ${this.slides.length}`;
+                document.body.appendChild(slideInfo);
+            }
+
+            createProgressBar() {
+                // Remove existing progress bar if any
+                const existing = document.querySelector('.slide-progress');
+                if (existing) existing.remove();
+
+                const progressContainer = document.createElement('div');
+                progressContainer.className = 'slide-progress';
+                
+                const progressBar = document.createElement('div');
+                progressBar.className = 'slide-progress-bar';
+                progressBar.id = 'slide-progress-bar';
+                
+                progressContainer.appendChild(progressBar);
+                document.body.appendChild(progressContainer);
+            }
+
+            updateSlideInfo() {
+                const slideInfo = document.getElementById('slide-info');
+                if (slideInfo) {
+                    slideInfo.textContent = `${this.currentSlideIndex + 1} of ${this.slides.length}`;
+                }
+            }
+
+            startProgressAnimation() {
+                const progressBar = document.getElementById('slide-progress-bar');
+                if (progressBar) {
+                    progressBar.style.width = '0%';
+                    // Start animation after a brief delay
+                    setTimeout(() => {
+                        progressBar.style.width = '100%';
+                        progressBar.style.transition = 'width 60s linear';
+                    }, 100);
+                }
+            }
+
+            preloadImages() {
+                this.slides.forEach(slide => {
+                    const img = new Image();
+                    img.src = `slides/${slide}`;
+                });
+            }
+
+            startSlideShow() {
+                if (this.slides.length <= 1) return;
+                
+                // Start progress animation for first slide
+                this.startProgressAnimation();
+                
+                this.slideInterval = setInterval(() => {
+                    this.nextSlide();
+                }, 60000); // 60 seconds per slide
+            }
+
+            nextSlide() {
+                const currentSlide = document.querySelector('.slide.active');
+                if (currentSlide) {
+                    // Add exit animation
+                    currentSlide.style.transform = 'translate(-50%, -50%) scale(1.05)';
+                    currentSlide.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        currentSlide.classList.remove('active');
+                        currentSlide.style.transform = '';
+                        currentSlide.style.opacity = '';
+                    }, 400);
+                }
+
+                this.currentSlideIndex = (this.currentSlideIndex + 1) % this.slides.length;
+                
+                const nextSlide = document.querySelectorAll('.slide')[this.currentSlideIndex];
+                if (nextSlide) {
+                    setTimeout(() => {
+                        nextSlide.classList.add('active');
+                        // Add entrance animation
+                        nextSlide.style.transform = 'translate(-50%, -50%) scale(0.95)';
+                        nextSlide.style.opacity = '0';
+                        
+                        requestAnimationFrame(() => {
+                            nextSlide.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                            nextSlide.style.transform = 'translate(-50%, -50%) scale(1)';
+                            nextSlide.style.opacity = '1';
+                            
+                            setTimeout(() => {
+                                nextSlide.style.transition = '';
+                                nextSlide.style.transform = '';
+                                nextSlide.style.opacity = '';
+                            }, 600);
+                        });
+                    }, 200);
+                }
+
+                // Update slide counter and restart progress animation
+                this.updateSlideInfo();
+                this.startProgressAnimation();
+            }
+
+            showError(message) {
+                const container = document.getElementById('slideContainer');
+                const loadingElement = container.querySelector('.loading');
+                const errorElement = container.querySelector('.error');
+                
+                // Remove loading element if present
+                if (loadingElement) {
+                    loadingElement.remove();
+                }
+                
+                // Update or create error element
+                if (errorElement) {
+                    errorElement.textContent = message;
+                } else {
+                    container.innerHTML = `<div class="error">${message}</div>`;
+                }
+            }
+
+            // Method to reload slides seamlessly
+            async reloadSlides() {
+                console.log('Checking for slide updates...');
+                const previousSlides = this.slides ? [...this.slides] : [];
+                const previousIndex = this.currentSlideIndex || 0;
+                
+                // Load manifest to check for updates
+                try {
+                    const response = await fetch(this.manifestUrl + '?t=' + Date.now());
+                    if (response.ok) {
+                        const manifest = await response.json();
+                        const newSlides = manifest.slides || [];
+                        
+                        // Check if slides changed
+                        if (JSON.stringify(newSlides.sort()) !== JSON.stringify(previousSlides.sort())) {
+                            console.log('Slides updated, reloading...');
+                            await this.loadSlides();
+                            
+                            // Adjust current index if needed
+                            if (previousIndex >= this.slides.length) {
+                                this.currentSlideIndex = 0;
+                            }
+                            
+                            // Update UI
+                            this.updateSlideInfo();
+                            
+                            // Show active slide
+                            const slides = document.querySelectorAll('.slide');
+                            slides.forEach((slide, index) => {
+                                slide.classList.toggle('active', index === this.currentSlideIndex);
+                            });
+                        } else {
+                            console.log('No slide changes detected');
+                        }
+                    }
+                } catch (error) {
+                    console.log('Could not check for slide updates:', error.message);
+                }
+            }
+
+            destroy() {
+                if (this.slideInterval) clearInterval(this.slideInterval);
+                if (this.weatherInterval) clearInterval(this.weatherInterval);
+                if (this.clockInterval) clearInterval(this.clockInterval);
+                if (this.hourlyChimeInterval) clearInterval(this.hourlyChimeInterval);
+                
+                // Clean up audio context
+                if (this.audioContext && this.audioContext.state !== 'closed') {
+                    this.audioContext.close();
+                }
+            }
+
+            // Manual test function for the hourly chime
+            testChime() {
+                console.log('Testing hourly chime...');
+                this.playHourlyChime();
+            }
+        }
+
+        // Initialize dashboard when page loads
+        let dashboard;
+        document.addEventListener('DOMContentLoaded', () => {
+            dashboard = new Dashboard();
+            
+            // Make test function available globally for debugging
+            window.testChime = () => {
+                if (dashboard) {
+                    dashboard.testChime();
+                } else {
+                    console.log('Dashboard not initialized yet');
+                }
+            };
+        });
+
+        // Handle page visibility changes for kiosk mode
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log('Dashboard hidden');
+            } else {
+                console.log('Dashboard visible');
+                if (dashboard) {
+                    dashboard.loadWeather();
+                }
+            }
+        });
+
+        // Handle window focus for kiosk mode
+        window.addEventListener('focus', () => {
+            console.log('Dashboard focused');
+        });
+
+        // Keyboard shortcuts for manual control
+        document.addEventListener('keydown', (event) => {
+            if (!dashboard) return;
+            
+            switch(event.key) {
+                case 'ArrowRight':
+                case ' ':
+                    event.preventDefault();
+                    dashboard.nextSlide();
+                    break;
+                case 'ArrowLeft':
+                    event.preventDefault();
+                    // Previous slide functionality
+                    const currentSlide = document.querySelector('.slide.active');
+                    if (currentSlide) {
+                        currentSlide.classList.remove('active');
+                    }
+                    dashboard.currentSlideIndex = (dashboard.currentSlideIndex - 1 + dashboard.slides.length) % dashboard.slides.length;
+                    const prevSlide = document.querySelectorAll('.slide')[dashboard.currentSlideIndex];
+                    if (prevSlide) {
+                        prevSlide.classList.add('active');
+                    }
+                    dashboard.updateSlideInfo();
+                    dashboard.startProgressAnimation();
+                    break;
+                case 'r':
+                case 'R':
+                    event.preventDefault();
+                    location.reload();
+                    break;
+                case 'c':
+                case 'C':
+                    event.preventDefault();
+                    dashboard.testChime();
+                    break;
+            }
+        });
+
+        // Auto-reload every 10 minutes for kiosk mode (reduced frequency since we have slide reloading)
+        setInterval(() => {
+            console.log('Performing scheduled page reload...');
+            location.reload();
+        }, 600000); // 10 minutes
+    </script>
+</body>
+</html>
