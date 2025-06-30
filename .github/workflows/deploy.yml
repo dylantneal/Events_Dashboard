@@ -34,7 +34,9 @@ jobs:
         
     - name: Generate slides
       run: |
-        python flex_gantt.py pipeline.xlsx --months 7 8 9 10 11 12 --year 2025 --dashboard
+        python flex_gantt.py pipeline.xlsx --rolling-window --dashboard
+        python flex_gantt.py pipeline.xlsx --weekly --dashboard  
+        python flex_gantt.py pipeline.xlsx --daily --dashboard
         
     - name: Setup Pages
       uses: actions/configure-pages@v4
