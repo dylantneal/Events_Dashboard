@@ -1090,10 +1090,10 @@
                 this.hourlyChimeInterval = null;
                 this.manifestUrl = 'slides/slides.json';
                 
-                // API Configuration - Set via environment or config
-                // For production, set this via a config file or environment variable
+                // API Configuration - GitHub Pages compatible
                 this.openWeatherApiKey = window.OPENWEATHER_API_KEY || 'YOUR_API_KEY_HERE';
                 this.openWeatherApiUrl = 'https://api.openweathermap.org/data/2.5/weather';
+                this.isProduction = window.DASHBOARD_CONFIG?.isProduction || false;
                 
                 // Audio and speech systems
                 this.speechSynthesis = null; // For hourly time announcements
@@ -1559,7 +1559,7 @@
                     console.log('Using known slides:', slides);
                 }
 
-                // Verify slides exist
+                // Verify slides exist (with GitHub Pages compatible error handling)
                 const validSlides = [];
                 for (const slide of slides) {
                     try {
@@ -1574,13 +1574,19 @@
                         console.log('✓ Verified slide:', slide);
                     } catch (error) {
                         console.log('✗ Could not load slide:', slide);
+                        // On GitHub Pages, this might be normal if slides haven't been generated yet
                     }
                 }
 
                 // Add announcements slide as the first slide
                 this.slides = ['announcements', ...validSlides];
                 this.announcementsSlideIndex = 0;
-                console.log(`Successfully loaded ${this.slides.length} slides (including announcements):`, this.slides);
+                
+                if (this.isProduction) {
+                    console.log(`GitHub Pages deployment: ${this.slides.length} slides loaded (including announcements)`);
+                } else {
+                    console.log(`Development: ${this.slides.length} slides loaded (including announcements):`, this.slides);
+                }
                 
                 this.createSlideElements();
                 this.preloadImages();
@@ -1809,6 +1815,12 @@
                     const stored = localStorage.getItem('dashboard_announcements');
                     this.announcements = stored ? JSON.parse(stored) : [];
                     console.log('Loaded announcements:', this.announcements);
+                    
+                    // GitHub Pages compatibility: Add deployment info to console
+                    if (window.DASHBOARD_CONFIG?.isProduction) {
+                        console.log('Running on GitHub Pages - announcements are stored locally per device');
+                        console.log('Use Ctrl+E to export and Ctrl+I to import announcements between devices');
+                    }
                 } catch (error) {
                     console.error('Error loading announcements:', error);
                     this.announcements = [];

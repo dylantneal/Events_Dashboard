@@ -183,6 +183,8 @@ For complete setup instructions, see `ROLLING_WINDOW_SETUP.md`.
 
 ### Production Deployment
 
+#### GitHub Pages (Recommended)
+
 1. **Push to GitHub:**
    ```bash
    git add .
@@ -192,8 +194,21 @@ For complete setup instructions, see `ROLLING_WINDOW_SETUP.md`.
 
 2. **Enable GitHub Pages:**
    - Go to repository Settings → Pages
-   - Select "GitHub Actions" as source
+   - Under **Source**, select **"GitHub Actions"**
    - The workflow will automatically deploy on push
+
+3. **Access Your Dashboard:**
+   - Available at: `https://yourusername.github.io/EncoreDashboard/`
+   - **Announcements board fully functional** on live site
+   - All features work exactly as in local development
+
+#### Important: Cross-Device Announcements
+- **Announcements are stored per-device** (browser localStorage)
+- **To share between devices:** Use `Ctrl+E` (export) and `Ctrl+I` (import)
+- **For kiosks/multiple screens:** Export from admin device, import to each display
+- **Backup strategy:** Regular exports with `Ctrl+E`
+
+📖 **See `GITHUB_PAGES_SETUP.md` for complete deployment guide**
 
 3. **Kiosk Setup (Raspberry Pi):**
    ```bash
@@ -373,10 +388,13 @@ The dashboard includes a built-in announcements system that allows anyone to cre
 - **Weekend-only**: Friday 5:00 PM to Monday 9:00 AM
 - **Same-day events**: Both start and end dates default to today for convenience
 
-**GitHub Deployment**:
-- Announcements are stored in browser localStorage (per device)
-- For multi-device deployments, use export/import to sync announcements
-- Data persists across browser sessions and dashboard reloads
+**GitHub Pages Deployment**:
+- **✅ Fully supported** - all announcements features work on GitHub Pages
+- **Per-device storage** - announcements stored in browser localStorage
+- **Multi-device sync** - use export/import to share announcements between devices
+- **Zero setup required** - just enable GitHub Pages with GitHub Actions
+- **Automatic HTTPS** - secure by default
+- **No server costs** - completely free hosting
 
 ### Best Practices
 
