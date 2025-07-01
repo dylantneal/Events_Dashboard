@@ -376,7 +376,6 @@ setInterval(() => {
 - **Escape**: Close announcements modal
 - **Ctrl+E**: Export announcements data
 - **Ctrl+I**: Import announcements data
-- **Ctrl+T**: Create test announcements for debugging
 - **Ctrl+D**: Debug all announcements with timing details
 
 ### Time Notifications
@@ -413,6 +412,11 @@ If time notifications aren't working, check the following:
    - Speech synthesis works in Chrome, Safari, Edge, Firefox
    - Web Audio API works in all modern browsers
    - Some browsers may require HTTPS for full functionality
+
+**Test Announcements (For Debugging Only)**
+- Test announcements can be created via browser console: `createTestAnnouncements()`
+- Clean up test data with: `cleanupTestAnnouncements()`
+- The Ctrl+T keyboard shortcut has been disabled to prevent accidental test data creation
 
 ## Announcements Board Usage
 

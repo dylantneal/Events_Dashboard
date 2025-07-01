@@ -3278,13 +3278,7 @@
                         importAnnouncements();
                     }
                     break;
-                case 't':
-                case 'T':
-                    if (event.ctrlKey || event.metaKey) {
-                        event.preventDefault();
-                        createTestAnnouncements();
-                    }
-                    break;
+                // Disabled: case 't': case 'T': createTestAnnouncements() - removed to prevent accidental test data creation
                 case 'd':
                 case 'D':
                     if (event.ctrlKey || event.metaKey) {
