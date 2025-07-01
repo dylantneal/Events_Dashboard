@@ -2125,6 +2125,9 @@
 
             async saveAnnouncements() {
                 try {
+                    // Track when we make local changes
+                    this.lastLocalSaveTime = Date.now();
+                    
                     // Always save to localStorage first (immediate backup)
                     localStorage.setItem('dashboard_announcements', JSON.stringify(this.announcements));
                     console.log('Saved announcements to localStorage:', this.announcements.length, 'items');
@@ -2227,23 +2230,23 @@
                     
                     const cloudData = await this.loadFromCloud();
                     if (cloudData && Array.isArray(cloudData)) {
+                        // Check if we should skip merge due to recent local changes
+                        const timeSinceLastLocalSave = Date.now() - (this.lastLocalSaveTime || 0);
+                        if (timeSinceLastLocalSave < 5000) { // 5 seconds
+                            console.log('🚫 Skipping cloud merge - recent local changes detected');
+                            this.lastSyncTime = Date.now();
+                            return;
+                        }
+                        
                         // Smart merge instead of overwrite
                         const mergedAnnouncements = this.mergeAnnouncements(this.announcements, cloudData);
-                        const localDataStr = JSON.stringify(this.announcements);
-                        const mergedDataStr = JSON.stringify(mergedAnnouncements);
+                        const localDataStr = JSON.stringify(this.announcements.sort((a,b) => a.id.localeCompare(b.id)));
+                        const mergedDataStr = JSON.stringify(mergedAnnouncements.sort((a,b) => a.id.localeCompare(b.id)));
                         
                         if (localDataStr !== mergedDataStr) {
+                            console.log('📝 Applying cloud changes to local data');
                             this.announcements = mergedAnnouncements;
                             localStorage.setItem('dashboard_announcements', JSON.stringify(this.announcements));
-                            
-                            // Save merged data back to cloud to keep everything in sync
-                            try {
-                                await this.saveToCloud(this.announcements);
-                                console.log('✓ Merged and synced announcements:', this.announcements.length, 'items');
-                            } catch (saveError) {
-                                console.warn('Failed to save merged data to cloud:', saveError.message);
-                            }
-                            
                             this.updateAnnouncementsDisplay();
                         } else {
                             console.log('Announcements are up to date');
@@ -2812,24 +2815,61 @@
                     return;
                 }
                 
-                if (confirm('⚠️ This will clear ALL announcements from cloud storage and re-upload your current local announcements. Continue?')) {
+                if (confirm('⚠️ This will FORCE RESET cloud storage with your current local announcements. This will fix sync conflicts. Continue?')) {
                     try {
-                        console.log('🧹 Force clearing cloud storage...');
+                        console.log('🧹 FORCE RESET: Clearing cloud storage and uploading local data...');
                         
-                        // Save current local announcements to cloud (this overwrites everything)
+                        // Stop all automatic syncing temporarily
+                        const originalSyncEnabled = this.cloudSyncEnabled;
+                        this.cloudSyncEnabled = false;
+                        
+                        // Force save current local announcements to cloud (this overwrites everything)
+                        this.syncInProgress = true;
                         await this.saveToCloud(this.announcements);
+                        this.syncInProgress = false;
                         
-                        console.log('✅ Cloud storage cleared and resynced with local data');
-                        alert(`✅ Cloud storage cleared and resynced with ${this.announcements.length} local announcements`);
+                        // Re-enable syncing
+                        this.cloudSyncEnabled = originalSyncEnabled;
+                        this.lastLocalSaveTime = Date.now(); // Prevent immediate merge
                         
-                        // Force an immediate sync check
-                        setTimeout(() => {
-                            this.syncAnnouncementsFromCloud();
-                        }, 2000);
+                        console.log('✅ FORCE RESET COMPLETE: Cloud storage overwritten with local data');
+                        alert(`✅ Cloud storage reset complete!\n\nLocal announcements: ${this.announcements.length}\nAll sync conflicts resolved.`);
+                        
+                        // Update display
+                        this.updateAnnouncementsDisplay();
                         
                     } catch (error) {
-                        console.error('❌ Failed to clear cloud storage:', error);
-                        alert('❌ Failed to clear cloud storage: ' + error.message);
+                        console.error('❌ Failed to reset cloud storage:', error);
+                        alert('❌ Failed to reset cloud storage: ' + error.message);
+                        this.cloudSyncEnabled = true; // Re-enable on error
+                        this.syncInProgress = false;
+                    }
+                }
+            }
+
+            // Emergency function to completely reset announcements
+            async emergencyReset() {
+                if (confirm('🚨 EMERGENCY RESET: This will delete ALL announcements and start fresh. This cannot be undone! Continue?')) {
+                    try {
+                        console.log('🚨 EMERGENCY RESET: Deleting all announcements...');
+                        
+                        // Clear everything
+                        this.announcements = [];
+                        localStorage.removeItem('dashboard_announcements');
+                        
+                        // Clear cloud storage
+                        if (this.cloudSyncEnabled) {
+                            await this.saveToCloud([]);
+                        }
+                        
+                        this.updateAnnouncementsDisplay();
+                        
+                        console.log('✅ EMERGENCY RESET COMPLETE: All announcements deleted');
+                        alert('🚨 Emergency reset complete. All announcements have been deleted.');
+                        
+                    } catch (error) {
+                        console.error('❌ Emergency reset failed:', error);
+                        alert('❌ Emergency reset failed: ' + error.message);
                     }
                 }
             }
@@ -3052,6 +3092,12 @@
         async function forceClearCloudStorage() {
             if (dashboard) {
                 await dashboard.forceClearCloudStorage();
+            }
+        }
+
+        async function emergencyReset() {
+            if (dashboard) {
+                await dashboard.emergencyReset();
             }
         }
 
