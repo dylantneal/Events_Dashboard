@@ -16,8 +16,8 @@ window.DASHBOARD_CONFIG = {
     
     // Cloud sync for announcements (optional but recommended for multi-device use)
     cloudSync: {
-        enabled: false, // Set to true to enable cloud sync
-        url: 'YOUR_JSONBIN_URL_HERE' // JSONBin.io endpoint (see setup instructions)
+        enabled: true, // Cloud sync enabled for multi-device announcements
+        url: 'https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1/latest' // Public JSONBin for collaborative announcements
         // No API key needed for public bins - perfect for collaborative announcements!
     }
     
