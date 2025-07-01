@@ -296,7 +296,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             max-width: 92vw;
-            max-height: 82vh;
+            max-height: calc(100vh - 200px); /* Account for header space */
             width: auto;
             height: auto;
             border-radius: 24px;
@@ -328,7 +328,7 @@
         .slide:has(.announcements-slide),
         .slide.announcements-slide-container {
             max-width: 98vw;
-            max-height: 92vh;
+            max-height: calc(100vh - 160px); /* Account for header + padding */
             padding: 16px;
         }
 
@@ -351,7 +351,7 @@
         .slide img {
             display: block;
             max-width: calc(92vw - 48px);
-            max-height: calc(82vh - 48px);
+            max-height: calc(100vh - 250px); /* Account for header + padding */
             width: auto;
             height: auto;
             border-radius: 16px;
@@ -1151,6 +1151,458 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
+        /* Mobile modal optimizations */
+        @media (max-width: 600px) {
+            .modal {
+                padding: 24px 20px;
+                width: 95%;
+                max-width: none;
+                border-radius: 20px;
+                margin: 20px;
+            }
+            
+            .modal-title {
+                font-size: 1.5rem;
+            }
+            
+            .modal-close {
+                font-size: 20px;
+                padding: 6px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .form-input, .form-textarea {
+                padding: 14px 16px;
+                font-size: 1rem;
+            }
+            
+            .form-textarea {
+                min-height: 100px;
+            }
+            
+            .modal-actions {
+                margin-top: 24px;
+                padding-top: 20px;
+                flex-direction: column-reverse;
+                gap: 10px;
+            }
+            
+            .btn {
+                padding: 14px 20px;
+                font-size: 1rem;
+                width: 100%;
+                justify-content: center;
+                border-radius: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal {
+                padding: 20px 16px;
+                width: 96%;
+                margin: 10px;
+                border-radius: 16px;
+            }
+            
+            .modal-title {
+                font-size: 1.375rem;
+            }
+            
+            .form-input, .form-textarea {
+                padding: 12px 14px;
+                font-size: 0.95rem;
+            }
+            
+            .form-label {
+                font-size: 0.9rem;
+            }
+            
+            .btn {
+                padding: 12px 18px;
+                font-size: 0.95rem;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (max-width: 768px) {
+            .announcement-item {
+                cursor: pointer;
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+                tap-highlight-color: rgba(255, 255, 255, 0.1);
+            }
+            
+            .announcement-item::after {
+                content: 'Tap to edit';
+                font-size: 0.75rem;
+            }
+            
+            .weather, .date-container, .clock {
+                -webkit-tap-highlight-color: transparent;
+                tap-highlight-color: transparent;
+            }
+            
+            /* Larger touch targets for buttons */
+            .add-announcement-btn {
+                min-height: 44px;
+                min-width: 44px;
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+            }
+            
+            .announcement-btn {
+                min-height: 32px;
+                min-width: 60px;
+                padding: 8px 12px;
+            }
+        }
+
+        /* Large screen optimizations for TVs and large monitors */
+        @media (min-width: 1600px) {
+            .header {
+                padding: 40px 60px;
+                grid-template-columns: 400px 1fr 400px;
+                min-height: 120px;
+            }
+            
+            .clock {
+                font-size: 4.5rem;
+                padding: 24px 36px;
+            }
+            
+            .weather-temp {
+                font-size: 2.5rem;
+            }
+            
+            .weather-location {
+                font-size: 1.25rem;
+            }
+            
+            .weather-icon {
+                font-size: 3rem;
+            }
+            
+            .day {
+                font-size: 2.75rem;
+            }
+            
+            .date {
+                font-size: 1.75rem;
+            }
+            
+            .weather, .date-container {
+                padding: 24px 28px;
+            }
+            
+            /* Make announcements much larger for TV viewing */
+            .slide:has(.announcements-slide),
+            .slide.announcements-slide-container {
+                max-width: 85vw;
+                max-height: calc(100vh - 180px); /* Account for larger header */
+                padding: 32px;
+            }
+            
+            .slide {
+                max-height: calc(100vh - 220px); /* Account for larger header */
+            }
+            
+            .slide img {
+                max-height: calc(100vh - 280px); /* Account for larger header + padding */
+            }
+            
+            .announcements-header {
+                padding: 48px 60px 36px 60px;
+            }
+            
+            .announcements-title {
+                font-size: 4rem;
+            }
+            
+            .add-announcement-btn {
+                width: 64px;
+                height: 64px;
+                font-size: 24px;
+                right: 32px;
+            }
+            
+            .announcements-content {
+                padding: 48px 60px 60px 60px;
+            }
+            
+            .site-title {
+                font-size: 1.125rem;
+                padding: 20px 32px 12px 32px;
+            }
+        }
+
+        @media (min-width: 1920px) {
+            .header {
+                padding: 50px 80px;
+                grid-template-columns: 500px 1fr 500px;
+                min-height: 140px;
+            }
+            
+            .clock {
+                font-size: 5.5rem;
+                padding: 32px 48px;
+            }
+            
+            .weather-temp {
+                font-size: 3rem;
+            }
+            
+            .weather-location {
+                font-size: 1.5rem;
+            }
+            
+            .weather-icon {
+                font-size: 3.5rem;
+            }
+            
+            .day {
+                font-size: 3.25rem;
+            }
+            
+            .date {
+                font-size: 2rem;
+            }
+            
+            .weather, .date-container {
+                padding: 32px 36px;
+                gap: 20px;
+            }
+            
+            /* Announcements optimized for Full HD TVs */
+            .slide:has(.announcements-slide),
+            .slide.announcements-slide-container {
+                max-width: 90vw;
+                max-height: calc(100vh - 200px); /* Account for Full HD header */
+                padding: 40px;
+            }
+            
+            .slide {
+                max-height: calc(100vh - 240px); /* Account for Full HD header */
+            }
+            
+            .slide img {
+                max-height: calc(100vh - 320px); /* Account for Full HD header + padding */
+            }
+            
+            .announcements-header {
+                padding: 60px 80px 48px 80px;
+            }
+            
+            .announcements-title {
+                font-size: 5rem;
+            }
+            
+            .add-announcement-btn {
+                width: 72px;
+                height: 72px;
+                font-size: 28px;
+                right: 40px;
+            }
+            
+            .announcements-content {
+                padding: 60px 80px 80px 80px;
+            }
+            
+            .site-title {
+                font-size: 1.25rem;
+                padding: 24px 40px 16px 40px;
+            }
+            
+            /* Scale up announcement text significantly */
+            .announcements-grid.single .announcement-item {
+                min-height: 280px;
+                padding: 60px 48px;
+            }
+            
+            .announcements-grid.single .announcement-item .announcement-text {
+                font-size: 2.5rem;
+                line-height: 1.4;
+            }
+            
+            .announcements-grid.two .announcement-item,
+            .announcements-grid.three .announcement-item {
+                min-height: 200px;
+                padding: 48px 40px;
+            }
+            
+            .announcements-grid.two .announcement-item .announcement-text,
+            .announcements-grid.three .announcement-item .announcement-text {
+                font-size: 2rem;
+                line-height: 1.4;
+            }
+            
+            .announcements-grid.four .announcement-item,
+            .announcements-grid.six .announcement-item {
+                min-height: 160px;
+                padding: 40px 32px;
+            }
+            
+            .announcements-grid.four .announcement-item .announcement-text,
+            .announcements-grid.six .announcement-item .announcement-text {
+                font-size: 1.75rem;
+                line-height: 1.3;
+            }
+            
+            .announcements-grid.many .announcement-item {
+                min-height: 140px;
+                padding: 36px 28px;
+            }
+            
+            .announcements-grid.many .announcement-item .announcement-text {
+                font-size: 1.5rem;
+                line-height: 1.3;
+            }
+            
+            .announcements-grid.ultra .announcement-item {
+                min-height: 120px;
+                padding: 28px 24px;
+            }
+            
+            .announcements-grid.ultra .announcement-item .announcement-text {
+                font-size: 1.375rem;
+                line-height: 1.3;
+            }
+        }
+
+        @media (min-width: 2560px) {
+            .header {
+                padding: 60px 100px;
+                grid-template-columns: 600px 1fr 600px;
+                min-height: 160px;
+            }
+            
+            .clock {
+                font-size: 7rem;
+                padding: 40px 60px;
+            }
+            
+            .weather-temp {
+                font-size: 3.75rem;
+            }
+            
+            .weather-location {
+                font-size: 1.875rem;
+            }
+            
+            .weather-icon {
+                font-size: 4.5rem;
+            }
+            
+            .day {
+                font-size: 4rem;
+            }
+            
+            .date {
+                font-size: 2.5rem;
+            }
+            
+            .weather, .date-container {
+                padding: 40px 44px;
+                gap: 24px;
+            }
+            
+            /* 4K TV optimizations */
+            .slide:has(.announcements-slide),
+            .slide.announcements-slide-container {
+                max-width: 92vw;
+                max-height: calc(100vh - 220px); /* Account for 4K header */
+                padding: 48px;
+            }
+            
+            .slide {
+                max-height: calc(100vh - 260px); /* Account for 4K header */
+            }
+            
+            .slide img {
+                max-height: calc(100vh - 360px); /* Account for 4K header + padding */
+            }
+            
+            .announcements-header {
+                padding: 80px 120px 60px 120px;
+            }
+            
+            .announcements-title {
+                font-size: 6.5rem;
+            }
+            
+            .add-announcement-btn {
+                width: 84px;
+                height: 84px;
+                font-size: 32px;
+                right: 48px;
+            }
+            
+            .announcements-content {
+                padding: 80px 120px 100px 120px;
+            }
+            
+            .site-title {
+                font-size: 1.5rem;
+                padding: 32px 48px 20px 48px;
+            }
+            
+            /* Massive text scaling for 4K viewing distance */
+            .announcements-grid.single .announcement-item {
+                min-height: 360px;
+                padding: 80px 64px;
+            }
+            
+            .announcements-grid.single .announcement-item .announcement-text {
+                font-size: 3.25rem;
+                line-height: 1.4;
+            }
+            
+            .announcements-grid.two .announcement-item,
+            .announcements-grid.three .announcement-item {
+                min-height: 260px;
+                padding: 64px 52px;
+            }
+            
+            .announcements-grid.two .announcement-item .announcement-text,
+            .announcements-grid.three .announcement-item .announcement-text {
+                font-size: 2.75rem;
+                line-height: 1.4;
+            }
+            
+            .announcements-grid.four .announcement-item,
+            .announcements-grid.six .announcement-item {
+                min-height: 200px;
+                padding: 52px 40px;
+            }
+            
+            .announcements-grid.four .announcement-item .announcement-text,
+            .announcements-grid.six .announcement-item .announcement-text {
+                font-size: 2.25rem;
+                line-height: 1.3;
+            }
+            
+            .announcements-grid.many .announcement-item {
+                min-height: 180px;
+                padding: 48px 36px;
+            }
+            
+            .announcements-grid.many .announcement-item .announcement-text {
+                font-size: 2rem;
+                line-height: 1.3;
+            }
+            
+            .announcements-grid.ultra .announcement-item {
+                min-height: 160px;
+                padding: 40px 32px;
+            }
+            
+            .announcements-grid.ultra .announcement-item .announcement-text {
+                font-size: 1.75rem;
+                line-height: 1.3;
+            }
+        }
+
         @media (max-width: 1400px) {
             .header {
                 padding: 20px 40px;
@@ -1231,6 +1683,273 @@
             
             .weather, .date-container {
                 padding: 10px 14px;
+            }
+        }
+
+        /* Enhanced mobile responsiveness */
+        @media (max-width: 600px) {
+            .header {
+                padding: 12px 16px;
+                gap: 12px;
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+            }
+            
+            .slide {
+                max-height: calc(100vh - 160px); /* Account for mobile header */
+            }
+            
+            .slide img {
+                max-height: calc(100vh - 210px); /* Account for mobile header + padding */
+            }
+            
+            .clock {
+                font-size: 2rem;
+                padding: 8px 14px;
+                order: 1;
+            }
+            
+            .weather {
+                order: 2;
+                padding: 8px 12px;
+                gap: 12px;
+            }
+            
+            .weather-temp {
+                font-size: 1.5rem;
+            }
+            
+            .weather-location {
+                font-size: 0.9rem;
+            }
+            
+            .date-container {
+                order: 3;
+                padding: 8px 12px;
+                gap: 12px;
+            }
+            
+            .day {
+                font-size: 1.75rem;
+            }
+            
+            .date {
+                font-size: 1.125rem;
+            }
+            
+            /* Announcements optimizations for mobile */
+            .announcements-header {
+                padding: 20px 20px 16px 20px;
+            }
+            
+            .announcements-title {
+                font-size: 2.25rem;
+            }
+            
+            .add-announcement-btn {
+                right: 12px;
+                width: 44px;
+                height: 44px;
+                font-size: 18px;
+            }
+            
+            .announcements-content {
+                padding: 20px 16px 24px 16px;
+            }
+            
+            .announcements-grid.single .announcement-item {
+                min-height: 160px;
+                padding: 24px 20px;
+            }
+            
+            .announcements-grid.single .announcement-item .announcement-text {
+                font-size: 1.4rem;
+                line-height: 1.3;
+            }
+            
+            .announcements-grid.two .announcement-item,
+            .announcements-grid.three .announcement-item {
+                min-height: 120px;
+                padding: 20px 16px;
+            }
+            
+            .announcements-grid.two .announcement-item .announcement-text,
+            .announcements-grid.three .announcement-item .announcement-text {
+                font-size: 1.25rem;
+                line-height: 1.3;
+            }
+            
+            .announcements-grid.four .announcement-item,
+            .announcements-grid.six .announcement-item {
+                min-height: 100px;
+                padding: 16px 14px;
+            }
+            
+            .announcements-grid.four .announcement-item .announcement-text,
+            .announcements-grid.six .announcement-item .announcement-text {
+                font-size: 1.1rem;
+                line-height: 1.2;
+            }
+            
+            .announcements-grid.many .announcement-item {
+                min-height: 85px;
+                padding: 14px 12px;
+            }
+            
+            .announcements-grid.many .announcement-item .announcement-text {
+                font-size: 1rem;
+                line-height: 1.2;
+            }
+            
+            .announcements-grid.ultra .announcement-item {
+                min-height: 75px;
+                padding: 12px 10px;
+            }
+            
+            .announcements-grid.ultra .announcement-item .announcement-text {
+                font-size: 0.95rem;
+                line-height: 1.2;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 10px 12px;
+                gap: 10px;
+            }
+            
+            .slide {
+                max-height: calc(100vh - 140px); /* Account for smaller mobile header */
+            }
+            
+            .slide img {
+                max-height: calc(100vh - 190px); /* Account for smaller mobile header + padding */
+            }
+            
+            .clock {
+                font-size: 1.75rem;
+                padding: 6px 12px;
+            }
+            
+            .weather {
+                padding: 6px 10px;
+                gap: 10px;
+            }
+            
+            .weather-icon {
+                font-size: 1.875rem;
+            }
+            
+            .weather-temp {
+                font-size: 1.375rem;
+            }
+            
+            .weather-location {
+                font-size: 0.825rem;
+            }
+            
+            .date-container {
+                padding: 6px 10px;
+                gap: 10px;
+            }
+            
+            .day {
+                font-size: 1.5rem;
+            }
+            
+            .date {
+                font-size: 1rem;
+            }
+            
+            /* Further optimize announcements for small screens */
+            .announcements-header {
+                padding: 16px 12px 12px 12px;
+            }
+            
+            .announcements-title {
+                font-size: 1.875rem;
+            }
+            
+            .add-announcement-btn {
+                right: 8px;
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+            
+            .announcements-content {
+                padding: 16px 12px 20px 12px;
+            }
+            
+            .site-title {
+                padding: 12px 16px 6px 16px;
+                font-size: 0.825rem;
+            }
+            
+            /* Force single column layout on very small screens */
+            .announcements-grid.four,
+            .announcements-grid.six,
+            .announcements-grid.many,
+            .announcements-grid.ultra {
+                grid-template-columns: 1fr !important;
+                gap: 8px;
+            }
+            
+            .announcements-grid.single .announcement-item {
+                min-height: 140px;
+                padding: 20px 16px;
+            }
+            
+            .announcements-grid.single .announcement-item .announcement-text {
+                font-size: 1.25rem;
+            }
+            
+            .announcement-item {
+                min-height: 80px;
+                padding: 14px 12px;
+            }
+            
+            .announcement-text {
+                font-size: 1rem;
+                line-height: 1.25;
+            }
+        }
+
+        @media (max-width: 390px) {
+            .header {
+                padding: 8px 10px;
+                gap: 8px;
+            }
+            
+            .clock {
+                font-size: 1.5rem;
+                padding: 5px 10px;
+            }
+            
+            .weather-temp {
+                font-size: 1.25rem;
+            }
+            
+            .weather-location {
+                font-size: 0.75rem;
+            }
+            
+            .day {
+                font-size: 1.375rem;
+            }
+            
+            .date {
+                font-size: 0.9rem;
+            }
+            
+            .announcements-title {
+                font-size: 1.625rem;
+            }
+            
+            .add-announcement-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 14px;
             }
         }
     </style>
