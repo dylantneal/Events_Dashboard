@@ -2307,8 +2307,25 @@
                     return hoursSinceEnd < 24; // Keep announcements that ended less than 24 hours ago
                 });
                 
-                console.log(`Merged announcements: ${localAnnouncements.length} local + ${cloudAnnouncements.length} cloud = ${mergedAnnouncements.length} final`);
-                console.log('Merge details: Preferring most recently modified versions');
+                console.log(`📊 MERGE SUMMARY:`);
+                console.log(`  Local: ${localAnnouncements.length} announcements`);
+                console.log(`  Cloud: ${cloudAnnouncements.length} announcements`);
+                console.log(`  Final: ${mergedAnnouncements.length} announcements`);
+                console.log('  Strategy: Preferring most recently modified versions');
+                
+                // Debug: Show which announcements are in each set
+                const localIds = new Set(localAnnouncements.map(a => a.id));
+                const cloudIds = new Set(cloudAnnouncements.map(a => a.id));
+                const finalIds = new Set(mergedAnnouncements.map(a => a.id));
+                
+                const onlyLocal = [...localIds].filter(id => !cloudIds.has(id));
+                const onlyCloud = [...cloudIds].filter(id => !localIds.has(id));
+                const bothSets = [...localIds].filter(id => cloudIds.has(id));
+                
+                if (onlyLocal.length > 0) console.log(`  🏠 Local only: ${onlyLocal.length} announcements`);
+                if (onlyCloud.length > 0) console.log(`  ☁️ Cloud only: ${onlyCloud.length} announcements`);
+                if (bothSets.length > 0) console.log(`  🔄 In both: ${bothSets.length} announcements`);
+                
                 return mergedAnnouncements;
             }
 
@@ -2552,16 +2569,31 @@
 
             async deleteAnnouncement(announcementId) {
                 if (confirm('Are you sure you want to delete this announcement?')) {
-                    console.log(`Deleting announcement: ${announcementId}`);
+                    console.log(`🗑️ Deleting announcement: ${announcementId}`);
+                    console.log(`Before deletion: ${this.announcements.length} announcements`);
                     
                     // Remove from local array
                     this.announcements = this.announcements.filter(a => a.id !== announcementId);
+                    console.log(`After deletion: ${this.announcements.length} announcements`);
                     
-                    // Save changes (this will sync the deletion to cloud)
+                    // Force immediate save to both local and cloud
                     await this.saveAnnouncements();
-                    this.updateAnnouncementsDisplay();
                     
-                    console.log(`Announcement ${announcementId} deleted and synced to cloud`);
+                    // Wait a moment for cloud sync to complete, then force another sync
+                    setTimeout(async () => {
+                        console.log('🔄 Forcing cloud sync after deletion...');
+                        if (this.cloudSyncEnabled) {
+                            try {
+                                await this.saveToCloud(this.announcements);
+                                console.log('✅ Deletion synced to cloud successfully');
+                            } catch (error) {
+                                console.error('❌ Failed to sync deletion to cloud:', error);
+                            }
+                        }
+                    }, 1000);
+                    
+                    this.updateAnnouncementsDisplay();
+                    console.log(`✅ Announcement ${announcementId} deleted locally and queued for cloud sync`);
                 }
             }
 
@@ -2771,6 +2803,35 @@
                 
                 console.log(`Cleaned up ${removedCount} test announcements`);
                 alert(`Removed ${removedCount} test announcements`);
+            }
+
+            // Force clear cloud storage and resync
+            async forceClearCloudStorage() {
+                if (!this.cloudSyncEnabled) {
+                    alert('Cloud sync is not enabled');
+                    return;
+                }
+                
+                if (confirm('⚠️ This will clear ALL announcements from cloud storage and re-upload your current local announcements. Continue?')) {
+                    try {
+                        console.log('🧹 Force clearing cloud storage...');
+                        
+                        // Save current local announcements to cloud (this overwrites everything)
+                        await this.saveToCloud(this.announcements);
+                        
+                        console.log('✅ Cloud storage cleared and resynced with local data');
+                        alert(`✅ Cloud storage cleared and resynced with ${this.announcements.length} local announcements`);
+                        
+                        // Force an immediate sync check
+                        setTimeout(() => {
+                            this.syncAnnouncementsFromCloud();
+                        }, 2000);
+                        
+                    } catch (error) {
+                        console.error('❌ Failed to clear cloud storage:', error);
+                        alert('❌ Failed to clear cloud storage: ' + error.message);
+                    }
+                }
             }
 
             // Debug function to show all announcements with timing details
@@ -2985,6 +3046,12 @@
         function debugAnnouncements() {
             if (dashboard) {
                 dashboard.debugAnnouncements();
+            }
+        }
+
+        async function forceClearCloudStorage() {
+            if (dashboard) {
+                await dashboard.forceClearCloudStorage();
             }
         }
 
