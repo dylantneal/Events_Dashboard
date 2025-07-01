@@ -264,8 +264,18 @@ EncoreDashboard/
 - **Real-time weather** with geolocation
 - **Live clock** display
 - **Offline capability** with cached weather data
-- **Hourly audio chime** to mark each hour
+- **Dual time notifications**: Voice announcements on the hour + audio chimes at quarter hours
 - **Visual progress indicators** for slide timing
+
+### Announcements Board
+- **Integrated announcements slide** in the slideshow rotation
+- **Scheduled messaging** with start and end date/time
+- **Beautiful, modern interface** with animated components
+- **Full CRUD operations** (Create, Read, Update, Delete)
+- **Automatic filtering** showing only current announcements
+- **Data persistence** using browser localStorage
+- **Export/Import functionality** for backup and sharing
+- **Real-time updates** when announcements expire or become active
 
 ### Kiosk Mode
 - **Full-screen display** with no browser chrome
@@ -299,14 +309,75 @@ setInterval(() => {
 - **→ or Space**: Next slide
 - **←**: Previous slide  
 - **R**: Reload dashboard
-- **C**: Test hourly chime
+- **C**: Test hourly time announcement
+- **V**: Test current time announcement
+- **Q**: Test quarter-hour chime
+- **Escape**: Close announcements modal
+- **Ctrl+E**: Export announcements data
+- **Ctrl+I**: Import announcements data
 
-### Hourly Chime
-The dashboard plays a pleasant two-note chime every hour on the hour:
-- Uses Web Audio API for precise timing
-- Automatically adjusts volume and provides visual feedback
-- Test anytime by pressing **C** or running `testChime()` in console
-- No external audio files required
+### Time Notifications
+The dashboard provides both voice announcements and audio chimes:
+
+**Hourly Voice Announcements (Top of the Hour)**
+- Speaks the current time every hour at :00 (e.g., "It is 4 PM")
+- Uses Web Speech API with pleasant voice selection
+- Test by pressing **C** or running `testChime()` in console
+- Test current time anytime by pressing **V** or running `testTimeAnnouncement()` in console
+
+**Quarter-Hour Chimes (15, 30, 45 minutes)**
+- Pleasant audio chime at :15, :30, and :45 minutes past each hour
+- Uses Web Audio API for precise timing and quality
+- Test by pressing **Q** or running `testQuarterChime()` in console
+
+- No external audio files required for either system
+
+## Announcements Board Usage
+
+The dashboard includes a built-in announcements system that allows anyone to create, schedule, and manage announcements that appear in the slideshow rotation.
+
+### Creating Announcements
+
+1. **Access**: When the announcements slide appears in the rotation, you'll see a blue **+** button in the top-left corner
+2. **Click the + button** to open the announcement creation modal
+3. **Fill in the details**:
+   - **Announcement Text**: Your message (supports line breaks)
+   - **Start Date & Time**: When the announcement should begin showing
+   - **End Date & Time**: When the announcement should stop showing
+4. **Click "Create Announcement"** to save
+
+### Managing Announcements
+
+- **Edit**: Click the ✏️ Edit button on any announcement to modify it
+- **Delete**: Click the 🗑️ Delete button to remove an announcement (requires confirmation)
+- **Automatic Filtering**: Only announcements scheduled for the current time are displayed
+- **Real-time Updates**: Announcements automatically appear/disappear based on their schedule
+
+### Advanced Features
+
+**Data Export/Import**:
+- **Export**: Press `Ctrl+E` to download all announcements as a JSON backup file
+- **Import**: Press `Ctrl+I` to upload and restore announcements from a backup file
+- **Merge vs Replace**: When importing, choose to merge with existing data or replace all
+
+**Scheduling Examples**:
+- **All-day announcement**: 12:00 AM to 11:59 PM on the same date
+- **Multi-day event**: Set start date to today, end date to next week
+- **Specific hours**: 9:00 AM to 5:00 PM for business announcements
+- **Weekend-only**: Friday 5:00 PM to Monday 9:00 AM
+
+**GitHub Deployment**:
+- Announcements are stored in browser localStorage (per device)
+- For multi-device deployments, use export/import to sync announcements
+- Data persists across browser sessions and dashboard reloads
+
+### Best Practices
+
+- **Keep messages concise** - they'll be displayed alongside other dashboard content
+- **Use clear dates/times** - consider your audience's timezone
+- **Test timing** - create short test announcements to verify scheduling
+- **Regular cleanup** - periodically review and delete old announcements
+- **Backup data** - export announcements before major changes
 
 ## Troubleshooting
 

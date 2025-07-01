@@ -310,8 +310,6 @@
                 0 8px 20px rgba(0, 0, 0, 0.15);
         }
 
-
-
         .slide-progress {
             position: fixed;
             bottom: 0;
@@ -455,6 +453,345 @@
             font-weight: 500;
         }
 
+        /* Announcements Board Styles */
+        .announcements-slide {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.05) 100%);
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .announcements-header {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.15));
+            padding: 32px 40px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .announcements-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #ffffff;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .announcements-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        .add-announcement-btn {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+        }
+
+        .add-announcement-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 35px rgba(59, 130, 246, 0.6);
+        }
+
+        .add-announcement-btn:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        .announcements-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .announcements-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        .announcement-item {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .announcement-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #06b6d4, #3b82f6);
+            background-size: 200% 100%;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        .announcement-item:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .announcement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .announcement-text {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #ffffff;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .announcement-time {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .announcement-duration {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
+        }
+
+        .announcement-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .announcement-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .announcement-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .announcement-btn.edit {
+            color: #60a5fa;
+        }
+
+        .announcement-btn.delete {
+            color: #f87171;
+        }
+
+        .no-announcements {
+            text-align: center;
+            padding: 80px 40px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.2rem;
+        }
+
+        .no-announcements-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 8px;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
         @media (max-width: 1400px) {
             .header {
                 padding: 20px 40px;
@@ -568,6 +905,49 @@
         </div>
     </div>
 
+    <!-- Announcements Modal -->
+    <div class="modal-overlay" id="announcementModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">Create Announcement</div>
+                <button class="modal-close" onclick="closeAnnouncementModal()">&times;</button>
+            </div>
+            <form id="announcementForm">
+                <div class="form-group">
+                    <label class="form-label" for="announcementText">Announcement Text</label>
+                    <textarea class="form-textarea" id="announcementText" placeholder="Enter your announcement message..." required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="startDate">Start Date</label>
+                        <input type="date" class="form-input" id="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="startTime">Start Time</label>
+                        <input type="time" class="form-input" id="startTime" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="endDate">End Date</label>
+                        <input type="date" class="form-input" id="endDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="endTime">End Time</label>
+                        <input type="time" class="form-input" id="endTime" required>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeAnnouncementModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Create Announcement</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         class Dashboard {
             constructor() {
@@ -584,9 +964,16 @@
                 this.openWeatherApiKey = window.OPENWEATHER_API_KEY || 'YOUR_API_KEY_HERE';
                 this.openWeatherApiUrl = 'https://api.openweathermap.org/data/2.5/weather';
                 
-                // Audio context for hourly chime
-                this.audioContext = null;
-                this.lastChimeHour = -1;
+                // Audio and speech systems
+                this.speechSynthesis = null; // For hourly time announcements
+                this.audioContext = null; // For quarter-hour chimes
+                this.lastVoiceHour = -1;
+                this.lastChimeTime = -1; // Track last chime time (minute of day)
+                
+                // Announcements system
+                this.announcements = [];
+                this.announcementsSlideIndex = -1;
+                this.editingAnnouncementId = null;
                 
                 this.init();
             }
@@ -596,11 +983,13 @@
                 this.startDate();
                 this.setupHourlyChime();
                 this.createFloatingElements();
+                this.loadAnnouncements();
                 await this.loadWeather();
                 await this.loadSlides();
                 this.startSlideShow();
                 this.startWeatherUpdates();
                 this.startSlideReloader();
+                this.setupAnnouncementModal();
             }
 
             startSlideReloader() {
@@ -679,8 +1068,8 @@
                     });
                     document.getElementById('clock').textContent = timeString;
                     
-                    // Check for hourly chime
-                    this.checkHourlyChime(now);
+                    // Check for hourly voice and quarter-hour chimes
+                    this.checkTimeNotifications(now);
                 };
                 
                 updateClock();
@@ -689,28 +1078,94 @@
 
             setupHourlyChime() {
                 try {
-                    // Initialize Web Audio API
+                    // Initialize Speech Synthesis API for hourly announcements
+                    if ('speechSynthesis' in window) {
+                        this.speechSynthesis = window.speechSynthesis;
+                        console.log('Speech synthesis initialized for hourly time announcements');
+                    } else {
+                        console.warn('Speech synthesis not supported');
+                    }
+                } catch (error) {
+                    console.warn('Speech synthesis API not supported:', error);
+                }
+
+                try {
+                    // Initialize Web Audio API for quarter-hour chimes
                     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    console.log('Audio context initialized for hourly chime');
+                    console.log('Audio context initialized for quarter-hour chimes');
                 } catch (error) {
                     console.warn('Web Audio API not supported:', error);
                 }
             }
 
-            checkHourlyChime(now) {
+            checkTimeNotifications(now) {
                 const currentHour = now.getHours();
                 const currentMinute = now.getMinutes();
                 const currentSecond = now.getSeconds();
+                const minuteOfDay = currentHour * 60 + currentMinute; // Unique identifier for this minute
                 
-                // Trigger chime at exactly the top of each hour (00:00:00)
-                if (currentMinute === 0 && currentSecond === 0 && currentHour !== this.lastChimeHour) {
-                    this.playHourlyChime();
-                    this.lastChimeHour = currentHour;
-                    console.log(`Hourly chime played at ${currentHour}:00`);
+                // Only trigger on exactly :00 seconds to avoid multiple triggers
+                if (currentSecond !== 0) return;
+                
+                // Voice announcement at top of each hour (00:00:00)
+                if (currentMinute === 0 && currentHour !== this.lastVoiceHour) {
+                    this.playHourlyVoiceAnnouncement();
+                    this.lastVoiceHour = currentHour;
+                    console.log(`Hourly voice announcement at ${currentHour}:00`);
+                }
+                
+                // Chimes at quarter hours (15, 30, 45 minutes)
+                else if ((currentMinute === 15 || currentMinute === 30 || currentMinute === 45) && 
+                         minuteOfDay !== this.lastChimeTime) {
+                    this.playQuarterHourChime();
+                    this.lastChimeTime = minuteOfDay;
+                    console.log(`Quarter-hour chime at ${currentHour}:${currentMinute < 10 ? '0' : ''}${currentMinute}`);
                 }
             }
 
-            playHourlyChime() {
+            playHourlyVoiceAnnouncement() {
+                if (!this.speechSynthesis) return;
+                
+                try {
+                    // Get current time and format it for speech
+                    const now = new Date();
+                    const timeText = this.formatTimeForSpeech(now);
+                    
+                    // Create speech utterance
+                    const utterance = new SpeechSynthesisUtterance(timeText);
+                    
+                    // Configure speech parameters for clear, pleasant voice
+                    utterance.rate = 0.9; // Slightly slower for clarity
+                    utterance.pitch = 1.0; // Normal pitch
+                    utterance.volume = 0.8; // Comfortable volume
+                    
+                    // Use a pleasant voice if available
+                    const voices = this.speechSynthesis.getVoices();
+                    if (voices.length > 0) {
+                        // Prefer a female voice or default to first available
+                        const preferredVoice = voices.find(voice => 
+                            voice.name.includes('Female') || 
+                            voice.name.includes('Samantha') ||
+                            voice.name.includes('Victoria') ||
+                            voice.name.includes('Zira')
+                        ) || voices[0];
+                        utterance.voice = preferredVoice;
+                    }
+                    
+                    // Speak the time
+                    this.speechSynthesis.speak(utterance);
+                    
+                    // Visual feedback - briefly highlight the clock
+                    this.flashClock();
+                    
+                    console.log(`Time announced: "${timeText}"`);
+                    
+                } catch (error) {
+                    console.warn('Error announcing time:', error);
+                }
+            }
+
+            playQuarterHourChime() {
                 if (!this.audioContext) return;
                 
                 try {
@@ -722,17 +1177,17 @@
                     // Create a pleasant chime sound using multiple tones
                     const now = this.audioContext.currentTime;
                     
-                    // First chime note (higher pitch)
-                    this.playChimeNote(880, now, 0.3, 0.8); // A5
+                    // Single pleasant chime note for quarter hours
+                    this.playChimeNote(880, now, 0.4, 0.6); // A5 note
                     
-                    // Second chime note (lower pitch) - slightly delayed
-                    this.playChimeNote(660, now + 0.15, 0.3, 0.6); // E5
+                    // Optional: Add a second note for harmony
+                    this.playChimeNote(660, now + 0.1, 0.3, 0.4); // E5 note, slightly delayed and quieter
                     
                     // Visual feedback - briefly highlight the clock
                     this.flashClock();
                     
                 } catch (error) {
-                    console.warn('Error playing hourly chime:', error);
+                    console.warn('Error playing quarter-hour chime:', error);
                 }
             }
 
@@ -759,6 +1214,25 @@
                 
                 oscillator.start(startTime);
                 oscillator.stop(startTime + duration);
+            }
+
+            formatTimeForSpeech(date) {
+                const hour = date.getHours();
+                const minute = date.getMinutes();
+                
+                // Convert to 12-hour format
+                const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+                const ampm = hour < 12 ? 'AM' : 'PM';
+                
+                // Format the speech text
+                if (minute === 0) {
+                    // On the hour - just say "It is 4 PM"
+                    return `It is ${hour12} ${ampm}`;
+                } else {
+                    // Include minutes - "It is 4:30 PM"
+                    const minuteStr = minute < 10 ? `0${minute}` : minute.toString();
+                    return `It is ${hour12}:${minuteStr} ${ampm}`;
+                }
             }
 
             flashClock() {
@@ -971,13 +1445,10 @@
                     }
                 }
 
-                if (validSlides.length === 0) {
-                    this.showError('No slides could be loaded. Please check the slides directory.');
-                    return;
-                }
-
-                this.slides = validSlides;
-                console.log(`Successfully loaded ${this.slides.length} slides:`, this.slides);
+                // Add announcements slide as the first slide
+                this.slides = ['announcements', ...validSlides];
+                this.announcementsSlideIndex = 0;
+                console.log(`Successfully loaded ${this.slides.length} slides (including announcements):`, this.slides);
                 
                 this.createSlideElements();
                 this.preloadImages();
@@ -1005,15 +1476,25 @@
                 this.slides.forEach((slide, index) => {
                     const slideDiv = document.createElement('div');
                     slideDiv.className = `slide ${index === 0 ? 'active' : ''}`;
-                    slideDiv.innerHTML = `
-                        <img src="slides/${slide}" alt="Gantt Chart ${index + 1}" loading="lazy">
-                    `;
+                    
+                    if (slide === 'announcements') {
+                        // Create announcements slide
+                        slideDiv.innerHTML = this.createAnnouncementsSlideHTML();
+                    } else {
+                        // Create regular image slide
+                        slideDiv.innerHTML = `
+                            <img src="slides/${slide}" alt="Gantt Chart ${index}" loading="lazy">
+                        `;
+                    }
                     container.appendChild(slideDiv);
                 });
 
                 // Add slide info counter
                 this.createSlideInfo();
                 this.createProgressBar();
+                
+                // Update announcements display
+                this.updateAnnouncementsDisplay();
             }
 
             createSlideInfo() {
@@ -1096,6 +1577,12 @@
                 if (nextSlide) {
                     setTimeout(() => {
                         nextSlide.classList.add('active');
+                        
+                        // If this is the announcements slide, update the display
+                        if (this.currentSlideIndex === this.announcementsSlideIndex) {
+                            this.updateAnnouncementsDisplay();
+                        }
+                        
                         // Add entrance animation
                         nextSlide.style.transform = 'translate(-50%, -50%) scale(0.95)';
                         nextSlide.style.opacity = '0';
@@ -1150,8 +1637,11 @@
                         const manifest = await response.json();
                         const newSlides = manifest.slides || [];
                         
+                        // Filter out announcements from comparison
+                        const previousImageSlides = previousSlides.filter(s => s !== 'announcements');
+                        
                         // Check if slides changed
-                        if (JSON.stringify(newSlides.sort()) !== JSON.stringify(previousSlides.sort())) {
+                        if (JSON.stringify(newSlides.sort()) !== JSON.stringify(previousImageSlides.sort())) {
                             console.log('Slides updated, reloading...');
                             await this.loadSlides();
                             
@@ -1175,6 +1665,309 @@
                 } catch (error) {
                     console.log('Could not check for slide updates:', error.message);
                 }
+                
+                // Always update announcements display
+                this.updateAnnouncementsDisplay();
+            }
+
+            // ==================== ANNOUNCEMENTS FUNCTIONALITY ====================
+
+            loadAnnouncements() {
+                try {
+                    const stored = localStorage.getItem('dashboard_announcements');
+                    this.announcements = stored ? JSON.parse(stored) : [];
+                    console.log('Loaded announcements:', this.announcements);
+                } catch (error) {
+                    console.error('Error loading announcements:', error);
+                    this.announcements = [];
+                }
+            }
+
+            saveAnnouncements() {
+                try {
+                    localStorage.setItem('dashboard_announcements', JSON.stringify(this.announcements));
+                    console.log('Saved announcements:', this.announcements);
+                } catch (error) {
+                    console.error('Error saving announcements:', error);
+                }
+            }
+
+            createAnnouncementsSlideHTML() {
+                return `
+                    <div class="announcements-slide">
+                        <button class="add-announcement-btn" onclick="openAnnouncementModal()" title="Add New Announcement">
+                            +
+                        </button>
+                        <div class="announcements-header">
+                            <div class="announcements-title">📢 Announcements</div>
+                            <div class="announcements-subtitle">Stay informed with the latest updates</div>
+                        </div>
+                        <div class="announcements-content" id="announcementsContent">
+                            <!-- Announcements will be populated here -->
+                        </div>
+                    </div>
+                `;
+            }
+
+            updateAnnouncementsDisplay() {
+                const content = document.getElementById('announcementsContent');
+                if (!content) return;
+
+                const currentAnnouncements = this.getCurrentAnnouncements();
+                
+                if (currentAnnouncements.length === 0) {
+                    content.innerHTML = `
+                        <div class="no-announcements">
+                            <div class="no-announcements-icon">📝</div>
+                            <div>No announcements at this time</div>
+                            <div style="font-size: 0.9rem; margin-top: 8px; opacity: 0.7;">Click the + button to create your first announcement</div>
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = currentAnnouncements.map(announcement => 
+                        this.createAnnouncementHTML(announcement)
+                    ).join('');
+                }
+            }
+
+            getCurrentAnnouncements() {
+                const now = new Date();
+                return this.announcements.filter(announcement => {
+                    const startDate = new Date(announcement.startDate + 'T' + announcement.startTime);
+                    const endDate = new Date(announcement.endDate + 'T' + announcement.endTime);
+                    return now >= startDate && now <= endDate;
+                }).sort((a, b) => {
+                    // Sort by start date/time
+                    const aStart = new Date(a.startDate + 'T' + a.startTime);
+                    const bStart = new Date(b.startDate + 'T' + b.startTime);
+                    return aStart - bStart;
+                });
+            }
+
+            createAnnouncementHTML(announcement) {
+                const startDate = new Date(announcement.startDate + 'T' + announcement.startTime);
+                const endDate = new Date(announcement.endDate + 'T' + announcement.endTime);
+                
+                const formatDate = (date) => {
+                    return date.toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+                };
+
+                const getDuration = () => {
+                    const diffMs = endDate - startDate;
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+                    if (diffDays > 0) {
+                        return `${diffDays} day${diffDays > 1 ? 's' : ''}, ${diffHours} hour${diffHours > 1 ? 's' : ''}`;
+                    } else if (diffHours > 0) {
+                        return `${diffHours} hour${diffHours > 1 ? 's' : ''}, ${diffMins} minute${diffMins > 1 ? 's' : ''}`;
+                    } else {
+                        return `${diffMins} minute${diffMins > 1 ? 's' : ''}`;
+                    }
+                };
+
+                return `
+                    <div class="announcement-item">
+                        <div class="announcement-header">
+                            <div>
+                                <div class="announcement-text">${this.escapeHtml(announcement.text)}</div>
+                                <div class="announcement-time">📅 ${formatDate(startDate)} → ${formatDate(endDate)}</div>
+                                <div class="announcement-duration">⏱️ Duration: ${getDuration()}</div>
+                            </div>
+                            <div class="announcement-actions">
+                                <button class="announcement-btn edit" onclick="editAnnouncement('${announcement.id}')">
+                                    ✏️ Edit
+                                </button>
+                                <button class="announcement-btn delete" onclick="deleteAnnouncement('${announcement.id}')">
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            setupAnnouncementModal() {
+                const form = document.getElementById('announcementForm');
+                if (!form) return;
+
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleAnnouncementSubmit();
+                });
+
+                // Set default dates/times
+                const now = new Date();
+                const tomorrow = new Date(now);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+
+                document.getElementById('startDate').value = now.toISOString().split('T')[0];
+                document.getElementById('startTime').value = '09:00';
+                document.getElementById('endDate').value = tomorrow.toISOString().split('T')[0];
+                document.getElementById('endTime').value = '17:00';
+            }
+
+            handleAnnouncementSubmit() {
+                const text = document.getElementById('announcementText').value.trim();
+                const startDate = document.getElementById('startDate').value;
+                const startTime = document.getElementById('startTime').value;
+                const endDate = document.getElementById('endDate').value;
+                const endTime = document.getElementById('endTime').value;
+
+                if (!text || !startDate || !startTime || !endDate || !endTime) {
+                    alert('Please fill in all fields');
+                    return;
+                }
+
+                // Validate dates
+                const start = new Date(startDate + 'T' + startTime);
+                const end = new Date(endDate + 'T' + endTime);
+
+                if (end <= start) {
+                    alert('End date/time must be after start date/time');
+                    return;
+                }
+
+                const announcement = {
+                    id: this.editingAnnouncementId || this.generateId(),
+                    text,
+                    startDate,
+                    startTime,
+                    endDate,
+                    endTime,
+                    createdAt: new Date().toISOString()
+                };
+
+                if (this.editingAnnouncementId) {
+                    // Update existing
+                    const index = this.announcements.findIndex(a => a.id === this.editingAnnouncementId);
+                    if (index !== -1) {
+                        this.announcements[index] = announcement;
+                    }
+                } else {
+                    // Add new
+                    this.announcements.push(announcement);
+                }
+
+                this.saveAnnouncements();
+                this.updateAnnouncementsDisplay();
+                this.closeAnnouncementModal();
+            }
+
+            generateId() {
+                return 'ann_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            openAnnouncementModal(announcementId = null) {
+                const modal = document.getElementById('announcementModal');
+                const title = document.getElementById('modalTitle');
+                const submitBtn = document.getElementById('submitBtn');
+                const form = document.getElementById('announcementForm');
+
+                this.editingAnnouncementId = announcementId;
+
+                if (announcementId) {
+                    // Edit mode
+                    const announcement = this.announcements.find(a => a.id === announcementId);
+                    if (announcement) {
+                        title.textContent = 'Edit Announcement';
+                        submitBtn.textContent = 'Update Announcement';
+                        
+                        document.getElementById('announcementText').value = announcement.text;
+                        document.getElementById('startDate').value = announcement.startDate;
+                        document.getElementById('startTime').value = announcement.startTime;
+                        document.getElementById('endDate').value = announcement.endDate;
+                        document.getElementById('endTime').value = announcement.endTime;
+                    }
+                } else {
+                    // Create mode
+                    title.textContent = 'Create Announcement';
+                    submitBtn.textContent = 'Create Announcement';
+                    form.reset();
+                    
+                    // Set default values
+                    const now = new Date();
+                    const tomorrow = new Date(now);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+
+                    document.getElementById('startDate').value = now.toISOString().split('T')[0];
+                    document.getElementById('startTime').value = '09:00';
+                    document.getElementById('endDate').value = tomorrow.toISOString().split('T')[0];
+                    document.getElementById('endTime').value = '17:00';
+                }
+
+                modal.classList.add('active');
+                document.getElementById('announcementText').focus();
+            }
+
+            closeAnnouncementModal() {
+                const modal = document.getElementById('announcementModal');
+                modal.classList.remove('active');
+                this.editingAnnouncementId = null;
+            }
+
+            deleteAnnouncement(announcementId) {
+                if (confirm('Are you sure you want to delete this announcement?')) {
+                    this.announcements = this.announcements.filter(a => a.id !== announcementId);
+                    this.saveAnnouncements();
+                    this.updateAnnouncementsDisplay();
+                }
+            }
+
+            // Export announcements data as JSON (for backup/sharing)
+            exportAnnouncements() {
+                const dataStr = JSON.stringify(this.announcements, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `announcements_backup_${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+            }
+
+            // Import announcements data from JSON file
+            importAnnouncements(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        if (Array.isArray(importedData)) {
+                            // Merge or replace announcements
+                            if (confirm('Do you want to merge with existing announcements? (Cancel to replace all)')) {
+                                // Merge - avoid duplicates by ID
+                                const existingIds = new Set(this.announcements.map(a => a.id));
+                                const newAnnouncements = importedData.filter(a => !existingIds.has(a.id));
+                                this.announcements = [...this.announcements, ...newAnnouncements];
+                            } else {
+                                // Replace
+                                this.announcements = importedData;
+                            }
+                            this.saveAnnouncements();
+                            this.updateAnnouncementsDisplay();
+                            alert(`Successfully imported ${importedData.length} announcements`);
+                        } else {
+                            alert('Invalid file format. Expected JSON array of announcements.');
+                        }
+                    } catch (error) {
+                        alert('Error reading file: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
             }
 
             destroy() {
@@ -1183,16 +1976,65 @@
                 if (this.clockInterval) clearInterval(this.clockInterval);
                 if (this.hourlyChimeInterval) clearInterval(this.hourlyChimeInterval);
                 
+                // Clean up speech synthesis
+                if (this.speechSynthesis) {
+                    this.speechSynthesis.cancel(); // Stop any ongoing speech
+                }
+                
                 // Clean up audio context
                 if (this.audioContext && this.audioContext.state !== 'closed') {
                     this.audioContext.close();
                 }
             }
 
-            // Manual test function for the hourly chime
+            // Manual test function for the hourly time announcement
             testChime() {
-                console.log('Testing hourly chime...');
-                this.playHourlyChime();
+                console.log('Testing hourly time announcement...');
+                this.playHourlyVoiceAnnouncement();
+            }
+
+            // Test function for quarter-hour chimes
+            testQuarterChime() {
+                console.log('Testing quarter-hour chime...');
+                this.playQuarterHourChime();
+            }
+
+            // Test function to announce current time (triggered by 'v' key)
+            testTimeAnnouncement() {
+                console.log('Testing time announcement...');
+                if (!this.speechSynthesis) {
+                    console.warn('Speech synthesis not available');
+                    return;
+                }
+                
+                try {
+                    const now = new Date();
+                    const timeText = this.formatTimeForSpeech(now);
+                    
+                    const utterance = new SpeechSynthesisUtterance(timeText);
+                    utterance.rate = 0.9;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 0.8;
+                    
+                    // Use a pleasant voice if available
+                    const voices = this.speechSynthesis.getVoices();
+                    if (voices.length > 0) {
+                        const preferredVoice = voices.find(voice => 
+                            voice.name.includes('Female') || 
+                            voice.name.includes('Samantha') ||
+                            voice.name.includes('Victoria') ||
+                            voice.name.includes('Zira')
+                        ) || voices[0];
+                        utterance.voice = preferredVoice;
+                    }
+                    
+                    this.speechSynthesis.speak(utterance);
+                    this.flashClock();
+                    
+                    console.log(`Time announced via test: "${timeText}"`);
+                } catch (error) {
+                    console.warn('Error in test time announcement:', error);
+                }
             }
         }
 
@@ -1201,7 +2043,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             dashboard = new Dashboard();
             
-            // Make test function available globally for debugging
+            // Make test functions available globally for debugging
             window.testChime = () => {
                 if (dashboard) {
                     dashboard.testChime();
@@ -1209,7 +2051,69 @@
                     console.log('Dashboard not initialized yet');
                 }
             };
+
+            window.testTimeAnnouncement = () => {
+                if (dashboard) {
+                    dashboard.testTimeAnnouncement();
+                } else {
+                    console.log('Dashboard not initialized yet');
+                }
+            };
+
+            window.testQuarterChime = () => {
+                if (dashboard) {
+                    dashboard.testQuarterChime();
+                } else {
+                    console.log('Dashboard not initialized yet');
+                }
+            };
         });
+
+        // Global functions for announcements modal
+        function openAnnouncementModal(announcementId = null) {
+            if (dashboard) {
+                dashboard.openAnnouncementModal(announcementId);
+            }
+        }
+
+        function closeAnnouncementModal() {
+            if (dashboard) {
+                dashboard.closeAnnouncementModal();
+            }
+        }
+
+        function editAnnouncement(announcementId) {
+            if (dashboard) {
+                dashboard.openAnnouncementModal(announcementId);
+            }
+        }
+
+        function deleteAnnouncement(announcementId) {
+            if (dashboard) {
+                dashboard.deleteAnnouncement(announcementId);
+            }
+        }
+
+        // Export/Import functions for announcements data
+        function exportAnnouncements() {
+            if (dashboard) {
+                dashboard.exportAnnouncements();
+            }
+        }
+
+        function importAnnouncements() {
+            if (dashboard) {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = (e) => {
+                    if (e.target.files[0]) {
+                        dashboard.importAnnouncements(e.target.files[0]);
+                    }
+                };
+                input.click();
+            }
+        }
 
         // Handle page visibility changes for kiosk mode
         document.addEventListener('visibilitychange', () => {
@@ -1249,6 +2153,11 @@
                     const prevSlide = document.querySelectorAll('.slide')[dashboard.currentSlideIndex];
                     if (prevSlide) {
                         prevSlide.classList.add('active');
+                        
+                        // If this is the announcements slide, update the display
+                        if (dashboard.currentSlideIndex === dashboard.announcementsSlideIndex) {
+                            dashboard.updateAnnouncementsDisplay();
+                        }
                     }
                     dashboard.updateSlideInfo();
                     dashboard.startProgressAnimation();
@@ -1263,6 +2172,46 @@
                     event.preventDefault();
                     dashboard.testChime();
                     break;
+                case 'v':
+                case 'V':
+                    event.preventDefault();
+                    dashboard.testTimeAnnouncement();
+                    break;
+                case 'q':
+                case 'Q':
+                    event.preventDefault();
+                    dashboard.testQuarterChime();
+                    break;
+                case 'Escape':
+                    event.preventDefault();
+                    // Close modal if open
+                    const modal = document.getElementById('announcementModal');
+                    if (modal && modal.classList.contains('active')) {
+                        closeAnnouncementModal();
+                    }
+                    break;
+                case 'e':
+                case 'E':
+                    if (event.ctrlKey || event.metaKey) {
+                        event.preventDefault();
+                        exportAnnouncements();
+                    }
+                    break;
+                case 'i':
+                case 'I':
+                    if (event.ctrlKey || event.metaKey) {
+                        event.preventDefault();
+                        importAnnouncements();
+                    }
+                    break;
+            }
+        });
+
+        // Close modal when clicking outside
+        document.addEventListener('click', (event) => {
+            const modal = document.getElementById('announcementModal');
+            if (modal && modal.classList.contains('active') && event.target === modal) {
+                closeAnnouncementModal();
             }
         });
 
