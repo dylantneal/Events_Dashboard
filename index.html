@@ -2178,8 +2178,11 @@
                 }
 
                 const payload = { announcements: announcements };
+                console.log('Saving to cloud:', announcements.length, 'announcements');
                 
-                const response = await fetch(this.cloudSyncUrl, {
+                // Remove /latest for PUT requests to JSONBin
+                const saveUrl = this.cloudSyncUrl.replace('/latest', '');
+                const response = await fetch(saveUrl, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2189,10 +2192,14 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Cloud save failed: ${response.status} ${response.statusText}`);
+                    const errorText = await response.text();
+                    console.error('Cloud save failed:', response.status, response.statusText, errorText);
+                    throw new Error(`Cloud save failed: ${response.status} ${response.statusText} - ${errorText}`);
                 }
 
-                return await response.json();
+                const result = await response.json();
+                console.log('✓ Cloud save successful:', result);
+                return result;
             }
 
             async syncAnnouncementsFromCloud() {
@@ -2206,15 +2213,24 @@
                     
                     const cloudData = await this.loadFromCloud();
                     if (cloudData && Array.isArray(cloudData)) {
-                        // Check if cloud data is newer or different
+                        // Smart merge instead of overwrite
+                        const mergedAnnouncements = this.mergeAnnouncements(this.announcements, cloudData);
                         const localDataStr = JSON.stringify(this.announcements);
-                        const cloudDataStr = JSON.stringify(cloudData);
+                        const mergedDataStr = JSON.stringify(mergedAnnouncements);
                         
-                        if (localDataStr !== cloudDataStr) {
-                            this.announcements = cloudData;
+                        if (localDataStr !== mergedDataStr) {
+                            this.announcements = mergedAnnouncements;
                             localStorage.setItem('dashboard_announcements', JSON.stringify(this.announcements));
+                            
+                            // Save merged data back to cloud to keep everything in sync
+                            try {
+                                await this.saveToCloud(this.announcements);
+                                console.log('✓ Merged and synced announcements:', this.announcements.length, 'items');
+                            } catch (saveError) {
+                                console.warn('Failed to save merged data to cloud:', saveError.message);
+                            }
+                            
                             this.updateAnnouncementsDisplay();
-                            console.log('✓ Updated announcements from cloud:', this.announcements.length, 'items');
                         } else {
                             console.log('Announcements are up to date');
                         }
@@ -2226,6 +2242,36 @@
                 } finally {
                     this.syncInProgress = false;
                 }
+            }
+
+            // Smart merge function that combines local and cloud announcements
+            mergeAnnouncements(localAnnouncements, cloudAnnouncements) {
+                // Create a map of all announcements by ID
+                const announcementMap = new Map();
+                
+                // Add local announcements first
+                localAnnouncements.forEach(ann => {
+                    announcementMap.set(ann.id, ann);
+                });
+                
+                // Add/update with cloud announcements (cloud takes precedence for same ID)
+                cloudAnnouncements.forEach(ann => {
+                    if (ann.id && ann.text) { // Basic validation
+                        announcementMap.set(ann.id, ann);
+                    }
+                });
+                
+                // Convert back to array and filter out invalid/expired announcements
+                const now = new Date();
+                const mergedAnnouncements = Array.from(announcementMap.values()).filter(ann => {
+                    // Remove announcements that are more than 24 hours past their end time (cleanup)
+                    const endDate = new Date(ann.endDate + 'T' + ann.endTime);
+                    const hoursSinceEnd = (now - endDate) / (1000 * 60 * 60);
+                    return hoursSinceEnd < 24; // Keep announcements that ended less than 24 hours ago
+                });
+                
+                console.log(`Merged announcements: ${localAnnouncements.length} local + ${cloudAnnouncements.length} cloud = ${mergedAnnouncements.length} final`);
+                return mergedAnnouncements;
             }
 
             startCloudSync() {
