@@ -1,12 +1,13 @@
 {
   "slides": [
+    "calendar_2025_06.png",
     "gantt_2025_07.png",
     "gantt_2025_08.png",
     "gantt_2025_09.png",
     "gantt_daily_2025_06_30.png",
     "gantt_weekly_2025_06_30.png"
   ],
-  "generated": "2025-06-30T13:18:00.000000",
-  "count": 5,
-  "announcements_enabled": true
+  "generated": "2025-06-30T23:56:15.935488",
+  "count": 6,
+  "note": "Auto-generated manifest of all PNG files in slides directory"
 }
