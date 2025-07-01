@@ -270,9 +270,12 @@ EncoreDashboard/
 ### Announcements Board
 - **Integrated announcements slide** in the slideshow rotation
 - **Scheduled messaging** with start and end date/time
-- **Beautiful, modern interface** with animated components
+- **Clean, responsive interface** with polished glassmorphism design
+- **Dynamic grid layouts** that adapt to any number of announcements
 - **Full CRUD operations** (Create, Read, Update, Delete)
+- **Click-to-reveal actions** for clean, uncluttered appearance
 - **Automatic filtering** showing only current announcements
+- **Smart sizing** - all announcements fit on screen simultaneously
 - **Data persistence** using browser localStorage
 - **Export/Import functionality** for backup and sharing
 - **Real-time updates** when announcements expire or become active
