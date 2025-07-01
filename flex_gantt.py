@@ -837,6 +837,15 @@ def calendar_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path) ->
     combined_mask = icw_mask & marriott_mask
     sub = sub.loc[combined_mask]
     
+    # Remove duplicate events by name (keep only the first occurrence of each event title)
+    events_before_dedup = len(sub)
+    sub = sub.drop_duplicates(subset=['Event Name'], keep='first')
+    events_after_dedup = len(sub)
+    duplicates_removed = events_before_dedup - events_after_dedup
+    
+    if duplicates_removed > 0:
+        print(f"  Removed {duplicates_removed} duplicate events (keeping first occurrence of each title)")
+    
     # Create figure with optimal sizing for calendar
     fig_w, fig_h = 22.0, 18.0  # Larger size for better readability
     fig, ax = plt.subplots(figsize=(fig_w, fig_h), constrained_layout=True)
@@ -1231,7 +1240,10 @@ def calendar_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path) ->
     total_filtered = total_events - filtered_events
     
     print(f"Saved {outfile}")
-    print(f"  Calendar events shown: {filtered_events}, Filtered: {total_filtered} (ICW: {icw_filtered}, Marriott In-House: {marriott_filtered})")
+    if duplicates_removed > 0:
+        print(f"  Calendar events shown: {filtered_events}, Filtered: {total_filtered} (ICW: {icw_filtered}, Marriott In-House: {marriott_filtered}, Duplicates: {duplicates_removed})")
+    else:
+        print(f"  Calendar events shown: {filtered_events}, Filtered: {total_filtered} (ICW: {icw_filtered}, Marriott In-House: {marriott_filtered})")
 
 
 def main() -> None:
