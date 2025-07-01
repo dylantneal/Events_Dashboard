@@ -78,19 +78,19 @@ def month_str_to_int(s: str) -> int:
 
 def get_rolling_months() -> tuple[list[int], int]:
     """
-    Get the next 3 months from current date.
-    Returns: (list of month numbers, year for the last month)
+    Get the current month and next 2 months (3 months total).
+    Returns: (list of month numbers, list of years)
     """
     current_date = datetime.now()
     months = []
     years = []
     
     for i in range(3):
-        future_date = current_date + relativedelta(months=i+1)
-        months.append(future_date.month)
-        years.append(future_date.year)
+        target_date = current_date + relativedelta(months=i)  # Start from current month (i=0)
+        months.append(target_date.month)
+        years.append(target_date.year)
     
-    # Return months and the year (handle year transitions)
+    # Return months and years (handle year transitions)
     return months, years
 
 
@@ -165,6 +165,36 @@ def cleanup_old_charts(outdir: Path, current_months: list[int], current_years: l
         print(f"Cleaned up {removed_count} old chart(s)")
     else:
         print("No old charts to remove")
+
+
+def cleanup_old_calendars(outdir: Path) -> None:
+    """
+    Remove old calendar files, keeping only the current month's calendar.
+    """
+    # Get all calendar files
+    calendar_files = list(outdir.glob("calendar_*.png"))
+    
+    if not calendar_files:
+        print("No calendar files to clean up")
+        return
+    
+    # Get current month for comparison
+    current_date = datetime.now()
+    current_filename = f"calendar_{current_date.strftime('%Y_%m')}.png"
+    
+    # Remove old calendar files
+    removed_count = 0
+    for calendar_file in calendar_files:
+        # Keep the current month's calendar
+        if calendar_file.name != current_filename:
+            print(f"Removing old calendar: {calendar_file.name}")
+            calendar_file.unlink()
+            removed_count += 1
+    
+    if removed_count > 0:
+        print(f"Cleaned up {removed_count} old calendar file(s)")
+    else:
+        print("No old calendar files to remove")
 
 
 def parse_args() -> argparse.Namespace:
@@ -1212,6 +1242,9 @@ def main() -> None:
         
         print(f"Calendar mode: generating calendar for {calendar.month_name[current_month]} {current_year}")
         
+        # Clean up old calendar files before generating new one
+        cleanup_old_calendars(outdir)
+        
         # Generate calendar
         df = load_events(wb, args.sheet)
         calendar_for_month(df, current_year, current_month, outdir)
@@ -1239,7 +1272,7 @@ def main() -> None:
     # Handle rolling window mode
     elif args.rolling_window:
         months, years = get_rolling_months()
-        print(f"Rolling window mode: generating charts for next 3 months")
+        print(f"Rolling window mode: generating charts for current month + next 2 months")
         for i, (month, year) in enumerate(zip(months, years)):
             month_name = calendar.month_name[month]
             print(f"  {i+1}. {month_name} {year}")
