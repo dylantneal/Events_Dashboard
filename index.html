@@ -462,51 +462,67 @@
             max-height: 100%;
             display: flex;
             flex-direction: column;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.05) 100%);
+            background: linear-gradient(135deg, 
+                rgba(59, 130, 246, 0.08) 0%, 
+                rgba(147, 51, 234, 0.04) 50%,
+                rgba(6, 182, 212, 0.06) 100%);
             border-radius: 16px;
             overflow: hidden;
             position: relative;
         }
 
+        .announcements-slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(147, 51, 234, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
         .announcements-header {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.15));
-            padding: 48px 60px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 51, 234, 0.1));
+            padding: 32px 40px;
             text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             position: relative;
         }
 
         .announcements-title {
-            font-size: 4.5rem;
-            font-weight: 800;
+            font-size: 3.2rem;
+            font-weight: 700;
             color: #ffffff;
-            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            margin-bottom: 16px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            margin-bottom: 8px;
             letter-spacing: -0.02em;
         }
 
         .announcements-subtitle {
-            font-size: 1.6rem;
-            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.7);
             font-weight: 500;
         }
 
         .add-announcement-btn {
             position: absolute;
-            top: 32px;
-            left: 32px;
-            width: 80px;
-            height: 80px;
+            top: 20px;
+            left: 20px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             background: linear-gradient(135deg, #3b82f6, #06b6d4);
             border: none;
             color: white;
-            font-size: 32px;
+            font-size: 24px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 12px 35px rgba(59, 130, 246, 0.5);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 10;
         }
@@ -522,35 +538,100 @@
 
         .announcements-content {
             flex: 1;
-            padding: 60px 80px;
+            padding: 24px 32px 32px 32px;
             overflow-y: auto;
             scrollbar-width: none;
             -ms-overflow-style: none;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
         }
 
         .announcements-content::-webkit-scrollbar {
             display: none;
         }
 
+        .announcements-grid {
+            display: grid;
+            gap: 16px;
+            height: 100%;
+            align-content: start;
+        }
+
+        .announcements-grid.single {
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr;
+        }
+
+        .announcements-grid.two {
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+
+        .announcements-grid.three {
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+        }
+
+        .announcements-grid.four {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+
+        .announcements-grid.many {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: repeat(auto-fit, minmax(100px, 1fr));
+        }
+
+        /* Adjust announcement item size based on grid type */
+        .announcements-grid.single .announcement-item {
+            min-height: 200px;
+            font-size: 1.6rem;
+        }
+
+        .announcements-grid.two .announcement-item,
+        .announcements-grid.three .announcement-item {
+            min-height: 120px;
+        }
+
+        .announcements-grid.four .announcement-item,
+        .announcements-grid.many .announcement-item {
+            min-height: 100px;
+            padding: 20px 24px;
+        }
+
+        .announcements-grid.many .announcement-item .announcement-text {
+            font-size: 1.2rem;
+        }
+
         .announcement-item {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            padding: 36px 40px;
-            margin-bottom: 32px;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.15) 0%, 
+                rgba(255, 255, 255, 0.10) 50%,
+                rgba(255, 255, 255, 0.08) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 16px;
+            padding: 24px 28px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            min-height: 120px;
+            box-shadow: 
+                0 4px 16px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .announcement-item::after {
             content: '👆 Click to edit or delete';
             position: absolute;
-            bottom: 12px;
-            right: 20px;
-            font-size: 0.85rem;
+            bottom: 8px;
+            right: 16px;
+            font-size: 0.75rem;
             color: rgba(255, 255, 255, 0.4);
             opacity: 0;
             transition: opacity 0.3s ease;
@@ -567,59 +648,84 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
+            height: 3px;
             background: linear-gradient(90deg, #3b82f6, #06b6d4, #3b82f6);
             background-size: 200% 100%;
-            animation: gradientShift 3s ease-in-out infinite;
+            animation: gradientShift 4s ease-in-out infinite;
+            border-radius: 16px 16px 0 0;
         }
 
         .announcement-item:hover {
-            transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px);
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.22) 0%, 
+                rgba(255, 255, 255, 0.16) 50%,
+                rgba(255, 255, 255, 0.12) 100%);
+            border-color: rgba(255, 255, 255, 0.35);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.15),
+                0 4px 16px rgba(59, 130, 246, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
         .announcement-item.clicked {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(59, 130, 246, 0.4);
+            background: linear-gradient(135deg, 
+                rgba(59, 130, 246, 0.18) 0%, 
+                rgba(147, 51, 234, 0.12) 50%,
+                rgba(6, 182, 212, 0.15) 100%);
+            border-color: rgba(59, 130, 246, 0.6);
+            box-shadow: 
+                0 0 0 2px rgba(59, 130, 246, 0.3),
+                0 8px 32px rgba(59, 130, 246, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
         .announcement-text {
-            font-size: 1.8rem;
-            font-weight: 600;
+            font-size: 1.4rem;
+            font-weight: 500;
             color: #ffffff;
-            line-height: 1.6;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            line-height: 1.5;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
             white-space: pre-wrap;
+            flex: 1;
+            display: flex;
+            align-items: center;
         }
 
         .announcement-actions {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 12px;
+            right: 12px;
             display: none;
-            gap: 12px;
+            gap: 6px;
             z-index: 10;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .announcement-item.clicked .announcement-actions {
             display: flex;
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .announcement-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
             color: white;
-            padding: 12px 18px;
-            border-radius: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.85rem;
             font-weight: 500;
             transition: all 0.2s ease;
+            backdrop-filter: blur(8px);
         }
 
         .announcement-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
         }
 
         .announcement-btn.edit {
@@ -632,15 +738,20 @@
 
         .no-announcements {
             text-align: center;
-            padding: 120px 60px;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1.6rem;
+            padding: 80px 40px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.3rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
         }
 
         .no-announcements-icon {
-            font-size: 6rem;
-            margin-bottom: 32px;
-            opacity: 0.6;
+            font-size: 4rem;
+            margin-bottom: 24px;
+            opacity: 0.5;
         }
 
         /* Modal Styles */
@@ -1726,7 +1837,7 @@
                 `;
             }
 
-            updateAnnouncementsDisplay() {
+                        updateAnnouncementsDisplay() {
                 const content = document.getElementById('announcementsContent');
                 if (!content) return;
 
@@ -1734,16 +1845,38 @@
                 
                 if (currentAnnouncements.length === 0) {
                     content.innerHTML = `
-                                                 <div class="no-announcements">
-                             <div class="no-announcements-icon">📝</div>
-                             <div>No announcements at this time</div>
-                             <div style="font-size: 1.2rem; margin-top: 16px; opacity: 0.8;">Click the + button to create your first announcement</div>
-                         </div>
+                        <div class="no-announcements">
+                            <div class="no-announcements-icon">📝</div>
+                            <div>No announcements at this time</div>
+                            <div style="font-size: 1rem; margin-top: 16px; opacity: 0.7;">Click the + button to create your first announcement</div>
+                        </div>
                     `;
                 } else {
-                    content.innerHTML = currentAnnouncements.map(announcement => 
+                    // Create grid container with dynamic sizing based on number of announcements
+                    let gridClass;
+                    const count = currentAnnouncements.length;
+                    
+                    if (count === 1) {
+                        gridClass = 'single';
+                    } else if (count === 2) {
+                        gridClass = 'two';
+                    } else if (count === 3) {
+                        gridClass = 'three';
+                    } else if (count === 4) {
+                        gridClass = 'four';
+                    } else {
+                        gridClass = 'many';
+                    }
+                    
+                    const announcementItems = currentAnnouncements.map(announcement => 
                         this.createAnnouncementHTML(announcement)
                     ).join('');
+                    
+                    content.innerHTML = `
+                        <div class="announcements-grid ${gridClass}">
+                            ${announcementItems}
+                        </div>
+                    `;
                 }
             }
 
@@ -1766,11 +1899,11 @@
                     <div class="announcement-item" onclick="toggleAnnouncementActions('${announcement.id}')">
                         <div class="announcement-text">${this.escapeHtml(announcement.text)}</div>
                         <div class="announcement-actions">
-                            <button class="announcement-btn edit" onclick="event.stopPropagation(); editAnnouncement('${announcement.id}')">
-                                ✏️ Edit
+                            <button class="announcement-btn edit" onclick="event.stopPropagation(); editAnnouncement('${announcement.id}')" title="Edit announcement">
+                                ✏️
                             </button>
-                            <button class="announcement-btn delete" onclick="event.stopPropagation(); deleteAnnouncement('${announcement.id}')">
-                                🗑️ Delete
+                            <button class="announcement-btn delete" onclick="event.stopPropagation(); deleteAnnouncement('${announcement.id}')" title="Delete announcement">
+                                🗑️
                             </button>
                         </div>
                     </div>
@@ -1962,7 +2095,7 @@
                 const activeEnd = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour from now
                 testAnnouncements.push({
                     id: 'test_current_' + Date.now(),
-                    text: '🔴 LIVE TEST: This announcement should be visible right now!\n\nThis is a multi-line announcement to test text formatting and spacing.\n\nClick me to see edit/delete options!',
+                    text: '🔴 LIVE TEST: This announcement should be visible right now!',
                     startDate: activeStart.toISOString().split('T')[0],
                     startTime: activeStart.toTimeString().split(' ')[0].slice(0, 5),
                     endDate: activeEnd.toISOString().split('T')[0],
@@ -2003,13 +2136,28 @@
                 todayEnd.setHours(23, 59, 59, 999);
                 testAnnouncements.push({
                     id: 'test_allday_' + Date.now(),
-                    text: '📅 ALL-DAY TEST: This announcement runs all day today.\n\nClick any announcement to reveal edit and delete options.',
+                    text: '📅 ALL-DAY TEST: This announcement runs all day today.',
                     startDate: todayStart.toISOString().split('T')[0],
                     startTime: '00:00',
                     endDate: todayEnd.toISOString().split('T')[0],
                     endTime: '23:59',
                     createdAt: new Date().toISOString()
                 });
+
+                // Test 5: Additional announcements to test grid layout
+                for (let i = 5; i <= 8; i++) {
+                    const start = new Date(now.getTime() - 10 * 60 * 1000); // 10 minutes ago
+                    const end = new Date(now.getTime() + 2 * 60 * 60 * 1000); // 2 hours from now
+                    testAnnouncements.push({
+                        id: 'test_extra_' + i + '_' + Date.now(),
+                        text: `📢 Test Announcement #${i}: This is a shorter test message to verify grid layout with multiple items.`,
+                        startDate: start.toISOString().split('T')[0],
+                        startTime: start.toTimeString().split(' ')[0].slice(0, 5),
+                        endDate: end.toISOString().split('T')[0],
+                        endTime: end.toTimeString().split(' ')[0].slice(0, 5),
+                        createdAt: new Date().toISOString()
+                    });
+                }
 
                 // Add test announcements
                 this.announcements = [...this.announcements, ...testAnnouncements];
