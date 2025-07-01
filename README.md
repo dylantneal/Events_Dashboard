@@ -350,8 +350,9 @@ The dashboard includes a built-in announcements system that allows anyone to cre
 
 ### Managing Announcements
 
-- **Edit**: Click the ✏️ Edit button on any announcement to modify it
-- **Delete**: Click the 🗑️ Delete button to remove an announcement (requires confirmation)
+- **Edit**: Click any announcement to reveal edit/delete options, then click ✏️ Edit to modify it
+- **Delete**: Click any announcement to reveal options, then click 🗑️ Delete to remove it (requires confirmation)  
+- **Clean Interface**: Edit/delete buttons only appear when needed (click to reveal)
 - **Automatic Filtering**: Only announcements scheduled for the current time are displayed
 - **Real-time Updates**: Announcements automatically appear/disappear based on their schedule
 
@@ -363,10 +364,11 @@ The dashboard includes a built-in announcements system that allows anyone to cre
 - **Merge vs Replace**: When importing, choose to merge with existing data or replace all
 
 **Scheduling Examples**:
-- **All-day announcement**: 12:00 AM to 11:59 PM on the same date
+- **All-day announcement**: 12:00 AM to 11:59 PM on the same date (defaults to today)
 - **Multi-day event**: Set start date to today, end date to next week
-- **Specific hours**: 9:00 AM to 5:00 PM for business announcements
+- **Specific hours**: 9:00 AM to 5:00 PM for business announcements  
 - **Weekend-only**: Friday 5:00 PM to Monday 9:00 AM
+- **Same-day events**: Both start and end dates default to today for convenience
 
 **GitHub Deployment**:
 - Announcements are stored in browser localStorage (per device)
