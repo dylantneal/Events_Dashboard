@@ -352,6 +352,24 @@ The dashboard provides both voice announcements and audio chimes:
 
 - No external audio files required for either system
 
+### Audio Troubleshooting
+
+If time notifications aren't working, check the following:
+
+1. **User Interaction**: Modern browsers require user interaction before enabling audio. Simply click anywhere on the page, press any key, or move your mouse to enable audio automatically.
+
+2. **Test Functions**: Use keyboard shortcuts to test audio:
+   - Press **C** to test hourly time announcement
+   - Press **V** to test current time announcement
+   - Press **Q** to test quarter-hour chime
+
+3. **Console Logging**: Check browser console (F12) for detailed audio system status and error messages.
+
+4. **Browser Support**: 
+   - Speech synthesis works in Chrome, Safari, Edge, Firefox
+   - Web Audio API works in all modern browsers
+   - Some browsers may require HTTPS for full functionality
+
 ## Announcements Board Usage
 
 The dashboard includes a built-in announcements system that allows anyone to create, schedule, and manage announcements that appear in the slideshow rotation.
