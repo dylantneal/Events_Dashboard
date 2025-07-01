@@ -315,6 +315,8 @@ setInterval(() => {
 - **Escape**: Close announcements modal
 - **Ctrl+E**: Export announcements data
 - **Ctrl+I**: Import announcements data
+- **Ctrl+T**: Create test announcements for debugging
+- **Ctrl+D**: Debug all announcements with timing details
 
 ### Time Notifications
 The dashboard provides both voice announcements and audio chimes:
@@ -378,6 +380,42 @@ The dashboard includes a built-in announcements system that allows anyone to cre
 - **Test timing** - create short test announcements to verify scheduling
 - **Regular cleanup** - periodically review and delete old announcements
 - **Backup data** - export announcements before major changes
+
+### Testing and Debugging
+
+The dashboard includes comprehensive testing tools for announcement scheduling:
+
+**Quick Testing**:
+- Press `Ctrl+T` to create test announcements that verify different timing scenarios
+- Press `Ctrl+D` to debug all announcements and see detailed timing information
+- Check browser console (F12) for detailed test results and scheduling information
+
+**Test Scenarios Created**:
+- **Active announcement**: Currently visible (started 30 min ago, ends in 1 hour)
+- **Future announcement**: Will appear in 2 minutes and last 8 minutes
+- **Expired announcement**: Should not be visible (ended 5 minutes ago)
+- **All-day announcement**: Runs from midnight to 11:59 PM today
+
+**Console Commands**:
+```javascript
+// Create test announcements
+createTestAnnouncements();
+
+// Run comprehensive scheduling tests
+runSchedulingTests();
+
+// Debug all announcements with timing details
+debugAnnouncements();
+
+// Clean up test announcements
+cleanupTestAnnouncements();
+```
+
+**Real-time Updates**:
+- Announcements automatically update every 30 seconds
+- Display refreshes when navigating to the announcements slide
+- Expired announcements disappear automatically
+- Future announcements appear when their start time arrives
 
 ## Troubleshooting
 

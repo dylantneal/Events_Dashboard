@@ -455,55 +455,58 @@
 
         /* Announcements Board Styles */
         .announcements-slide {
-            width: 100%;
-            height: 100%;
+            width: 95vw;
+            height: 85vh;
+            max-width: 1400px;
+            max-height: 900px;
             display: flex;
             flex-direction: column;
             background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.05) 100%);
-            border-radius: 24px;
+            border-radius: 32px;
             overflow: hidden;
             position: relative;
+            margin: auto;
         }
 
         .announcements-header {
             background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.15));
-            padding: 32px 40px;
+            padding: 48px 60px;
             text-align: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
         }
 
         .announcements-title {
-            font-size: 3rem;
+            font-size: 4.5rem;
             font-weight: 800;
             color: #ffffff;
             text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            margin-bottom: 8px;
+            margin-bottom: 16px;
             letter-spacing: -0.02em;
         }
 
         .announcements-subtitle {
-            font-size: 1.2rem;
+            font-size: 1.6rem;
             color: rgba(255, 255, 255, 0.8);
             font-weight: 500;
         }
 
         .add-announcement-btn {
             position: absolute;
-            top: 24px;
-            left: 24px;
-            width: 60px;
-            height: 60px;
+            top: 32px;
+            left: 32px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             background: linear-gradient(135deg, #3b82f6, #06b6d4);
             border: none;
             color: white;
-            font-size: 24px;
+            font-size: 32px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 12px 35px rgba(59, 130, 246, 0.5);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 10;
         }
@@ -519,7 +522,7 @@
 
         .announcements-content {
             flex: 1;
-            padding: 40px;
+            padding: 60px 80px;
             overflow-y: auto;
             scrollbar-width: none;
             -ms-overflow-style: none;
@@ -533,9 +536,9 @@
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px;
+            border-radius: 20px;
+            padding: 36px 40px;
+            margin-bottom: 32px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
@@ -567,24 +570,25 @@
         }
 
         .announcement-text {
-            font-size: 1.4rem;
+            font-size: 1.8rem;
             font-weight: 600;
             color: #ffffff;
-            line-height: 1.5;
-            margin-bottom: 12px;
+            line-height: 1.6;
+            margin-bottom: 20px;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            white-space: pre-wrap;
         }
 
         .announcement-time {
-            font-size: 0.95rem;
-            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
             font-weight: 500;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
         }
 
         .announcement-duration {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.6);
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
             font-style: italic;
         }
 
@@ -597,10 +601,11 @@
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
+            padding: 12px 18px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 1rem;
+            font-weight: 500;
             transition: all 0.2s ease;
         }
 
@@ -618,15 +623,15 @@
 
         .no-announcements {
             text-align: center;
-            padding: 80px 40px;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 1.2rem;
+            padding: 120px 60px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.6rem;
         }
 
         .no-announcements-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            opacity: 0.5;
+            font-size: 6rem;
+            margin-bottom: 32px;
+            opacity: 0.6;
         }
 
         /* Modal Styles */
@@ -659,8 +664,8 @@
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 24px;
-            padding: 32px;
-            max-width: 600px;
+            padding: 40px;
+            max-width: 700px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
@@ -727,11 +732,12 @@
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px;
-            padding: 12px 16px;
+            padding: 16px 20px;
             color: white;
-            font-size: 1rem;
+            font-size: 1.1rem;
             transition: all 0.2s ease;
             box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         .form-input:focus, .form-textarea:focus {
@@ -743,7 +749,8 @@
 
         .form-textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 120px;
+            line-height: 1.5;
         }
 
         .form-row {
@@ -990,6 +997,7 @@
                 this.startWeatherUpdates();
                 this.startSlideReloader();
                 this.setupAnnouncementModal();
+                this.startAnnouncementUpdates();
             }
 
             startSlideReloader() {
@@ -1970,6 +1978,184 @@
                 reader.readAsText(file);
             }
 
+            // ==================== TESTING FUNCTIONALITY ====================
+
+            // Create test announcements for various scenarios
+            createTestAnnouncements() {
+                const now = new Date();
+                const testAnnouncements = [];
+
+                // Test 1: Current announcement (active now)
+                const activeStart = new Date(now.getTime() - 30 * 60 * 1000); // 30 minutes ago
+                const activeEnd = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour from now
+                testAnnouncements.push({
+                    id: 'test_current_' + Date.now(),
+                    text: '🔴 LIVE TEST: This announcement should be visible right now!\n\nThis is a multi-line announcement to test text formatting and spacing.',
+                    startDate: activeStart.toISOString().split('T')[0],
+                    startTime: activeStart.toTimeString().split(' ')[0].slice(0, 5),
+                    endDate: activeEnd.toISOString().split('T')[0],
+                    endTime: activeEnd.toTimeString().split(' ')[0].slice(0, 5),
+                    createdAt: new Date().toISOString()
+                });
+
+                // Test 2: Future announcement (starts in 2 minutes)
+                const futureStart = new Date(now.getTime() + 2 * 60 * 1000); // 2 minutes from now
+                const futureEnd = new Date(now.getTime() + 10 * 60 * 1000); // 10 minutes from now
+                testAnnouncements.push({
+                    id: 'test_future_' + Date.now(),
+                    text: '⏰ FUTURE TEST: This should appear in 2 minutes and last for 8 minutes.',
+                    startDate: futureStart.toISOString().split('T')[0],
+                    startTime: futureStart.toTimeString().split(' ')[0].slice(0, 5),
+                    endDate: futureEnd.toISOString().split('T')[0],
+                    endTime: futureEnd.toTimeString().split(' ')[0].slice(0, 5),
+                    createdAt: new Date().toISOString()
+                });
+
+                // Test 3: Expired announcement (ended 5 minutes ago)
+                const expiredStart = new Date(now.getTime() - 60 * 60 * 1000); // 1 hour ago
+                const expiredEnd = new Date(now.getTime() - 5 * 60 * 1000); // 5 minutes ago
+                testAnnouncements.push({
+                    id: 'test_expired_' + Date.now(),
+                    text: '❌ EXPIRED TEST: This should NOT be visible (expired 5 minutes ago).',
+                    startDate: expiredStart.toISOString().split('T')[0],
+                    startTime: expiredStart.toTimeString().split(' ')[0].slice(0, 5),
+                    endDate: expiredEnd.toISOString().split('T')[0],
+                    endTime: expiredEnd.toTimeString().split(' ')[0].slice(0, 5),
+                    createdAt: new Date().toISOString()
+                });
+
+                // Test 4: All-day announcement for today
+                const todayStart = new Date(now);
+                todayStart.setHours(0, 0, 0, 0);
+                const todayEnd = new Date(now);
+                todayEnd.setHours(23, 59, 59, 999);
+                testAnnouncements.push({
+                    id: 'test_allday_' + Date.now(),
+                    text: '📅 ALL-DAY TEST: This announcement runs all day today (12:00 AM to 11:59 PM).',
+                    startDate: todayStart.toISOString().split('T')[0],
+                    startTime: '00:00',
+                    endDate: todayEnd.toISOString().split('T')[0],
+                    endTime: '23:59',
+                    createdAt: new Date().toISOString()
+                });
+
+                // Add test announcements
+                this.announcements = [...this.announcements, ...testAnnouncements];
+                this.saveAnnouncements();
+                this.updateAnnouncementsDisplay();
+
+                // Log test details
+                console.log('TEST ANNOUNCEMENTS CREATED:');
+                console.log('Current time:', now.toLocaleString());
+                testAnnouncements.forEach((ann, index) => {
+                    const start = new Date(ann.startDate + 'T' + ann.startTime);
+                    const end = new Date(ann.endDate + 'T' + ann.endTime);
+                    const isActive = now >= start && now <= end;
+                    console.log(`${index + 1}. ${ann.text.split('\n')[0]}`);
+                    console.log(`   Start: ${start.toLocaleString()}`);
+                    console.log(`   End: ${end.toLocaleString()}`);
+                    console.log(`   Status: ${isActive ? '✅ ACTIVE' : '❌ INACTIVE'}`);
+                    console.log('');
+                });
+
+                alert('Test announcements created! Check console for details. The display should show only active announcements.');
+            }
+
+            // Run comprehensive scheduling tests
+            runSchedulingTests() {
+                console.log('=== ANNOUNCEMENT SCHEDULING TESTS ===');
+                const now = new Date();
+                console.log('Current time:', now.toLocaleString());
+                
+                // Test all announcements
+                this.announcements.forEach((ann, index) => {
+                    const start = new Date(ann.startDate + 'T' + ann.startTime);
+                    const end = new Date(ann.endDate + 'T' + ann.endTime);
+                    const isActive = now >= start && now <= end;
+                    const shouldShow = this.getCurrentAnnouncements().includes(ann);
+                    
+                    console.log(`\nTest ${index + 1}: ${ann.text.substring(0, 50)}...`);
+                    console.log(`  ID: ${ann.id}`);
+                    console.log(`  Start: ${start.toLocaleString()}`);
+                    console.log(`  End: ${end.toLocaleString()}`);
+                    console.log(`  Expected Active: ${isActive}`);
+                    console.log(`  Actually Showing: ${shouldShow}`);
+                    console.log(`  Test Result: ${isActive === shouldShow ? '✅ PASS' : '❌ FAIL'}`);
+                });
+
+                // Test the filtering function
+                const currentAnnouncements = this.getCurrentAnnouncements();
+                console.log(`\nCurrent Announcements Count: ${currentAnnouncements.length}`);
+                console.log('Currently active announcements:');
+                currentAnnouncements.forEach(ann => {
+                    console.log(`  - ${ann.text.split('\n')[0]}`);
+                });
+
+                // Update display to ensure it matches
+                this.updateAnnouncementsDisplay();
+                
+                alert('Scheduling tests completed! Check console for detailed results.');
+            }
+
+            // Clean up test announcements
+            cleanupTestAnnouncements() {
+                const beforeCount = this.announcements.length;
+                this.announcements = this.announcements.filter(ann => !ann.id.startsWith('test_'));
+                const afterCount = this.announcements.length;
+                const removedCount = beforeCount - afterCount;
+                
+                this.saveAnnouncements();
+                this.updateAnnouncementsDisplay();
+                
+                console.log(`Cleaned up ${removedCount} test announcements`);
+                alert(`Removed ${removedCount} test announcements`);
+            }
+
+            // Debug function to show all announcements with timing details
+            debugAnnouncements() {
+                console.log('=== ALL ANNOUNCEMENTS DEBUG ===');
+                const now = new Date();
+                console.log('Current time:', now.toLocaleString());
+                console.log(`Total announcements: ${this.announcements.length}`);
+                
+                this.announcements.forEach((ann, index) => {
+                    const start = new Date(ann.startDate + 'T' + ann.startTime);
+                    const end = new Date(ann.endDate + 'T' + ann.endTime);
+                    const isActive = now >= start && now <= end;
+                    
+                    console.log(`\n${index + 1}. "${ann.text.substring(0, 30)}..."`);
+                    console.log(`   ID: ${ann.id}`);
+                    console.log(`   Start: ${ann.startDate} ${ann.startTime} (${start.toLocaleString()})`);
+                    console.log(`   End: ${ann.endDate} ${ann.endTime} (${end.toLocaleString()})`);
+                    console.log(`   Status: ${isActive ? '🟢 ACTIVE' : '🔴 INACTIVE'}`);
+                    
+                    if (!isActive) {
+                        if (now < start) {
+                            const minutesUntil = Math.round((start - now) / (1000 * 60));
+                            console.log(`   Note: Starts in ${minutesUntil} minutes`);
+                        } else {
+                            const minutesSince = Math.round((now - end) / (1000 * 60));
+                            console.log(`   Note: Ended ${minutesSince} minutes ago`);
+                        }
+                    }
+                });
+                
+                const currentAnnouncements = this.getCurrentAnnouncements();
+                console.log(`\nCurrently showing ${currentAnnouncements.length} announcements`);
+            }
+
+            // Start periodic announcement updates (every 30 seconds)
+            startAnnouncementUpdates() {
+                // Update announcements display every 30 seconds to handle timing changes
+                setInterval(() => {
+                    if (this.currentSlideIndex === this.announcementsSlideIndex) {
+                        this.updateAnnouncementsDisplay();
+                    }
+                }, 30000); // 30 seconds
+                
+                console.log('Started periodic announcement updates (every 30 seconds)');
+            }
+
             destroy() {
                 if (this.slideInterval) clearInterval(this.slideInterval);
                 if (this.weatherInterval) clearInterval(this.weatherInterval);
@@ -2115,6 +2301,31 @@
             }
         }
 
+        // Testing functions
+        function createTestAnnouncements() {
+            if (dashboard) {
+                dashboard.createTestAnnouncements();
+            }
+        }
+
+        function runSchedulingTests() {
+            if (dashboard) {
+                dashboard.runSchedulingTests();
+            }
+        }
+
+        function cleanupTestAnnouncements() {
+            if (dashboard) {
+                dashboard.cleanupTestAnnouncements();
+            }
+        }
+
+        function debugAnnouncements() {
+            if (dashboard) {
+                dashboard.debugAnnouncements();
+            }
+        }
+
         // Handle page visibility changes for kiosk mode
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
@@ -2135,6 +2346,15 @@
         // Keyboard shortcuts for manual control
         document.addEventListener('keydown', (event) => {
             if (!dashboard) return;
+            
+            // Check if we're in a modal or input field
+            const isInModal = document.getElementById('announcementModal')?.classList.contains('active');
+            const isInInput = event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA';
+            
+            // Skip keyboard shortcuts if we're typing in a form
+            if (isInModal && isInInput) {
+                return;
+            }
             
             switch(event.key) {
                 case 'ArrowRight':
@@ -2202,6 +2422,20 @@
                     if (event.ctrlKey || event.metaKey) {
                         event.preventDefault();
                         importAnnouncements();
+                    }
+                    break;
+                case 't':
+                case 'T':
+                    if (event.ctrlKey || event.metaKey) {
+                        event.preventDefault();
+                        createTestAnnouncements();
+                    }
+                    break;
+                case 'd':
+                case 'D':
+                    if (event.ctrlKey || event.metaKey) {
+                        event.preventDefault();
+                        debugAnnouncements();
                     }
                     break;
             }
