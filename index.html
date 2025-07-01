@@ -1521,11 +1521,11 @@
                 // Allow triggers within first 3 seconds to be more flexible (handles timing variations)
                 if (currentSecond > 3) return;
                 
-                // Voice announcement at top of each hour (XX:00:00 - XX:00:03)
+                // Top of the hour (XX:00:00 - XX:00:03): Play chime THEN voice
                 if (currentMinute === 0 && currentHour !== this.lastVoiceHour) {
-                    this.playHourlyVoiceAnnouncement();
+                    this.playHourlyChimeAndVoice();
                     this.lastVoiceHour = currentHour;
-                    console.log(`Hourly voice announcement triggered at ${currentHour}:${currentMinute < 10 ? '0' : ''}${currentMinute}:${currentSecond < 10 ? '0' : ''}${currentSecond}`);
+                    console.log(`Hourly chime and voice triggered at ${currentHour}:${currentMinute < 10 ? '0' : ''}${currentMinute}:${currentSecond < 10 ? '0' : ''}${currentSecond}`);
                 }
                 
                 // Chimes at quarter hours (15, 30, 45 minutes within first 3 seconds)
@@ -1535,6 +1535,18 @@
                     this.lastChimeTime = minuteOfDay;
                     console.log(`Quarter-hour chime triggered at ${currentHour}:${currentMinute < 10 ? '0' : ''}${currentMinute}:${currentSecond < 10 ? '0' : ''}${currentSecond}`);
                 }
+            }
+
+            playHourlyChimeAndVoice() {
+                console.log('🕐 Starting hourly chime and voice sequence');
+                
+                // First, play the chime
+                this.playQuarterHourChime();
+                
+                // Then, after a 1.5-second delay, play the voice announcement
+                setTimeout(() => {
+                    this.playHourlyVoiceAnnouncement();
+                }, 1500); // 1.5 second delay allows chime to finish before voice starts
             }
 
             playHourlyVoiceAnnouncement() {
@@ -2991,10 +3003,10 @@
                 }
             }
 
-            // Manual test function for the hourly time announcement
+            // Manual test function for the hourly chime and voice sequence
             testChime() {
-                console.log('Testing hourly time announcement...');
-                this.playHourlyVoiceAnnouncement();
+                console.log('Testing hourly chime and voice sequence...');
+                this.playHourlyChimeAndVoice();
             }
 
             // Test function for quarter-hour chimes

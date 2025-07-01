@@ -370,7 +370,7 @@ setInterval(() => {
 - **→ or Space**: Next slide
 - **←**: Previous slide  
 - **R**: Reload dashboard
-- **C**: Test hourly time announcement
+- **C**: Test hourly chime and voice sequence
 - **V**: Test current time announcement
 - **Q**: Test quarter-hour chime
 - **Escape**: Close announcements modal
@@ -382,14 +382,15 @@ setInterval(() => {
 ### Time Notifications
 The dashboard provides both voice announcements and audio chimes:
 
-**Hourly Voice Announcements (Top of the Hour)**
-- Speaks the current time every hour at :00 (e.g., "It is 4 PM")
-- Uses Web Speech API with pleasant voice selection
+**Hourly Chime and Voice (Top of the Hour)**
+- Plays a pleasant chime followed by voice announcement every hour at :00
+- Chime plays first, then after 1.5 seconds, voice announces the time (e.g., "It is 4 PM")
+- Uses Web Audio API for chime and Web Speech API for voice with pleasant voice selection
 - Test by pressing **C** or running `testChime()` in console
 - Test current time anytime by pressing **V** or running `testTimeAnnouncement()` in console
 
 **Quarter-Hour Chimes (15, 30, 45 minutes)**
-- Pleasant audio chime at :15, :30, and :45 minutes past each hour
+- Pleasant audio chime only at :15, :30, and :45 minutes past each hour
 - Uses Web Audio API for precise timing and quality
 - Test by pressing **Q** or running `testQuarterChime()` in console
 
