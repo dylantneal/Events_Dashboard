@@ -408,11 +408,19 @@ The dashboard includes a built-in announcements system that allows anyone to cre
 
 **GitHub Pages Deployment**:
 - **✅ Fully supported** - all announcements features work on GitHub Pages
-- **Per-device storage** - announcements stored in browser localStorage
-- **Multi-device sync** - use export/import to share announcements between devices
+- **🔄 Cloud Sync Available** - optional automatic sync across all devices
+- **Per-device storage** - announcements stored in browser localStorage (with cloud backup)
+- **Multi-device sync** - automatic with cloud sync, or manual export/import
 - **Zero setup required** - just enable GitHub Pages with GitHub Actions
 - **Automatic HTTPS** - secure by default
 - **No server costs** - completely free hosting
+
+**Cloud Sync (New!)**: 
+- Enable automatic synchronization across all devices
+- Announcements appear instantly on all screens
+- See `CLOUD_SYNC_SETUP.md` for 5-minute setup guide
+- Uses free JSONBin.io service (100k requests/month free tier)
+- Fully optional - dashboard works perfectly without it
 
 ### Best Practices
 
