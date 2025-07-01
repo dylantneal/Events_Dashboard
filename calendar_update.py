@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
 """
-weekly_update.py
-----------------
-Automated weekly update script for the "Happening This Week" dashboard.
-This script should be run weekly (every Monday at midnight) to update the weekly chart.
+calendar_update.py
+------------------
+Automated monthly calendar update script for the professional calendar dashboard.
+This script should be run monthly (every 1st at midnight) to update the calendar view.
 
 Usage:
-    python weekly_update.py
+    python calendar_update.py
 
 This script will:
-1. Generate a "Happening This Week" chart for the current week (Monday to Sunday)
-2. Remove old weekly charts that are no longer current
+1. Generate a professional calendar view for the current month
+2. Remove old calendar files that are no longer current
 3. Optimize images for dashboard display
 4. Update the slides manifest
 
-To set up weekly automation on Unix/Linux/macOS:
+To set up monthly automation on Unix/Linux/macOS:
 1. Edit your crontab: crontab -e
-2. Add this line to run every Monday at midnight:
-   0 0 * * 1 cd /path/to/EncoreDashboard && python3 weekly_update.py
+2. Add this line to run on the 1st of every month at midnight:
+   0 0 1 * * cd /path/to/EncoreDashboard && python3 calendar_update.py
 
 For Windows Task Scheduler:
 1. Create a new task
-2. Set trigger to weekly on Monday
+2. Set trigger to monthly on the 1st day
 3. Set action to run this script
 """
 
@@ -34,7 +34,7 @@ from datetime import datetime
 # Set up logging
 log_dir = Path("logs")
 log_dir.mkdir(exist_ok=True)
-log_file = log_dir / f"weekly_update_{datetime.now().strftime('%Y%m%d')}.log"
+log_file = log_dir / f"calendar_update_{datetime.now().strftime('%Y%m%d')}.log"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -48,47 +48,45 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def cleanup_old_weekly_charts():
-    """Remove old weekly chart files that are not from the current week."""
+def cleanup_old_calendar_files():
+    """Remove old calendar files that are not from the current month."""
     try:
         slides_dir = Path("slides")
         if not slides_dir.exists():
             logger.info("Slides directory does not exist, nothing to clean up")
             return
         
-        # Get all weekly chart files
-        weekly_charts = list(slides_dir.glob("gantt_weekly_*.png"))
+        # Get all calendar files
+        calendar_files = list(slides_dir.glob("calendar_*.png"))
         
-        if not weekly_charts:
-            logger.info("No existing weekly charts to clean up")
+        if not calendar_files:
+            logger.info("No existing calendar files to clean up")
             return
         
-        # Get current week's Monday date for comparison
-        from datetime import datetime, timedelta
+        # Get current month for comparison
         current_date = datetime.now()
-        days_since_monday = current_date.weekday()
-        current_monday = current_date - timedelta(days=days_since_monday)
-        current_week_filename = f"gantt_weekly_{current_monday.strftime('%Y_%m_%d')}.png"
+        current_filename = f"calendar_{current_date.strftime('%Y_%m')}.png"
         
-        # Remove old weekly charts
+        # Remove old calendar files
         removed_count = 0
-        for chart in weekly_charts:
-            if chart.name != current_week_filename:
-                logger.info(f"Removing old weekly chart: {chart.name}")
-                chart.unlink()
+        for calendar_file in calendar_files:
+            # Keep the current month's calendar
+            if calendar_file.name != current_filename:
+                logger.info(f"Removing old calendar: {calendar_file.name}")
+                calendar_file.unlink()
                 removed_count += 1
         
         if removed_count > 0:
-            logger.info(f"Cleaned up {removed_count} old weekly chart(s)")
+            logger.info(f"Cleaned up {removed_count} old calendar file(s)")
         else:
-            logger.info("No old weekly charts to remove")
+            logger.info("No old calendar files to remove")
             
     except Exception as e:
-        logger.error(f"Error cleaning up old weekly charts: {e}")
+        logger.error(f"Error cleaning up old calendar files: {e}")
 
 
-def run_weekly_update():
-    """Run the flex_gantt script with weekly mode."""
+def run_calendar_update():
+    """Run the flex_gantt script with calendar mode."""
     try:
         # Path to the pipeline Excel file
         pipeline_file = Path("pipeline.xlsx")
@@ -97,15 +95,15 @@ def run_weekly_update():
             logger.error(f"Pipeline file not found: {pipeline_file}")
             return False
         
-        # Clean up old weekly charts before generating new one
-        cleanup_old_weekly_charts()
+        # Clean up old calendar files before generating new one
+        cleanup_old_calendar_files()
         
-        # Run the flex_gantt script with weekly mode
+        # Run the flex_gantt script with calendar mode
         cmd = [
             "python3", 
             "flex_gantt.py", 
             str(pipeline_file), 
-            "--weekly", 
+            "--calendar", 
             "--dashboard"
         ]
         
@@ -118,7 +116,7 @@ def run_weekly_update():
             check=True
         )
         
-        logger.info("Weekly dashboard update completed successfully")
+        logger.info("Calendar update completed successfully")
         logger.info(f"Script output: {result.stdout}")
         
         if result.stderr:
@@ -138,34 +136,28 @@ def run_weekly_update():
 def main():
     """Main execution function."""
     logger.info("=" * 50)
-    logger.info("Starting weekly dashboard update")
+    logger.info("Starting monthly calendar update")
     logger.info("=" * 50)
     
     start_time = datetime.now()
+    current_month = start_time.strftime('%B %Y')
     
-    success = run_weekly_update()
+    logger.info(f"Generating calendar for: {current_month}")
+    
+    success = run_calendar_update()
     
     end_time = datetime.now()
     duration = end_time - start_time
     
     if success:
-        logger.info(f"Weekly update completed successfully in {duration}")
-        logger.info("Dashboard 'Happening This Week' chart is now updated")
+        logger.info(f"Calendar update completed successfully in {duration}")
+        logger.info(f"Dashboard calendar for {current_month} is now updated")
         
         # Auto-commit and push changes to GitHub
         logger.info("\n--- Auto-committing to GitHub ---")
         try:
             from git_auto_commit import auto_commit_and_push
-            from datetime import timedelta
-            
-            # Calculate current week for commit message
-            current_date = datetime.now()
-            days_since_monday = current_date.weekday()
-            week_start = current_date - timedelta(days=days_since_monday)
-            week_end = week_start + timedelta(days=6)
-            week_display = f"{week_start.strftime('%b %d')} - {week_end.strftime('%b %d, %Y')}"
-            
-            if auto_commit_and_push(f"Auto-update: Weekly dashboard - {week_display}"):
+            if auto_commit_and_push(f"Auto-update: Calendar view - {current_month}"):
                 logger.info("✅ Changes pushed to GitHub successfully")
                 logger.info("All screens will receive updates within minutes")
             else:
@@ -175,7 +167,7 @@ def main():
             logger.error(f"Error during auto-commit: {e}")
             logger.warning("Manual git commit and push required")
     else:
-        logger.error(f"Weekly update failed after {duration}")
+        logger.error(f"Calendar update failed after {duration}")
         sys.exit(1)
     
     logger.info("=" * 50)

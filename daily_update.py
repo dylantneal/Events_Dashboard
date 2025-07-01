@@ -148,6 +148,21 @@ def main():
     if success:
         logger.info(f"Daily update completed successfully in {duration}")
         logger.info("Dashboard 'Happening Today' chart is now updated")
+        
+        # Auto-commit and push changes to GitHub
+        logger.info("\n--- Auto-committing to GitHub ---")
+        try:
+            from git_auto_commit import auto_commit_and_push
+            today_display = start_time.strftime('%A, %B %d, %Y')
+            if auto_commit_and_push(f"Auto-update: Daily dashboard - {today_display}"):
+                logger.info("✅ Changes pushed to GitHub successfully")
+                logger.info("All screens will receive updates within minutes")
+            else:
+                logger.warning("⚠️  Failed to push changes to GitHub")
+                logger.warning("Manual git commit and push may be required")
+        except Exception as e:
+            logger.error(f"Error during auto-commit: {e}")
+            logger.warning("Manual git commit and push required")
     else:
         logger.error(f"Daily update failed after {duration}")
         sys.exit(1)

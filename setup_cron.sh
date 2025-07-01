@@ -1,14 +1,49 @@
 #!/bin/bash
 # setup_cron.sh
-# Automated setup script for monthly dashboard updates
+# Automated setup script for monthly dashboard updates with calendar views
 
 # Get the current directory (project root)
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "====================================="
-echo "Dashboard Monthly Update Setup"
+echo "Dashboard Update Setup (Gantt + Calendar)"
+echo "Now with Automatic GitHub Sync!"
 echo "====================================="
 echo "Project directory: $PROJECT_DIR"
+echo ""
+
+# Check git configuration for auto-commit feature
+echo "--- Checking Git Configuration ---"
+if [ -d "$PROJECT_DIR/.git" ]; then
+    echo "✅ Git repository detected"
+    
+    # Check if remote is configured
+    cd "$PROJECT_DIR"
+    if git remote get-url origin >/dev/null 2>&1; then
+        echo "✅ Git remote configured: $(git remote get-url origin)"
+        
+        # Check if we can push
+        echo "Testing git push access..."
+        if git push --dry-run origin main >/dev/null 2>&1; then
+            echo "✅ Git push access confirmed - Auto-sync will work!"
+            GIT_SYNC_AVAILABLE=true
+        else
+            echo "⚠️  Cannot push to git remote"
+            echo "   Auto-commit will be disabled"
+            echo "   To enable: Configure SSH keys or personal access token"
+            echo "   See AUTOMATED_IMAGE_SYNC.md for instructions"
+            GIT_SYNC_AVAILABLE=false
+        fi
+    else
+        echo "⚠️  No git remote configured"
+        echo "   Auto-commit will be disabled"
+        GIT_SYNC_AVAILABLE=false
+    fi
+else
+    echo "⚠️  Not a git repository"
+    echo "   Auto-commit will be disabled"
+    GIT_SYNC_AVAILABLE=false
+fi
 echo ""
 
 # Check if Python 3 is available
@@ -46,6 +81,20 @@ if [ ! -f "$PROJECT_DIR/daily_update.py" ]; then
     exit 1
 fi
 
+if [ ! -f "$PROJECT_DIR/calendar_update.py" ]; then
+    echo "❌ Error: calendar_update.py not found in project directory"
+    exit 1
+fi
+
+if [ ! -f "$PROJECT_DIR/git_auto_commit.py" ]; then
+    echo "⚠️  Warning: git_auto_commit.py not found"
+    echo "   Auto-sync to GitHub will not work"
+    echo "   Create this file to enable automatic image distribution"
+    GIT_SYNC_AVAILABLE=false
+else
+    echo "✅ git_auto_commit.py found"
+fi
+
 echo "✅ All required files found"
 
 # Test the script
@@ -53,11 +102,20 @@ echo ""
 echo "Testing the update scripts..."
 cd "$PROJECT_DIR"
 
-echo "Testing monthly update script..."
+echo "Testing monthly update script (includes calendar generation)..."
 if python3 monthly_update.py; then
-    echo "✅ Monthly update test successful!"
+    echo "✅ Monthly update test successful! (Gantt charts + Calendar generated)"
 else
     echo "❌ Monthly update test failed. Please check the error messages above."
+    exit 1
+fi
+
+echo ""
+echo "Testing calendar update script..."
+if python3 calendar_update.py; then
+    echo "✅ Calendar update test successful!"
+else
+    echo "❌ Calendar update test failed. Please check the error messages above."
     exit 1
 fi
 
@@ -85,25 +143,28 @@ echo "Cron Job Setup"
 echo "====================================="
 echo ""
 echo "Choose automation type:"
-echo "1. Monthly updates only (3-month rolling window)"
+echo "1. Monthly updates only (3-month rolling window + calendar)"
 echo "2. Weekly updates only ('Happening This Week' chart)"
 echo "3. Daily updates only ('Happening Today' chart)"
 echo "4. Monthly + Weekly (recommended for general use)"
 echo "5. Weekly + Daily (recommended for immediate awareness)"
 echo "6. All three updates (complete automation)"
-echo "7. Manual setup (skip automatic configuration)"
+echo "7. Calendar-only updates (professional calendar view)"
+echo "8. Manual setup (skip automatic configuration)"
 echo ""
 
-read -p "Select option (1-7): " -n 1 -r
+read -p "Select option (1-8): " -n 1 -r
 echo ""
 echo ""
 
 case $REPLY in
     1)
-        echo "Setting up monthly updates only..."
+        echo "Setting up monthly updates (Gantt charts + calendar)..."
         MONTHLY_CRON="0 6 1 * * cd \"$PROJECT_DIR\" && python3 monthly_update.py"
         (crontab -l 2>/dev/null; echo "$MONTHLY_CRON") | crontab -
         echo "✅ Monthly cron job added: Updates on 1st of each month at 6 AM"
+        echo "   📊 3-month rolling Gantt charts"
+        echo "   📅 Professional calendar view"
         ;;
     2)
         echo "Setting up weekly updates only..."
@@ -123,7 +184,7 @@ case $REPLY in
         WEEKLY_CRON="0 0 * * 1 cd \"$PROJECT_DIR\" && python3 weekly_update.py"
         (crontab -l 2>/dev/null; echo "$MONTHLY_CRON"; echo "$WEEKLY_CRON") | crontab -
         echo "✅ Cron jobs added:"
-        echo "   📅 Monthly: 1st of each month at 6 AM"
+        echo "   📅 Monthly: 1st of each month at 6 AM (Gantt + Calendar)"
         echo "   📅 Weekly: Every Monday at midnight"
         ;;
     5)
@@ -142,16 +203,23 @@ case $REPLY in
         DAILY_CRON="0 0 * * * cd \"$PROJECT_DIR\" && python3 daily_update.py"
         (crontab -l 2>/dev/null; echo "$MONTHLY_CRON"; echo "$WEEKLY_CRON"; echo "$DAILY_CRON") | crontab -
         echo "✅ All cron jobs added:"
-        echo "   📅 Monthly: 1st of each month at 6 AM"
+        echo "   📅 Monthly: 1st of each month at 6 AM (Gantt + Calendar)"
         echo "   📅 Weekly: Every Monday at midnight"
         echo "   📅 Daily: Every day at midnight"
         ;;
     7)
+        echo "Setting up calendar-only updates..."
+        CALENDAR_CRON="0 0 1 * * cd \"$PROJECT_DIR\" && python3 calendar_update.py"
+        (crontab -l 2>/dev/null; echo "$CALENDAR_CRON") | crontab -
+        echo "✅ Calendar cron job added: Updates on 1st of each month at midnight"
+        echo "   📅 Professional calendar view only"
+        ;;
+    8)
         echo "Skipping automatic cron job setup."
         echo ""
         echo "Manual setup instructions:"
         echo ""
-        echo "For monthly updates (3-month rolling window):"
+        echo "For monthly updates (3-month rolling window + calendar):"
         echo "   0 6 1 * * cd \"$PROJECT_DIR\" && python3 monthly_update.py"
         echo ""
         echo "For weekly updates ('Happening This Week'):"
@@ -160,6 +228,9 @@ case $REPLY in
         echo "For daily updates ('Happening Today'):"
         echo "   0 0 * * * cd \"$PROJECT_DIR\" && python3 daily_update.py"
         echo ""
+        echo "For calendar-only updates:"
+        echo "   0 0 1 * * cd \"$PROJECT_DIR\" && python3 calendar_update.py"
+        echo ""
         echo "To add these manually: crontab -e"
         ;;
     *)
@@ -167,10 +238,10 @@ case $REPLY in
         ;;
 esac
 
-if [[ $REPLY =~ ^[1-6]$ ]]; then
+if [[ $REPLY =~ ^[1-7]$ ]]; then
     echo ""
     echo "Current crontab entries:"
-    crontab -l | grep -E "(monthly_update|weekly_update|daily_update|flex_gantt)" || echo "(No matching entries found)"
+    crontab -l | grep -E "(monthly_update|weekly_update|daily_update|calendar_update|flex_gantt)" || echo "(No matching entries found)"
 fi
 
 echo ""
@@ -179,16 +250,29 @@ echo "Setup Complete!"
 echo "====================================="
 echo ""
 echo "✅ Rolling window functionality is ready"
-echo "✅ Monthly update script is working" 
+echo "✅ Professional calendar generation is ready"
+echo "✅ Monthly update script is working (includes calendar)" 
+echo "✅ Calendar-only update script is working"
 echo "✅ Weekly update script is working"
 echo "✅ Daily update script is working"
+if [ "$GIT_SYNC_AVAILABLE" = "true" ]; then
+    echo "✅ Automatic GitHub sync is ENABLED"
+    echo "   Images will be pushed to GitHub automatically"
+    echo "   All screens will receive updates within minutes"
+else
+    echo "⚠️  Automatic GitHub sync is DISABLED"
+    echo "   Manual git commit and push required after updates"
+    echo "   See AUTOMATED_IMAGE_SYNC.md for setup instructions"
+fi
 echo "📁 Log files will be saved to: $PROJECT_DIR/logs/"
 echo "🖼️  Chart files will be updated in: $PROJECT_DIR/slides/"
 echo ""
 echo "Manual commands:"
-echo "- Monthly update: python3 monthly_update.py"
+echo "- Monthly update: python3 monthly_update.py (Gantt + Calendar)"
+echo "- Calendar only: python3 calendar_update.py"
 echo "- Weekly update: python3 weekly_update.py"
 echo "- Daily update: python3 daily_update.py"
+echo "- Manual calendar: python3 flex_gantt.py pipeline.xlsx --calendar --dashboard"
 echo "- Manual daily chart: python3 flex_gantt.py pipeline.xlsx --daily --dashboard"
 echo "- Manual weekly chart: python3 flex_gantt.py pipeline.xlsx --weekly --dashboard"
 echo "- Check logs: ls -la logs/"

@@ -4,7 +4,7 @@ flex_gantt.py
 -------------
 Create month-by-month Gantt charts from the Marriott (or any similar) pipeline sheet.
 Enhanced for dashboard kiosk system with image optimization and manifest generation.
-Now supports rolling 3-month window for automatic dashboard updates.
+Now supports rolling 3-month window for automatic dashboard updates and calendar views.
 
 Features:
 - Automatic event filtering for all charts: "Marriott In-House Events 2025" events are excluded from all views
@@ -14,6 +14,7 @@ Features:
 - Sales team legend automatically generated
 - Rolling 3-month window with automatic cleanup of old charts
 - Daily charts with hourly granularity for precise timing
+- Professional calendar views with event placement and owner color coding
 
 Usage examples
 --------------
@@ -31,6 +32,9 @@ python flex_gantt.py pipeline.xlsx --months 7 8 9 10 11 12 --year 2025 --dashboa
 
 # Rolling 3-month window (automatically updates for current month +3)
 python flex_gantt.py pipeline.xlsx --rolling-window --dashboard
+
+# Generate calendar view for current month
+python flex_gantt.py pipeline.xlsx --calendar --dashboard
 
 # Happening This Week chart (current week Monday to Sunday)
 python flex_gantt.py pipeline.xlsx --weekly --dashboard
@@ -51,6 +55,8 @@ from dateutil.relativedelta import relativedelta
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.patches as patches
+from matplotlib.patches import Rectangle
 from PIL import Image
 import os
 
@@ -162,14 +168,14 @@ def cleanup_old_charts(outdir: Path, current_months: list[int], current_years: l
 
 
 def parse_args() -> argparse.Namespace:
-    ap = argparse.ArgumentParser(description="Create monthly Gantt charts.")
+    ap = argparse.ArgumentParser(description="Create monthly Gantt charts and calendar views.")
     ap.add_argument("workbook", help="Path to the Excel workbook")
     
     # Make months optional when using rolling window
     ap.add_argument(
         "--months",
         nargs="*",
-        help="Month numbers or names (e.g. 7 8 12  or  July September). Not needed with --rolling-window.",
+        help="Month numbers or names (e.g. 7 8 12  or  July September). Not needed with --rolling-window or --calendar.",
     )
     ap.add_argument("--year", type=int, default=2025, help="Calendar year (default 2025)")
     ap.add_argument(
@@ -192,6 +198,11 @@ def parse_args() -> argparse.Namespace:
         "--rolling-window",
         action="store_true",
         help="Generate charts for rolling 3-month window (next 3 months from current date)",
+    )
+    ap.add_argument(
+        "--calendar",
+        action="store_true",
+        help="Generate calendar view for current month",
     )
     ap.add_argument(
         "--weekly",
@@ -278,22 +289,22 @@ def get_seller_color(owner: str) -> str:
     """
     Get color for seller based on name mapping.
     
-    Modern color scheme with sophisticated gradients:
-    - Darren: Emerald (#10b981 - Modern Emerald)
-    - Dylan: Amber (#f59e0b - Warm Amber)  
-    - Sarah: Rose (#f43f5e - Vibrant Rose)
-    - Eder: Violet (#8b5cf6 - Rich Violet)
-    - David: Blue (#3b82f6 - Modern Blue)
-    - Unknown/Unassigned: Slate (#64748b - Professional Slate)
+    Modern color scheme with lighter tones for black text readability:
+    - Darren: Light Emerald (#6ee7b7)
+    - Dylan: Light Amber (#fcd34d)  
+    - Sarah: Light Rose (#fda4af)
+    - Eder: Light Violet (#c4b5fd)
+    - David: Light Blue (#93c5fd)
+    - Unknown/Unassigned: Light Yellow (#fde047)
     """
     owner_clean = str(owner).strip().lower() if pd.notna(owner) else ""
     
     color_mapping = {
-        'darren': '#10b981',    # Modern Emerald - Fresh, professional green
-        'dylan': '#f59e0b',     # Warm Amber - Sophisticated orange
-        'sarah': '#f43f5e',     # Vibrant Rose - Modern pink
-        'eder': '#8b5cf6',      # Rich Violet - Deep purple  
-        'david': '#3b82f6',     # Modern Blue - Clean, professional blue
+        'darren': '#6ee7b7',    # Light Emerald - Softer green for black text
+        'dylan': '#fcd34d',     # Light Amber - Softer orange for black text
+        'sarah': '#fda4af',     # Light Rose - Softer pink for black text
+        'eder': '#c4b5fd',      # Light Violet - Softer purple for black text
+        'david': '#93c5fd',     # Light Blue - Softer blue for black text
     }
     
     # Check for exact matches first, then partial matches
@@ -304,8 +315,8 @@ def get_seller_color(owner: str) -> str:
         if name in owner_clean:
             return color
     
-    # Default color for unknown sellers - professional slate
-    return '#64748b'
+    # Default color for unknown sellers - light yellow
+    return '#fde047'
 
 
 def gantt_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path) -> None:
@@ -777,6 +788,404 @@ def gantt_for_day(df: pd.DataFrame, outdir: Path) -> None:
     print(f"  Day: {day_display}")
 
 
+def calendar_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path) -> None:
+    """Draw + save a professional calendar view for the specified month."""
+    import textwrap
+    from matplotlib.patches import FancyBboxPatch
+    
+    mname = calendar.month_name[month]
+    mstart = pd.Timestamp(year, month, 1)
+    mend = pd.Timestamp(year, month, calendar.monthrange(year, month)[1])
+
+    # Filter events for this month
+    mask = (df["Event Start Date"] <= mend) & (df["Event End Date"] >= mstart)
+    sub = df.loc[mask].copy()
+    
+    # Filter out events containing "ICW" or "Marriott In-House Events 2025" in the name
+    icw_mask = ~sub["Event Name"].str.contains("ICW", case=False, na=False)
+    marriott_mask = ~sub["Event Name"].str.contains("Marriott In-House Events 2025", case=False, na=False)
+    combined_mask = icw_mask & marriott_mask
+    sub = sub.loc[combined_mask]
+    
+    # Create figure with optimal sizing for calendar
+    fig_w, fig_h = 22.0, 18.0  # Larger size for better readability
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h), constrained_layout=True)
+    
+    # Elegant gradient background
+    fig.patch.set_facecolor('#fafbfc')
+    ax.set_facecolor('#ffffff')
+    
+    # Set up calendar grid starting with Sunday
+    calendar.setfirstweekday(calendar.SUNDAY)
+    cal = calendar.monthcalendar(year, month)
+    num_weeks = len(cal)
+    
+    # Set axis limits with generous padding for professional appearance
+    ax.set_xlim(-0.1, 7.1)
+    ax.set_ylim(-0.15, num_weeks + 1.4)
+    
+    # Remove axis ticks and labels
+    ax.set_xticks([])
+    ax.set_yticks([])
+    
+    # Remove spines
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    
+    # Sophisticated title design
+    title_text = ax.set_title(f"{mname} {year}", 
+                             fontsize=48, fontweight='800', color='#1a202c', 
+                             pad=60, fontfamily='sans-serif')
+    title_text.set_bbox(dict(boxstyle="round,pad=0.8", 
+                            facecolor='#ffffff', alpha=0.98,
+                            edgecolor='#e2e8f0', linewidth=1.5))
+    
+        # Clean day names header with uniform styling
+    day_names = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    
+    # Add subtle background bar for all headers
+    header_bg = FancyBboxPatch((0, num_weeks + 0.1), 7, 0.8,
+                              boxstyle="round,pad=0.02",
+                              facecolor='#f8fafc', alpha=0.8,
+                              edgecolor='#e5e7eb', linewidth=1)
+    ax.add_patch(header_bg)
+    
+    for i, day_name in enumerate(day_names):
+        # Uniform styling for all days
+        header_color = '#f0f9ff'
+        border_color = '#3b82f6'
+        text_color = '#1e40af'
+            
+        ax.text(i + 0.5, num_weeks + 0.5, day_name, 
+                ha='center', va='center', fontsize=18, fontweight='700',
+                color=text_color, fontfamily='sans-serif')
+        
+        # Clean header cells with uniform borders
+        header_rect = FancyBboxPatch((i + 0.05, num_weeks + 0.15), 0.9, 0.7,
+                                   boxstyle="round,pad=0.02",
+                                   facecolor=header_color, alpha=0.8,
+                                   edgecolor=border_color, linewidth=2)
+        ax.add_patch(header_rect)
+    
+    # Draw clean calendar grid with uniform design
+    for week_idx, week in enumerate(cal):
+        y_pos = num_weeks - week_idx - 1
+        
+        for day_idx, day in enumerate(week):
+            x_pos = day_idx
+            
+            # Clean cell design with uniform appearance
+            if day == 0:
+                # Muted cells for days from other months
+                cell_rect = FancyBboxPatch((x_pos + 0.04, y_pos + 0.04), 0.92, 0.92,
+                                         boxstyle="round,pad=0.02",
+                                         facecolor='#f9fafb', alpha=0.4,
+                                         edgecolor='#f3f4f6', linewidth=1)
+            else:
+                # Uniform cell design for all days
+                cell_color = '#ffffff'  # Clean white background
+                border_color = '#6b7280'
+                inner_border = '#e5e7eb'
+                shadow_color = '#9ca3af'
+                    
+                # Subtle outer shadow
+                shadow_rect = FancyBboxPatch((x_pos + 0.06, y_pos + 0.02), 0.92, 0.92,
+                                           boxstyle="round,pad=0.02",
+                                           facecolor=shadow_color, alpha=0.08,
+                                           edgecolor='none')
+                ax.add_patch(shadow_rect)
+                
+                # Main cell with elegant borders
+                cell_rect = FancyBboxPatch((x_pos + 0.04, y_pos + 0.04), 0.92, 0.92,
+                                         boxstyle="round,pad=0.02",
+                                         facecolor=cell_color, alpha=0.98,
+                                         edgecolor=border_color, linewidth=1.5)
+                ax.add_patch(cell_rect)
+                
+                # Inner highlight border for depth
+                inner_rect = FancyBboxPatch((x_pos + 0.06, y_pos + 0.06), 0.88, 0.88,
+                                          boxstyle="round,pad=0.01",
+                                          facecolor='none',
+                                          edgecolor=inner_border, linewidth=1, alpha=0.6)
+                ax.add_patch(inner_rect)
+            
+            # Enhanced day number styling
+            if day != 0:
+                # Check if this is today
+                today = datetime.now()
+                is_today = (today.year == year and today.month == month and today.day == day)
+                
+                if is_today:
+                    # Beautiful today indicator with modern design
+                    # Outer glow
+                    glow_circle = plt.Circle((x_pos + 0.2, y_pos + 0.8), 0.18,
+                                           color='#3b82f6', alpha=0.2)
+                    ax.add_patch(glow_circle)
+                    
+                    # Main today indicator
+                    today_circle = plt.Circle((x_pos + 0.2, y_pos + 0.8), 0.14,
+                                            color='#3b82f6', alpha=0.95)
+                    ax.add_patch(today_circle)
+                    
+                    # Inner highlight
+                    highlight_circle = plt.Circle((x_pos + 0.2, y_pos + 0.8), 0.12,
+                                                color='#60a5fa', alpha=0.3)
+                    ax.add_patch(highlight_circle)
+                    
+                    day_color = '#ffffff'
+                    day_weight = '800'
+                    day_size = 16
+                else:
+                    day_color = '#1f2937'  # Strong color for all days
+                    day_weight = '700'
+                    day_size = 15
+                
+                ax.text(x_pos + 0.2, y_pos + 0.8, str(day),
+                       ha='center', va='center', fontsize=day_size, 
+                       fontweight=day_weight, color=day_color,
+                       fontfamily='sans-serif')
+    
+    # Add events to calendar with continuous multi-day spans
+    if not sub.empty:
+        # Track events per day to handle vertical stacking
+        events_per_day = {}
+        
+        # First pass: count events per day to determine maximum events on any day
+        max_events_per_day = 0
+        for _, event in sub.iterrows():
+            event_start = max(event["Event Start Date"], mstart)
+            event_end = min(event["Event End Date"], mend)
+            
+            current_date = event_start.date()
+            end_date = event_end.date()
+            
+            while current_date <= end_date:
+                if current_date.month == month:
+                    day_key = current_date.day
+                    if day_key not in events_per_day:
+                        events_per_day[day_key] = 0
+                    events_per_day[day_key] += 1
+                    max_events_per_day = max(max_events_per_day, events_per_day[day_key])
+                current_date += timedelta(days=1)
+        
+        # Reset counter for actual placement
+        events_per_day = {}
+        
+        # Calculate optimal event height for better readability
+        max_events_to_fit = min(max_events_per_day, 5)  # Limit to 5 events max per day for better readability
+        event_height = min(0.18, 0.8 / max_events_to_fit)  # Larger height for better text readability
+        event_spacing = 0.03  # Better spacing between events
+        
+        for _, event in sub.iterrows():
+            event_start = max(event["Event Start Date"], mstart)
+            event_end = min(event["Event End Date"], mend)
+            
+            # Get owner color
+            owner_color = get_seller_color(event.get("Owner", ""))
+            event_name = str(event["Event Name"])
+            
+            # Calculate all days this event spans within the month
+            span_start = event_start.date()
+            span_end = event_end.date()
+            
+            # Group consecutive days by week and position to create continuous spans
+            event_spans = []  # List of (start_pos, end_pos, week_y) tuples
+            
+            current_date = span_start
+            while current_date <= span_end:
+                if current_date.month == month:
+                    # Find position in calendar
+                    day = current_date.day
+                    
+                    # Find which week and day of week
+                    for week_idx, week in enumerate(cal):
+                        if day in week:
+                            day_idx = week.index(day)
+                            y_pos = num_weeks - week_idx - 1
+                            x_pos = day_idx
+                            break
+                    else:
+                        current_date += timedelta(days=1)
+                        continue
+                    
+                    # Find consecutive days in the same week
+                    span_start_x = x_pos
+                    span_y = y_pos
+                    span_end_x = x_pos
+                    
+                    # Look ahead for consecutive days in same week
+                    look_ahead_date = current_date + timedelta(days=1)
+                    while (look_ahead_date <= span_end and 
+                           look_ahead_date.month == month and
+                           span_end_x < 6):  # Don't go past Saturday
+                        
+                        look_ahead_day = look_ahead_date.day
+                        # Check if next day is in same week
+                        for week_idx, week in enumerate(cal):
+                            if look_ahead_day in week:
+                                look_ahead_day_idx = week.index(look_ahead_day)
+                                look_ahead_y_pos = num_weeks - week_idx - 1
+                                if (look_ahead_y_pos == span_y and 
+                                    look_ahead_day_idx == span_end_x + 1):
+                                    span_end_x = look_ahead_day_idx
+                                    current_date = look_ahead_date
+                                    look_ahead_date += timedelta(days=1)
+                                else:
+                                    break
+                                break
+                        else:
+                            break
+                    
+                    event_spans.append((span_start_x, span_end_x, span_y))
+                
+                current_date += timedelta(days=1)
+            
+            # Draw continuous event spans
+            for span_start_x, span_end_x, span_y in event_spans:
+                # Track events for vertical stacking at the start position
+                day_key = (span_start_x, span_y)
+                if day_key not in events_per_day:
+                    events_per_day[day_key] = 0
+                
+                # Calculate vertical offset for this event
+                event_index = events_per_day[day_key]
+                base_offset = 0.08
+                event_y_offset = base_offset + event_index * (event_height + event_spacing)
+                
+                # Skip if event would go outside cell boundaries
+                if event_y_offset + event_height > 0.92:
+                    continue
+                
+                events_per_day[day_key] += 1
+                
+                # Calculate continuous span dimensions
+                rect_x = span_start_x + 0.06
+                rect_width = (span_end_x - span_start_x + 1) - 0.12  # Account for padding
+                rect_y = span_y + event_y_offset
+                rect_height = event_height
+                
+                # Add subtle shadow for depth
+                shadow_rect = FancyBboxPatch((rect_x + 0.01, rect_y - 0.01), rect_width, rect_height,
+                                           boxstyle="round,pad=0.02",
+                                           facecolor='#000000', alpha=0.1,
+                                           edgecolor='none')
+                ax.add_patch(shadow_rect)
+                
+                # Create beautiful continuous event box
+                event_rect = FancyBboxPatch((rect_x, rect_y), rect_width, rect_height,
+                                          boxstyle="round,pad=0.02",
+                                          facecolor=owner_color, alpha=0.9,
+                                          edgecolor='white', linewidth=2)
+                ax.add_patch(event_rect)
+                
+                # Add subtle inner highlight for depth
+                highlight_rect = FancyBboxPatch((rect_x + 0.005, rect_y + 0.005), 
+                                              rect_width - 0.01, rect_height - 0.01,
+                                              boxstyle="round,pad=0.005",
+                                              facecolor='white', alpha=0.2,
+                                              edgecolor='none')
+                ax.add_patch(highlight_rect)
+                
+                # Add event text with smart sizing based on total span width
+                font_size = max(9, min(12, int(event_height * 50)))
+                
+                # Center positioning for text across entire span
+                text_x = rect_x + rect_width/2
+                text_y = rect_y + rect_height/2
+                
+                # Calculate available width for text based on entire span
+                available_width = rect_width - 0.1  # Leave padding
+                
+                # Estimate character width (rough approximation)
+                char_width = font_size * 0.007
+                max_chars = int(available_width / char_width)
+                
+                # Smart truncation based on available space across full span
+                display_name = event_name
+                if len(event_name) > max_chars and max_chars > 0:
+                    if max_chars > 10:  # Try word boundaries if reasonable space
+                        words = event_name.split()
+                        truncated = ""
+                        for word in words:
+                            if len(truncated + word) <= max_chars - 3:
+                                truncated += word + " "
+                            else:
+                                break
+                        display_name = truncated.strip() + "..." if truncated.strip() else event_name[:max_chars-3] + "..."
+                    else:
+                        display_name = event_name[:max_chars-3] + "..." if max_chars > 3 else event_name[:max_chars]
+                
+                # Draw text in black for better readability on colored backgrounds
+                ax.text(text_x, text_y, display_name,
+                       ha='center', va='center', fontsize=font_size, 
+                       fontweight='600', color='black',
+                       fontfamily='sans-serif')
+    
+    # Create an elegant legend positioned to avoid Monday coverage
+    if 'Owner' in sub.columns and not sub.empty:
+        unique_owners = sub['Owner'].dropna().unique()
+        if len(unique_owners) > 0:
+            legend_elements = []
+            for owner in sorted(unique_owners):
+                if pd.notna(owner) and str(owner).strip():
+                    color = get_seller_color(owner)
+                    legend_elements.append(Rectangle((0,0),1,1, facecolor=color, 
+                                                   edgecolor='white', linewidth=1.8,
+                                                   label=str(owner).strip(), alpha=0.9))
+            
+            if legend_elements:
+                # Position legend in bottom right to avoid covering Monday
+                legend = ax.legend(handles=legend_elements, loc='lower right', 
+                                 bbox_to_anchor=(0.98, 0.02),
+                                 frameon=True, fancybox=True, shadow=True, 
+                                 framealpha=0.96, facecolor='#ffffff',
+                                 edgecolor='#d1d5db',
+                                 title='Sales Team', fontsize=11,
+                                 title_fontsize=13)
+                legend.get_title().set_fontweight('700')
+                legend.get_title().set_color('#1f2937')
+                legend.get_title().set_fontfamily('sans-serif')
+                
+                # Enhanced legend text styling
+                for text in legend.get_texts():
+                    text.set_fontweight('600')
+                    text.set_color('#374151')
+                    text.set_fontfamily('sans-serif')
+                
+                # Enhanced legend frame styling
+                legend.get_frame().set_boxstyle("round,pad=0.5")
+                legend.get_frame().set_linewidth(1.5)
+    
+    # Add beautiful month stats with elegant styling
+    if not sub.empty:
+        stats_text = f"Total Events: {len(sub)}"
+        ax.text(7.05, -0.08, stats_text,
+               ha='right', va='bottom', fontsize=13, 
+               fontweight='700', color='#374151',
+               fontfamily='sans-serif',
+               bbox=dict(boxstyle="round,pad=0.4", facecolor='#ffffff', 
+                        alpha=0.95, edgecolor='#d1d5db', linewidth=1.5))
+    
+    outfile = outdir / f"calendar_{year}_{month:02d}.png"
+    fig.savefig(outfile, dpi=300, bbox_inches='tight', facecolor='#f8fafc', 
+                edgecolor='none', pad_inches=0.4, 
+                metadata={'Title': f'Calendar - {mname} {year}', 'Software': 'Encore Dashboard'})
+    plt.close(fig)
+    
+    # Report filtering results
+    total_events = len(df.loc[(df["Event Start Date"] <= mend) & (df["Event End Date"] >= mstart)])
+    filtered_events = len(sub)
+    
+    # Calculate individual filter counts
+    all_month_events = df.loc[(df["Event Start Date"] <= mend) & (df["Event End Date"] >= mstart)].copy()
+    icw_filtered = len(all_month_events[all_month_events["Event Name"].str.contains("ICW", case=False, na=False)])
+    marriott_filtered = len(all_month_events[all_month_events["Event Name"].str.contains("Marriott In-House Events 2025", case=False, na=False)])
+    total_filtered = total_events - filtered_events
+    
+    print(f"Saved {outfile}")
+    print(f"  Calendar events shown: {filtered_events}, Filtered: {total_filtered} (ICW: {icw_filtered}, Marriott In-House: {marriott_filtered})")
+
+
 def main() -> None:
     args = parse_args()
     
@@ -795,8 +1204,20 @@ def main() -> None:
         outdir = args.outdir or wb.parent
         outdir.mkdir(parents=True, exist_ok=True)
 
+    # Handle calendar mode
+    if args.calendar:
+        current_date = datetime.now()
+        current_month = current_date.month
+        current_year = current_date.year
+        
+        print(f"Calendar mode: generating calendar for {calendar.month_name[current_month]} {current_year}")
+        
+        # Generate calendar
+        df = load_events(wb, args.sheet)
+        calendar_for_month(df, current_year, current_month, outdir)
+        
     # Handle daily mode
-    if args.daily:
+    elif args.daily:
         print(f"Daily mode: generating 'Happening Today' chart")
         day_start, day_end = get_current_day()
         print(f"  Day: {day_start.strftime('%A, %B %d, %Y')}")
@@ -839,7 +1260,7 @@ def main() -> None:
     else:
         # Original behavior - validate months argument
         if not args.months:
-            sys.exit("Error: --months is required unless using --rolling-window, --weekly, or --daily")
+            sys.exit("Error: --months is required unless using --rolling-window, --weekly, --daily, or --calendar")
             
         # Convert requested months to integers (deduplicate & sort)
         try:

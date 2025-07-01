@@ -7,7 +7,7 @@ A three-layer kiosk dashboard system for displaying Gantt charts with automatic 
 This system is designed as three cooperating layers:
 
 ### 1. Content Generation Layer
-- **Python script** (`flex_gantt.py`) that exports Gantt charts from Excel data
+- **Python script** (`flex_gantt.py`) that exports Gantt charts and professional calendar views from Excel data
 - **Image optimization** using Pillow to create 8-bit indexed color PNGs under 300KB
 - **Manifest generation** (`slides.json`) that provides an authoritative playlist
 - **Git integration** for versioned content management
@@ -60,7 +60,12 @@ This system is designed as three cooperating layers:
    python3 flex_gantt.py pipeline.xlsx --daily --dashboard
    ```
    
-   **Option D: Specific months (traditional method):**
+   **Option D: Professional calendar view for current month:**
+   ```bash
+   python3 flex_gantt.py pipeline.xlsx --calendar --dashboard
+   ```
+   
+   **Option E: Specific months (traditional method):**
    ```bash
    python3 flex_gantt.py pipeline.xlsx --months 7 8 9 10 11 12 --year 2025 --dashboard
    ```
@@ -84,7 +89,17 @@ This system is designed as three cooperating layers:
 
 ## Dashboard Automation System
 
-The dashboard now supports three types of automated updates:
+The dashboard now supports three types of automated updates with **automatic GitHub synchronization** for multi-screen deployments:
+
+### 🔄 Automatic Image Synchronization (NEW!)
+
+All generated images are automatically committed and pushed to GitHub, ensuring:
+- **All screens show the same charts** - no manual deployment needed
+- **Updates within minutes** - GitHub Pages rebuilds automatically
+- **Zero manual intervention** - completely automated workflow
+- **Proper cleanup** - old images removed before pushing
+
+See `AUTOMATED_IMAGE_SYNC.md` for detailed setup instructions.
 
 ### 🗓️ Rolling 3-Month Window (Monthly Updates)
 
@@ -136,6 +151,23 @@ python3 flex_gantt.py pipeline.xlsx --daily --dashboard
 python3 daily_update.py
 ```
 
+### 📅 Professional Calendar View (Monthly Updates)
+
+Shows events in a traditional calendar format with professional styling, color-coded by owner, updated monthly.
+
+**How It Works:**
+- **Calendar layout**: Traditional month view with proper week/day grid
+- **Event placement**: Events appear on correct dates with owner color coding
+- **Multi-day events**: Span across multiple calendar days with visual continuity
+- **Professional styling**: Modern typography, glassmorphism effects, and clean layout
+- **Monthly refresh**: Updates on the 1st of each month at midnight
+
+**Manual Usage:**
+```bash
+python3 flex_gantt.py pipeline.xlsx --calendar --dashboard
+python3 calendar_update.py
+```
+
 ### 🚀 Automated Setup
 
 **Easy setup with interactive script:**
@@ -144,19 +176,23 @@ python3 daily_update.py
 ```
 
 Choose from:
-1. **Monthly only**: 3-month rolling window updates
+1. **Monthly only**: 3-month rolling window + calendar updates
 2. **Weekly only**: "Happening This Week" updates
 3. **Daily only**: "Happening Today" updates
-4. **Monthly + Weekly**: General planning automation
-5. **Weekly + Daily**: Immediate awareness automation
-6. **All three**: Complete automation (recommended)
+4. **Calendar only**: Professional calendar view updates
+5. **Monthly + Weekly**: General planning automation
+6. **Weekly + Daily**: Immediate awareness automation
+7. **All three**: Complete automation (recommended)
 
 **Manual cron setup:**
 ```bash
 crontab -e
 
-# Monthly updates (1st of each month at 6 AM):
+# Monthly updates (1st of each month at 6 AM - includes calendar):
 0 6 1 * * cd /path/to/EncoreDashboard && python3 monthly_update.py
+
+# Calendar-only updates (1st of each month at midnight):
+0 0 1 * * cd /path/to/EncoreDashboard && python3 calendar_update.py
 
 # Weekly updates (every Monday at midnight):
 0 0 * * 1 cd /path/to/EncoreDashboard && python3 weekly_update.py
@@ -242,26 +278,31 @@ For complete setup instructions, see `ROLLING_WINDOW_SETUP.md`.
 
 ```
 EncoreDashboard/
-├── flex_gantt.py              # Content generation script (monthly/weekly/daily modes)
-├── monthly_update.py          # Automated monthly update script
+├── flex_gantt.py              # Content generation script (monthly/weekly/daily/calendar modes)
+├── monthly_update.py          # Automated monthly update script (includes calendar)
+├── calendar_update.py         # Automated calendar-only update script
 ├── weekly_update.py           # Automated weekly update script
 ├── daily_update.py            # Automated daily update script
+├── git_auto_commit.py         # Automatic git commit & push for image sync
 ├── setup_cron.sh             # Easy automation setup script  
 ├── pipeline.xlsx             # Source data
 ├── index.html                # Presentation layer
 ├── slides/                   # Generated content
 │   ├── slides.json           # Manifest file
 │   ├── gantt_YYYY_MM.png     # Monthly charts (rolling 3-month window)
+│   ├── calendar_YYYY_MM.png  # Professional calendar views
 │   ├── gantt_weekly_*.png    # Weekly "Happening This Week" chart
 │   └── gantt_daily_*.png     # Daily "Happening Today" chart
 ├── logs/                     # Automation logs
-│   ├── monthly_update_*.log  # Monthly execution logs
+│   ├── monthly_update_*.log  # Monthly execution logs (Gantt + Calendar)
+│   ├── calendar_update_*.log # Calendar execution logs
 │   ├── weekly_update_*.log   # Weekly execution logs
 │   └── daily_update_*.log    # Daily execution logs
 ├── .github/workflows/        # CI/CD configuration
 ├── requirements.txt          # Python dependencies (updated)
 ├── README.md                 # This file
 ├── ROLLING_WINDOW_SETUP.md   # Detailed setup guide
+├── AUTOMATED_IMAGE_SYNC.md   # Image synchronization setup guide
 └── config.example.js         # API configuration template
 ```
 
@@ -272,6 +313,8 @@ EncoreDashboard/
 - **Automatic image optimization** for fast loading
 - **Chronological sorting** of slides
 - **Manifest-based playlist** management
+- **Automatic GitHub sync** for multi-screen deployments
+- **Smart cleanup** of outdated images
 
 ### Presentation
 - **Responsive design** that works on any screen size
