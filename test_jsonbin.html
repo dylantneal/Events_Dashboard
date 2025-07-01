@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JSONBin Test</title>
+</head>
+<body>
+    <h1>JSONBin Debug Test</h1>
+    <div id="results"></div>
+    <button onclick="testRead()">Test Read</button>
+    <button onclick="testWrite()">Test Write</button>
+    <button onclick="testCleanup()">Test Cleanup</button>
+
+    <script>
+        const binUrl = 'https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1';
+        
+        function log(message, isError = false) {
+            const div = document.getElementById('results');
+            const p = document.createElement('p');
+            p.style.color = isError ? 'red' : 'green';
+            p.style.fontFamily = 'monospace';
+            p.textContent = new Date().toTimeString().split(' ')[0] + ' - ' + message;
+            div.appendChild(p);
+            console.log(message);
+        }
+
+        async function testRead() {
+            try {
+                log('Testing READ from: ' + binUrl + '/latest');
+                const response = await fetch(binUrl + '/latest');
+                log('READ Response status: ' + response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('READ Success: ' + JSON.stringify(data, null, 2));
+                } else {
+                    const errorText = await response.text();
+                    log('READ Failed: ' + response.status + ' - ' + errorText, true);
+                }
+            } catch (error) {
+                log('READ Error: ' + error.message, true);
+            }
+        }
+
+        async function testWrite() {
+            try {
+                const testData = {
+                    announcements: [{
+                        id: 'test_' + Date.now(),
+                        text: 'Test announcement from debug script',
+                        startDate: new Date().toISOString().split('T')[0],
+                        startTime: '09:00',
+                        endDate: new Date().toISOString().split('T')[0],
+                        endTime: '17:00',
+                        createdAt: new Date().toISOString()
+                    }]
+                };
+                
+                log('Testing WRITE to: ' + binUrl);
+                log('Writing data: ' + JSON.stringify(testData));
+                
+                const response = await fetch(binUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                log('WRITE Response status: ' + response.status);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    log('WRITE Success: ' + JSON.stringify(result, null, 2));
+                } else {
+                    const errorText = await response.text();
+                    log('WRITE Failed: ' + response.status + ' - ' + errorText, true);
+                }
+            } catch (error) {
+                log('WRITE Error: ' + error.message, true);
+            }
+        }
+
+        async function testCleanup() {
+            try {
+                const cleanData = { announcements: [] };
+                
+                log('Testing CLEANUP - resetting to empty');
+                
+                const response = await fetch(binUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(cleanData)
+                });
+                
+                log('CLEANUP Response status: ' + response.status);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    log('CLEANUP Success: ' + JSON.stringify(result, null, 2));
+                } else {
+                    const errorText = await response.text();
+                    log('CLEANUP Failed: ' + response.status + ' - ' + errorText, true);
+                }
+            } catch (error) {
+                log('CLEANUP Error: ' + error.message, true);
+            }
+        }
+    </script>
+</body>
+</html> 

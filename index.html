@@ -1259,6 +1259,16 @@
                 this.cloudSyncEnabled = window.DASHBOARD_CONFIG?.cloudSync?.enabled || false;
                 this.cloudSyncUrl = window.DASHBOARD_CONFIG?.cloudSync?.url || null;
                 this.cloudSyncKey = window.DASHBOARD_CONFIG?.cloudSync?.key || null;
+                
+                // Enhanced debugging for URL issues
+                console.log('🔧 CLOUD SYNC DEBUG:');
+                console.log('  Enabled:', this.cloudSyncEnabled);
+                console.log('  URL:', this.cloudSyncUrl);
+                console.log('  Key present:', !!this.cloudSyncKey);
+                if (this.cloudSyncUrl) {
+                    console.log('  URL length:', this.cloudSyncUrl.length);
+                    console.log('  URL valid:', this.cloudSyncUrl.includes('api.jsonbin.io'));
+                }
                 this.lastSyncTime = 0;
                 this.syncInProgress = false;
                 
@@ -2144,6 +2154,7 @@
                     throw new Error('Cloud sync URL not configured');
                 }
 
+                console.log('🔄 LOADING FROM CLOUD:', this.cloudSyncUrl);
                 const response = await fetch(this.cloudSyncUrl, {
                     method: 'GET',
                     headers: {
@@ -2182,6 +2193,9 @@
                 
                 // Remove /latest for PUT requests to JSONBin
                 const saveUrl = this.cloudSyncUrl.replace('/latest', '');
+                console.log('💾 SAVING TO CLOUD:');
+                console.log('  Original URL:', this.cloudSyncUrl);
+                console.log('  Save URL:', saveUrl);
                 const response = await fetch(saveUrl, {
                     method: 'PUT',
                     headers: {
