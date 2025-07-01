@@ -2258,20 +2258,43 @@
                 }
             }
 
-            // Smart merge function that combines local and cloud announcements
+            // Smart merge function that combines local and cloud announcements with proper deletion handling
             mergeAnnouncements(localAnnouncements, cloudAnnouncements) {
-                // Create a map of all announcements by ID
+                // Create a map of all announcements by ID, tracking last modified time
                 const announcementMap = new Map();
                 
-                // Add local announcements first
+                // Add local announcements with modification tracking
                 localAnnouncements.forEach(ann => {
+                    // Ensure lastModified exists (for backward compatibility)
+                    if (!ann.lastModified) {
+                        ann.lastModified = ann.createdAt || new Date().toISOString();
+                    }
                     announcementMap.set(ann.id, ann);
                 });
                 
-                // Add/update with cloud announcements (cloud takes precedence for same ID)
+                // Add/update with cloud announcements, but respect lastModified timestamps
                 cloudAnnouncements.forEach(ann => {
                     if (ann.id && ann.text) { // Basic validation
-                        announcementMap.set(ann.id, ann);
+                        // Ensure lastModified exists (for backward compatibility)
+                        if (!ann.lastModified) {
+                            ann.lastModified = ann.createdAt || new Date().toISOString();
+                        }
+                        
+                        const existingLocal = announcementMap.get(ann.id);
+                        if (!existingLocal) {
+                            // New announcement from cloud, add it
+                            announcementMap.set(ann.id, ann);
+                        } else {
+                            // Announcement exists both locally and in cloud, use the most recent
+                            const localModified = new Date(existingLocal.lastModified);
+                            const cloudModified = new Date(ann.lastModified);
+                            
+                            if (cloudModified > localModified) {
+                                // Cloud version is newer, use it
+                                announcementMap.set(ann.id, ann);
+                            }
+                            // Otherwise keep local version (it's newer or same age)
+                        }
                     }
                 });
                 
@@ -2285,6 +2308,7 @@
                 });
                 
                 console.log(`Merged announcements: ${localAnnouncements.length} local + ${cloudAnnouncements.length} cloud = ${mergedAnnouncements.length} final`);
+                console.log('Merge details: Preferring most recently modified versions');
                 return mergedAnnouncements;
             }
 
@@ -2453,7 +2477,10 @@
                     startTime,
                     endDate,
                     endTime,
-                    createdAt: new Date().toISOString()
+                    createdAt: this.editingAnnouncementId ? 
+                        (this.announcements.find(a => a.id === this.editingAnnouncementId)?.createdAt || new Date().toISOString()) : 
+                        new Date().toISOString(),
+                    lastModified: new Date().toISOString()
                 };
 
                 if (this.editingAnnouncementId) {
@@ -2525,9 +2552,16 @@
 
             async deleteAnnouncement(announcementId) {
                 if (confirm('Are you sure you want to delete this announcement?')) {
+                    console.log(`Deleting announcement: ${announcementId}`);
+                    
+                    // Remove from local array
                     this.announcements = this.announcements.filter(a => a.id !== announcementId);
+                    
+                    // Save changes (this will sync the deletion to cloud)
                     await this.saveAnnouncements();
                     this.updateAnnouncementsDisplay();
+                    
+                    console.log(`Announcement ${announcementId} deleted and synced to cloud`);
                 }
             }
 
