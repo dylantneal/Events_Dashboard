@@ -977,11 +977,15 @@ def calendar_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path) ->
     
     # Add events to calendar with continuous multi-day spans
     if not sub.empty:
-        # Track events per day to handle vertical stacking
-        events_per_day = {}
+        # Create a comprehensive tracking system for event placement
+        # Track which vertical slots are occupied on each day
+        day_slots = {}  # day -> list of occupied slot indices
+        event_placements = []  # Store (event, slot_index, spans) for drawing
         
         # First pass: count events per day to determine maximum events on any day
         max_events_per_day = 0
+        events_per_day = {}
+        
         for _, event in sub.iterrows():
             event_start = max(event["Event Start Date"], mstart)
             event_end = min(event["Event End Date"], mend)
@@ -998,95 +1002,116 @@ def calendar_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path) ->
                     max_events_per_day = max(max_events_per_day, events_per_day[day_key])
                 current_date += timedelta(days=1)
         
-        # Reset counter for actual placement
-        events_per_day = {}
-        
         # Calculate optimal event height for better readability
-        max_events_to_fit = min(max_events_per_day, 5)  # Limit to 5 events max per day for better readability
-        event_height = min(0.18, 0.8 / max_events_to_fit)  # Larger height for better text readability
-        event_spacing = 0.03  # Better spacing between events
+        max_events_to_fit = min(max_events_per_day, 5)  # Allow up to 5 events per day for better spacing
+        available_height = 0.65  # Available space in each cell for events (reduced due to increased base_offset)
+        event_height = available_height / max_events_to_fit * 0.85  # Use 85% to ensure spacing
+        event_spacing = available_height / max_events_to_fit * 0.15  # Use 15% for spacing
         
+        # Minimum height to ensure readability
+        event_height = max(event_height, 0.08)
+        event_spacing = max(event_spacing, 0.02)
+        
+        # Second pass: assign vertical slots to events
         for _, event in sub.iterrows():
             event_start = max(event["Event Start Date"], mstart)
             event_end = min(event["Event End Date"], mend)
-            
-            # Get owner color
-            owner_color = get_seller_color(event.get("Owner", ""))
-            event_name = str(event["Event Name"])
             
             # Calculate all days this event spans within the month
             span_start = event_start.date()
             span_end = event_end.date()
             
-            # Group consecutive days by week and position to create continuous spans
-            event_spans = []  # List of (start_pos, end_pos, week_y) tuples
-            
+            # Get all days this event spans
+            event_days = []
             current_date = span_start
             while current_date <= span_end:
                 if current_date.month == month:
-                    # Find position in calendar
                     day = current_date.day
-                    
-                    # Find which week and day of week
+                    # Find position in calendar
                     for week_idx, week in enumerate(cal):
                         if day in week:
                             day_idx = week.index(day)
                             y_pos = num_weeks - week_idx - 1
                             x_pos = day_idx
+                            event_days.append((day, x_pos, y_pos))
                             break
-                    else:
-                        current_date += timedelta(days=1)
-                        continue
-                    
-                    # Find consecutive days in the same week
-                    span_start_x = x_pos
-                    span_y = y_pos
-                    span_end_x = x_pos
-                    
-                    # Look ahead for consecutive days in same week
-                    look_ahead_date = current_date + timedelta(days=1)
-                    while (look_ahead_date <= span_end and 
-                           look_ahead_date.month == month and
-                           span_end_x < 6):  # Don't go past Saturday
-                        
-                        look_ahead_day = look_ahead_date.day
-                        # Check if next day is in same week
-                        for week_idx, week in enumerate(cal):
-                            if look_ahead_day in week:
-                                look_ahead_day_idx = week.index(look_ahead_day)
-                                look_ahead_y_pos = num_weeks - week_idx - 1
-                                if (look_ahead_y_pos == span_y and 
-                                    look_ahead_day_idx == span_end_x + 1):
-                                    span_end_x = look_ahead_day_idx
-                                    current_date = look_ahead_date
-                                    look_ahead_date += timedelta(days=1)
-                                else:
-                                    break
-                                break
-                        else:
-                            break
-                    
-                    event_spans.append((span_start_x, span_end_x, span_y))
-                
                 current_date += timedelta(days=1)
+            
+            if not event_days:
+                continue
+            
+            # Find the lowest available slot that works for all days in this event
+            slot_index = 0
+            slot_found = False
+            
+            while slot_index < max_events_to_fit and not slot_found:
+                # Check if this slot is available for all days of this event
+                slot_available = True
+                for day, x_pos, y_pos in event_days:
+                    day_key = (day, x_pos, y_pos)
+                    if day_key in day_slots and slot_index in day_slots[day_key]:
+                        slot_available = False
+                        break
+                
+                if slot_available:
+                    # Reserve this slot for all days of this event
+                    for day, x_pos, y_pos in event_days:
+                        day_key = (day, x_pos, y_pos)
+                        if day_key not in day_slots:
+                            day_slots[day_key] = []
+                        day_slots[day_key].append(slot_index)
+                    slot_found = True
+                else:
+                    slot_index += 1
+            
+            if not slot_found:
+                # Skip this event if no slot available (too many events on some day)
+                continue
+            
+            # Group consecutive days by week for continuous spans
+            event_spans = []  # List of (start_x, end_x, week_y) tuples
+            
+            current_span_start = None
+            current_span_y = None
+            
+            for i, (day, x_pos, y_pos) in enumerate(event_days):
+                # Start new span or continue existing
+                if current_span_start is None:
+                    current_span_start = x_pos
+                    current_span_y = y_pos
+                    current_span_end = x_pos
+                elif y_pos == current_span_y and x_pos == current_span_end + 1:
+                    # Continue current span
+                    current_span_end = x_pos
+                else:
+                    # End current span and start new one
+                    event_spans.append((current_span_start, current_span_end, current_span_y))
+                    current_span_start = x_pos
+                    current_span_y = y_pos
+                    current_span_end = x_pos
+            
+            # Add the final span
+            if current_span_start is not None:
+                event_spans.append((current_span_start, current_span_end, current_span_y))
+            
+            # Store event placement info for drawing
+            event_placements.append((event, slot_index, event_spans))
+        
+        # Third pass: draw all events using their assigned slots
+        for event, slot_index, event_spans in event_placements:
+            # Get event details
+            owner_color = get_seller_color(event.get("Owner", ""))
+            event_name = str(event["Event Name"])
+            
+            # Calculate vertical position based on slot
+            base_offset = 0.15  # Increased spacing from day numbers
+            event_y_offset = base_offset + slot_index * (event_height + event_spacing)
             
             # Draw continuous event spans
             for span_start_x, span_end_x, span_y in event_spans:
-                # Track events for vertical stacking at the start position
-                day_key = (span_start_x, span_y)
-                if day_key not in events_per_day:
-                    events_per_day[day_key] = 0
-                
-                # Calculate vertical offset for this event
-                event_index = events_per_day[day_key]
-                base_offset = 0.08
-                event_y_offset = base_offset + event_index * (event_height + event_spacing)
-                
                 # Skip if event would go outside cell boundaries
-                if event_y_offset + event_height > 0.92:
+                if event_y_offset + event_height > 0.80:
                     continue
-                
-                events_per_day[day_key] += 1
                 
                 # Calculate continuous span dimensions
                 rect_x = span_start_x + 0.06
@@ -1117,7 +1142,8 @@ def calendar_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path) ->
                 ax.add_patch(highlight_rect)
                 
                 # Add event text with smart sizing based on total span width
-                font_size = max(9, min(12, int(event_height * 50)))
+                # Scale font size based on available height
+                font_size = max(8, min(14, int(event_height * 60)))
                 
                 # Center positioning for text across entire span
                 text_x = rect_x + rect_width/2
@@ -1186,15 +1212,7 @@ def calendar_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path) ->
                 legend.get_frame().set_boxstyle("round,pad=0.5")
                 legend.get_frame().set_linewidth(1.5)
     
-    # Add beautiful month stats with elegant styling
-    if not sub.empty:
-        stats_text = f"Total Events: {len(sub)}"
-        ax.text(7.05, -0.08, stats_text,
-               ha='right', va='bottom', fontsize=13, 
-               fontweight='700', color='#374151',
-               fontfamily='sans-serif',
-               bbox=dict(boxstyle="round,pad=0.4", facecolor='#ffffff', 
-                        alpha=0.95, edgecolor='#d1d5db', linewidth=1.5))
+
     
     outfile = outdir / f"calendar_{year}_{month:02d}.png"
     fig.savefig(outfile, dpi=300, bbox_inches='tight', facecolor='#f8fafc', 
