@@ -2087,13 +2087,20 @@
                 this.startSlideReloader();
                 this.setupAnnouncementModal();
                 this.startAnnouncementUpdates();
+                this.startChimeSchedule();
             }
 
             startSlideReloader() {
                 // Check for new slides every 2 minutes
-                setInterval(() => {
-                    this.reloadSlides();
+                setInterval(async () => {
+                    try {
+                        await this.reloadSlides();
+                    } catch (error) {
+                        console.log('Error during periodic slide refresh:', error);
+                    }
                 }, 120000); // 2 minutes
+                
+                console.log('Started periodic slide refresh (every 2 minutes)');
             }
 
             createFloatingElements() {
@@ -2171,6 +2178,12 @@
                 
                 updateClock();
                 this.clockInterval = setInterval(updateClock, 1000);
+            }
+
+            startChimeSchedule() {
+                // Initialize the chime schedule
+                this.setupHourlyChime();
+                console.log('Started chime schedule for hourly announcements and quarter-hour chimes');
             }
 
             setupHourlyChime() {
