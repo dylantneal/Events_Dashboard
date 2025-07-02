@@ -2095,7 +2095,12 @@
                 this.startClock();
                 this.startDate();
                 this.setupHourlyChime();
-                this.createFloatingElements();
+                
+                // Skip floating elements on Raspberry Pi
+                if (!document.body.classList.contains('raspberry-pi-mode')) {
+                    this.createFloatingElements();
+                }
+                
                 await this.loadAnnouncements();
                 this.startCloudSync();
                 await this.loadWeather();
