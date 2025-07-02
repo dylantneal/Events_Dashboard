@@ -18,12 +18,10 @@ To set up monthly automation on Unix/Linux/macOS:
 1. Edit your crontab: crontab -e
 2. Add this line to run on the 1st of every month at midnight:
    0 0 1 * * cd /path/to/EncoreDashboard && python3 calendar_update.py
-3. For redundancy, also run on the 2nd at 12:05 AM:
-   5 0 2 * * cd /path/to/EncoreDashboard && python3 calendar_update.py
 
 For Windows Task Scheduler:
 1. Create a new task
-2. Set trigger to monthly on the 1st and 2nd day
+2. Set trigger to monthly on the 1st day
 3. Set action to run this script
 """
 

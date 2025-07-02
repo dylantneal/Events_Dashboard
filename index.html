@@ -341,11 +341,29 @@
             }
         }
 
+        /* Override any positioning issues */
+        .slide-container .slide {
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+        }
+
+        .slide-container .slide.active {
+            transform: translate(-50%, -50%) scale(1) !important;
+        }
+
         .slide.active {
             opacity: 1;
             pointer-events: auto;
             z-index: 15;
             transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Ensure slides are always centered regardless of animations */
+        .slide.active {
+            top: 50% !important;
+            left: 50% !important;
         }
 
         .slide img {
