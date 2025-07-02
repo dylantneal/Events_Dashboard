@@ -2804,47 +2804,63 @@
             }
 
             nextSlide() {
+                const isPi = document.body.classList.contains('raspberry-pi-mode');
                 const currentSlide = document.querySelector('.slide.active');
+                
                 if (currentSlide) {
-                    // Add exit animation
-                    currentSlide.style.transform = 'translate(-50%, -50%) scale(1.05)';
-                    currentSlide.style.opacity = '0';
-                    
-                    setTimeout(() => {
+                    if (isPi) {
+                        // Simple immediate transition for Pi
                         currentSlide.classList.remove('active');
-                        currentSlide.style.transform = '';
-                        currentSlide.style.opacity = '';
-                    }, 400);
+                    } else {
+                        // Add exit animation for desktop
+                        currentSlide.style.transform = 'translate(-50%, -50%) scale(1.05)';
+                        currentSlide.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                            currentSlide.classList.remove('active');
+                            currentSlide.style.transform = '';
+                            currentSlide.style.opacity = '';
+                        }, 400);
+                    }
                 }
 
                 this.currentSlideIndex = (this.currentSlideIndex + 1) % this.slides.length;
                 
                 const nextSlide = document.querySelectorAll('.slide')[this.currentSlideIndex];
                 if (nextSlide) {
-                    setTimeout(() => {
+                    if (isPi) {
+                        // Immediate transition for Pi
                         nextSlide.classList.add('active');
-                        
-                        // If this is the announcements slide, update the display
                         if (this.currentSlideIndex === this.announcementsSlideIndex) {
                             this.updateAnnouncementsDisplay();
                         }
-                        
-                        // Add entrance animation
-                        nextSlide.style.transform = 'translate(-50%, -50%) scale(0.95)';
-                        nextSlide.style.opacity = '0';
-                        
-                        requestAnimationFrame(() => {
-                            nextSlide.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-                            nextSlide.style.transform = 'translate(-50%, -50%) scale(1)';
-                            nextSlide.style.opacity = '1';
+                    } else {
+                        // Animated transition for desktop
+                        setTimeout(() => {
+                            nextSlide.classList.add('active');
                             
-                            setTimeout(() => {
-                                nextSlide.style.transition = '';
-                                nextSlide.style.transform = '';
-                                nextSlide.style.opacity = '';
-                            }, 600);
-                        });
-                    }, 200);
+                            // If this is the announcements slide, update the display
+                            if (this.currentSlideIndex === this.announcementsSlideIndex) {
+                                this.updateAnnouncementsDisplay();
+                            }
+                            
+                            // Add entrance animation
+                            nextSlide.style.transform = 'translate(-50%, -50%) scale(0.95)';
+                            nextSlide.style.opacity = '0';
+                            
+                            requestAnimationFrame(() => {
+                                nextSlide.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                                nextSlide.style.transform = 'translate(-50%, -50%) scale(1)';
+                                nextSlide.style.opacity = '1';
+                                
+                                setTimeout(() => {
+                                    nextSlide.style.transition = '';
+                                    nextSlide.style.transform = '';
+                                    nextSlide.style.opacity = '';
+                                }, 600);
+                            });
+                        }, 200);
+                    }
                 }
 
                 // Update slide counter and restart progress animation
@@ -3834,9 +3850,154 @@
             }
         }
 
+        // Detect if running on Raspberry Pi or low-powered device
+        function isRaspberryPi() {
+            const ua = navigator.userAgent.toLowerCase();
+            const platform = navigator.platform.toLowerCase();
+            
+            // Check for ARM architecture
+            const isARM = ua.includes('arm') || ua.includes('aarch64');
+            
+            // Check for Linux + Chromium (common Pi setup)
+            const isLinuxChromium = platform.includes('linux') && 
+                                    (ua.includes('chromium') || ua.includes('chrome')) &&
+                                    !ua.includes('android');
+            
+            // Check for specific Pi indicators
+            const isPiUserAgent = ua.includes('raspbian') || ua.includes('raspberry');
+            
+            // Check performance - Pi typically has fewer cores and less memory
+            const lowCores = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4;
+            
+            // Combine checks
+            const isPi = (isARM && isLinuxChromium) || isPiUserAgent || (isLinuxChromium && lowCores);
+            
+            console.log('Device detection:', {
+                userAgent: ua,
+                platform: platform,
+                isARM: isARM,
+                isLinuxChromium: isLinuxChromium,
+                cores: navigator.hardwareConcurrency,
+                isPi: isPi
+            });
+            
+            return isPi;
+        }
+
+        // Apply performance optimizations for Pi
+        function applyPiOptimizations() {
+            console.log('🍓 Applying Raspberry Pi optimizations...');
+            
+            // Add class to body for CSS optimizations
+            document.body.classList.add('raspberry-pi-mode');
+            
+            // Disable smooth animations
+            const style = document.createElement('style');
+            style.textContent = `
+                /* Raspberry Pi Performance Optimizations */
+                .raspberry-pi-mode * {
+                    animation-duration: 0s !important;
+                    transition-duration: 0.1s !important;
+                }
+                
+                /* Disable floating elements completely on Pi */
+                .raspberry-pi-mode .floating-elements {
+                    display: none !important;
+                }
+                
+                /* Simplified background - static color instead of animated gradient */
+                .raspberry-pi-mode body::before {
+                    animation: piColorCycle 30s steps(16, end) infinite !important;
+                    background: #2a2a4e !important;
+                    filter: none !important;
+                }
+                
+                /* Define 16 distinct colors for Pi */
+                @keyframes piColorCycle {
+                    0% { background: #2a2a4e !important; }
+                    6.25% { background: #3a2a5e !important; }
+                    12.5% { background: #4a2a6e !important; }
+                    18.75% { background: #5a2a7e !important; }
+                    25% { background: #5a3a7e !important; }
+                    31.25% { background: #5a4a7e !important; }
+                    37.5% { background: #4a5a7e !important; }
+                    43.75% { background: #3a5a7e !important; }
+                    50% { background: #2a5a7e !important; }
+                    56.25% { background: #2a5a6e !important; }
+                    62.5% { background: #2a5a5e !important; }
+                    68.75% { background: #2a5a4e !important; }
+                    75% { background: #2a4a4e !important; }
+                    81.25% { background: #2a3a4e !important; }
+                    87.5% { background: #3a3a4e !important; }
+                    93.75% { background: #3a2a4e !important; }
+                    100% { background: #2a2a4e !important; }
+                }
+                
+                /* Disable backdrop filters on Pi */
+                .raspberry-pi-mode .header,
+                .raspberry-pi-mode .slide,
+                .raspberry-pi-mode .weather,
+                .raspberry-pi-mode .clock-container,
+                .raspberry-pi-mode .date-container,
+                .raspberry-pi-mode .announcements-slide {
+                    backdrop-filter: none !important;
+                    -webkit-backdrop-filter: none !important;
+                }
+                
+                /* Simplify shadows */
+                .raspberry-pi-mode * {
+                    box-shadow: none !important;
+                    text-shadow: none !important;
+                }
+                
+                /* Disable slide float animation */
+                .raspberry-pi-mode .slide {
+                    animation: none !important;
+                }
+                
+                /* Disable weather bob animation */
+                .raspberry-pi-mode .weather-icon {
+                    animation: none !important;
+                }
+                
+                /* Disable progress bar gradient animation */
+                .raspberry-pi-mode .slide-progress-bar {
+                    animation: none !important;
+                    background: #4c6ef5 !important;
+                }
+                
+                /* Reduce header effects */
+                .raspberry-pi-mode .header {
+                    background: rgba(30, 30, 60, 0.95) !important;
+                }
+                
+                /* Simplify slide backgrounds */
+                .raspberry-pi-mode .slide {
+                    background: rgba(40, 40, 70, 0.95) !important;
+                }
+                
+                /* Disable hover effects on Pi */
+                .raspberry-pi-mode .slide:hover {
+                    transform: translate(-50%, -50%) scale(1) !important;
+                }
+                
+                /* Disable site title shimmer */
+                .raspberry-pi-mode .site-title::before {
+                    animation: none !important;
+                    display: none !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
         // Initialize dashboard when page loads
         let dashboard;
         document.addEventListener('DOMContentLoaded', () => {
+            // Check if running on Raspberry Pi and apply optimizations
+            if (isRaspberryPi()) {
+                applyPiOptimizations();
+            }
+            
             dashboard = new Dashboard();
             
             // Make test functions available globally for debugging
