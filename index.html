@@ -2694,9 +2694,9 @@
                         slideDiv.classList.add('announcements-slide-container');
                         slideDiv.innerHTML = this.createAnnouncementsSlideHTML();
                     } else {
-                        // Create regular image slide
+                        // Create regular image slide with cache-busting
                         slideDiv.innerHTML = `
-                            <img src="slides/${slide}" alt="Gantt Chart ${index}" loading="lazy">
+                            <img src="slides/${slide}?t=${Date.now()}" alt="Gantt Chart ${index}" loading="lazy">
                         `;
                     }
                     container.appendChild(slideDiv);
@@ -2754,8 +2754,10 @@
 
             preloadImages() {
                 this.slides.forEach(slide => {
-                    const img = new Image();
-                    img.src = `slides/${slide}`;
+                    if (slide !== 'announcements') {
+                        const img = new Image();
+                        img.src = `slides/${slide}?t=${Date.now()}`;
+                    }
                 });
             }
 
@@ -3720,6 +3722,19 @@
                 console.log('Started periodic announcement updates (every 30 seconds)');
             }
 
+            startPeriodicSlideRefresh() {
+                // Check for new slides every 2 minutes
+                setInterval(async () => {
+                    try {
+                        await this.reloadSlides();
+                    } catch (error) {
+                        console.log('Error during periodic slide refresh:', error);
+                    }
+                }, 120000); // 2 minutes
+                
+                console.log('Started periodic slide refresh (every 2 minutes)');
+            }
+
             destroy() {
                 if (this.slideInterval) clearInterval(this.slideInterval);
                 if (this.weatherInterval) clearInterval(this.weatherInterval);
@@ -4038,11 +4053,11 @@
             }
         });
 
-        // Auto-reload every 10 minutes for kiosk mode (reduced frequency since we have slide reloading)
+        // Auto-reload every 5 minutes for kiosk mode to ensure fresh content
         setInterval(() => {
             console.log('Performing scheduled page reload...');
             location.reload();
-        }, 600000); // 10 minutes
+        }, 300000); // 5 minutes
     </script>
 </body>
 </html>
