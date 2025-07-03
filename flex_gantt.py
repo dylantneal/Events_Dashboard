@@ -349,8 +349,12 @@ def get_seller_color(owner: str) -> str:
     return '#fde047'
 
 
-def gantt_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path) -> None:
-    """Draw + save a single month's chart, clipping multi-month events."""
+def gantt_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path, month_position: int = None) -> None:
+    """Draw + save a single month's chart, clipping multi-month events.
+    
+    Args:
+        month_position: Position in rolling window (0=current, 1=next, 2=third) for color coding
+    """
     mname = calendar.month_name[month]
     mstart = pd.Timestamp(year, month, 1)
     mend = pd.Timestamp(year, month, calendar.monthrange(year, month)[1])
@@ -431,15 +435,46 @@ def gantt_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path) -> No
                 week_end = min(date + pd.Timedelta(days=6, hours=23, minutes=59), mend)
                 ax.axvspan(date, week_end, color='#f1f5f9', alpha=0.3, zorder=0)
     
+    # Add current date indicator (vertical red line)
+    current_date = pd.Timestamp(datetime.now().date())
+    if mstart <= current_date <= mend:
+        # Draw a prominent red vertical line for today
+        ax.axvline(x=current_date, color='#ef4444', linewidth=3.0, alpha=0.8, zorder=10, 
+                   linestyle='-', label='Today')
+        
+        # Add a subtle red glow/shadow effect
+        ax.axvline(x=current_date, color='#ef4444', linewidth=6.0, alpha=0.2, zorder=9)
+        
+        # Optional: Add "Today" text at the top of the line
+        ax.text(current_date, ax.get_ylim()[1], 'Today', 
+                horizontalalignment='center', verticalalignment='bottom',
+                fontsize=10, color='#ef4444', fontweight='bold',
+                bbox=dict(boxstyle="round,pad=0.3", facecolor='white', 
+                         edgecolor='#ef4444', alpha=0.9))
+    
     # Enhanced labels and title with modern typography
     ax.set_xlabel("Date", fontsize=16, fontweight='600', color='#1e293b', 
                   labelpad=15, fontfamily='sans-serif')
     ax.set_ylabel("Events", fontsize=16, fontweight='600', color='#1e293b', 
                   labelpad=15, fontfamily='sans-serif')
     
-    # Modern title with enhanced styling
+    # Determine title color based on month position
+    if month_position is not None:
+        # Color coding for rolling window months
+        if month_position == 0:
+            title_color = '#eab308'  # Yellow for current month
+        elif month_position == 1:
+            title_color = '#22c55e'  # Green for next month
+        elif month_position == 2:
+            title_color = '#3b82f6'  # Blue for third month
+        else:
+            title_color = '#0f172a'  # Default dark color
+    else:
+        title_color = '#0f172a'  # Default dark color
+    
+    # Modern title with enhanced styling and color coding
     title_text = ax.set_title(f"Events — {mname} {year}", 
-                             fontsize=28, fontweight='700', color='#0f172a', 
+                             fontsize=28, fontweight='700', color=title_color, 
                              pad=30, fontfamily='sans-serif')
     title_text.set_bbox(dict(boxstyle="round,pad=0.5", facecolor='#f1f5f9', 
                             alpha=0.8, edgecolor='none'))
@@ -588,9 +623,9 @@ def gantt_for_week(df: pd.DataFrame, outdir: Path) -> None:
     ax.set_ylabel("Events", fontsize=16, fontweight='600', color='#1e293b', 
                   labelpad=15, fontfamily='sans-serif')
     
-    # Modern title with enhanced styling
+    # Modern title with enhanced styling - Orange for weekly
     title_text = ax.set_title(f"Happening This Week — {week_display}", 
-                             fontsize=28, fontweight='700', color='#0f172a', 
+                             fontsize=28, fontweight='700', color='#f97316',  # Orange for weekly
                              pad=30, fontfamily='sans-serif')
     title_text.set_bbox(dict(boxstyle="round,pad=0.5", facecolor='#f1f5f9', 
                             alpha=0.8, edgecolor='none'))
@@ -740,9 +775,9 @@ def gantt_for_day(df: pd.DataFrame, outdir: Path) -> None:
     ax.set_ylabel("Events", fontsize=16, fontweight='600', color='#1e293b', 
                   labelpad=15, fontfamily='sans-serif')
     
-    # Modern title with enhanced styling
+    # Modern title with enhanced styling - Red for daily
     title_text = ax.set_title(f"Happening Today — {day_display}", 
-                             fontsize=28, fontweight='700', color='#0f172a', 
+                             fontsize=28, fontweight='700', color='#ef4444',  # Red for daily
                              pad=30, fontfamily='sans-serif')
     title_text.set_bbox(dict(boxstyle="round,pad=0.5", facecolor='#f1f5f9', 
                             alpha=0.8, edgecolor='none'))
@@ -1313,12 +1348,13 @@ def main() -> None:
         # Generate charts for each month/year combination
         df = load_events(wb, args.sheet)
         
-        for month, year in zip(months, years):
+        for i, (month, year) in enumerate(zip(months, years)):
             # Filter data for this specific month/year
             month_start = pd.Timestamp(year, month, 1)
             month_end = pd.Timestamp(year, month, calendar.monthrange(year, month)[1])
             month_df = df[(df["Event End Date"] >= month_start) & (df["Event Start Date"] <= month_end)]
-            gantt_for_month(month_df, year, month, outdir)
+            # Pass the month position for color coding (0=current, 1=next, 2=third)
+            gantt_for_month(month_df, year, month, outdir, month_position=i)
         
     else:
         # Original behavior - validate months argument
