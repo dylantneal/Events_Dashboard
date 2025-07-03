@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi Optimization Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .pass { background: #4CAF50; color: white; }
+        .fail { background: #f44336; color: white; }
+        .info { background: #2196F3; color: white; }
+        .warning { background: #ff9800; color: white; }
+        pre {
+            background: #333;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>🍓 Raspberry Pi Optimization Test</h1>
+    
+    <div class="test-section">
+        <h2>Device Detection</h2>
+        <div id="device-info"></div>
+        <button onclick="forceRaspberryPiMode()">Force Pi Mode</button>
+        <button onclick="forceDesktopMode()">Force Desktop Mode</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Performance Tests</h2>
+        <div id="performance-tests"></div>
+        <button onclick="runPerformanceTests()">Run Performance Tests</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Optimization Status</h2>
+        <div id="optimization-status"></div>
+        <button onclick="checkOptimizations()">Check Optimizations</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Memory Usage</h2>
+        <div id="memory-info"></div>
+        <button onclick="checkMemoryUsage()">Check Memory</button>
+    </div>
+
+    <script>
+        // Configuration for testing
+        window.DASHBOARD_CONFIG = {
+            raspberryPi: {
+                // forceMode: true,  // Uncomment to force Pi mode
+                slideInterval: 90000,
+                weatherUpdateInterval: 1200000,
+                autoReloadInterval: 600000,
+                disableAnimations: true,
+                disableBackdropFilter: true,
+                disableShadows: true,
+                useSystemFonts: true,
+                reduceImageQuality: true,
+                hideInactiveSlides: true,
+                limitStorageSize: true,
+                enableGarbageCollection: true,
+                reducedUpdateFrequency: true,
+                disableServiceWorker: true
+            }
+        };
+
+        // Import Pi detection from main dashboard
+        function isRaspberryPi() {
+            const config = window.DASHBOARD_CONFIG;
+            if (config && config.raspberryPi && typeof config.raspberryPi.forceMode === 'boolean') {
+                console.log('🍓 Pi mode forced via configuration:', config.raspberryPi.forceMode);
+                return config.raspberryPi.forceMode;
+            }
+            
+            const ua = navigator.userAgent.toLowerCase();
+            const platform = navigator.platform.toLowerCase();
+            
+            const isARM = ua.includes('arm') || ua.includes('aarch64');
+            const isLinuxChromium = platform.includes('linux') && 
+                                    (ua.includes('chromium') || ua.includes('chrome')) &&
+                                    !ua.includes('android');
+            const isPiUserAgent = ua.includes('raspbian') || ua.includes('raspberry') || 
+                                 ua.includes('pi') || ua.includes('armv');
+            const lowCores = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4;
+            const lowMemory = navigator.deviceMemory && navigator.deviceMemory <= 8;
+            const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua);
+            
+            const isPi = isPiUserAgent || 
+                        (isARM && isLinuxChromium) || 
+                        (isLinuxChromium && lowCores && !isMobileDevice) ||
+                        (isLinuxChromium && lowMemory) ||
+                        (isARM && lowCores && !isMobileDevice);
+            
+            return isPi;
+        }
+
+        function displayDeviceInfo() {
+            const isPi = isRaspberryPi();
+            const info = document.getElementById('device-info');
+            
+            const deviceData = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                cores: navigator.hardwareConcurrency,
+                memory: navigator.deviceMemory ? navigator.deviceMemory + 'GB' : 'Unknown',
+                webGL: !!window.WebGLRenderingContext,
+                isPi: isPi
+            };
+            
+            info.innerHTML = `
+                <div class="status ${isPi ? 'info' : 'warning'}">
+                    ${isPi ? '🍓 RASPBERRY PI DETECTED' : '🖥️ DESKTOP/LAPTOP DETECTED'}
+                </div>
+                <pre>${JSON.stringify(deviceData, null, 2)}</pre>
+            `;
+        }
+
+        function runPerformanceTests() {
+            const results = document.getElementById('performance-tests');
+            const startTime = performance.now();
+            
+            // Test 1: DOM manipulation
+            const testDiv = document.createElement('div');
+            for (let i = 0; i < 1000; i++) {
+                const span = document.createElement('span');
+                span.textContent = 'Test ' + i;
+                testDiv.appendChild(span);
+            }
+            const domTime = performance.now() - startTime;
+            
+            // Test 2: Array operations
+            const arrayStart = performance.now();
+            const arr = [];
+            for (let i = 0; i < 10000; i++) {
+                arr.push(Math.random());
+            }
+            arr.sort();
+            const arrayTime = performance.now() - arrayStart;
+            
+            // Test 3: Canvas rendering (if available)
+            let canvasTime = 0;
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const canvasStart = performance.now();
+                for (let i = 0; i < 1000; i++) {
+                    ctx.fillRect(Math.random() * 100, Math.random() * 100, 10, 10);
+                }
+                canvasTime = performance.now() - canvasStart;
+            } catch (e) {
+                canvasTime = 'Error';
+            }
+            
+            results.innerHTML = `
+                <div class="status info">Performance Test Results</div>
+                <div>DOM Manipulation: ${domTime.toFixed(2)}ms</div>
+                <div>Array Operations: ${arrayTime.toFixed(2)}ms</div>
+                <div>Canvas Rendering: ${canvasTime !== 'Error' ? canvasTime.toFixed(2) + 'ms' : 'Not available'}</div>
+                <div><small>Lower values indicate better performance</small></div>
+            `;
+        }
+
+        function checkOptimizations() {
+            const status = document.getElementById('optimization-status');
+            const isPi = isRaspberryPi();
+            const hasPiClass = document.body.classList.contains('raspberry-pi-mode');
+            
+            if (isPi) {
+                document.body.classList.add('raspberry-pi-mode');
+            }
+            
+            const optimizations = [
+                { name: 'Pi Detection', status: isPi, expected: true },
+                { name: 'Pi Class Applied', status: hasPiClass, expected: isPi },
+                { name: 'Config Loaded', status: !!window.DASHBOARD_CONFIG, expected: true },
+                { name: 'Pi Config Present', status: !!window.DASHBOARD_CONFIG?.raspberryPi, expected: true },
+                { name: 'WebGL Available', status: !!window.WebGLRenderingContext, expected: false },
+                { name: 'Device Memory API', status: !!navigator.deviceMemory, expected: false },
+                { name: 'Hardware Concurrency', status: !!navigator.hardwareConcurrency, expected: false }
+            ];
+            
+            let html = '';
+            optimizations.forEach(opt => {
+                const isOptimal = opt.expected ? opt.status : !opt.status;
+                html += `
+                    <div class="status ${isOptimal ? 'pass' : 'warning'}">
+                        ${opt.name}: ${opt.status ? '✅' : '❌'} 
+                        ${isOptimal ? '(Optimal)' : '(Could be better)'}
+                    </div>
+                `;
+            });
+            
+            status.innerHTML = html;
+        }
+
+        function checkMemoryUsage() {
+            const info = document.getElementById('memory-info');
+            
+            let memoryInfo = 'Memory API not available';
+            if (performance.memory) {
+                memoryInfo = `
+                    <div>Used: ${Math.round(performance.memory.usedJSHeapSize / 1024 / 1024)}MB</div>
+                    <div>Total: ${Math.round(performance.memory.totalJSHeapSize / 1024 / 1024)}MB</div>
+                    <div>Limit: ${Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024)}MB</div>
+                `;
+            }
+            
+            info.innerHTML = `
+                <div class="status info">JavaScript Memory Usage</div>
+                ${memoryInfo}
+                <div><small>Note: Memory API may not be available on all devices</small></div>
+            `;
+        }
+
+        function forceRaspberryPiMode() {
+            window.DASHBOARD_CONFIG.raspberryPi.forceMode = true;
+            document.body.classList.add('raspberry-pi-mode');
+            displayDeviceInfo();
+            checkOptimizations();
+        }
+
+        function forceDesktopMode() {
+            window.DASHBOARD_CONFIG.raspberryPi.forceMode = false;
+            document.body.classList.remove('raspberry-pi-mode');
+            displayDeviceInfo();
+            checkOptimizations();
+        }
+
+        // Initialize tests
+        document.addEventListener('DOMContentLoaded', function() {
+            displayDeviceInfo();
+            checkOptimizations();
+            checkMemoryUsage();
+            
+            // Set up periodic memory monitoring
+            setInterval(checkMemoryUsage, 30000); // Every 30 seconds
+        });
+
+        // Test localStorage limits
+        function testLocalStorage() {
+            try {
+                const testData = 'x'.repeat(100000); // 100KB test
+                localStorage.setItem('test', testData);
+                localStorage.removeItem('test');
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // Add CSS for Pi mode testing
+        const style = document.createElement('style');
+        style.textContent = `
+            .raspberry-pi-mode {
+                background: #2a2a4e !important;
+            }
+            .raspberry-pi-mode * {
+                animation: none !important;
+                transition-duration: 0.1s !important;
+            }
+            .raspberry-pi-mode .test-section {
+                background: rgba(60, 60, 100, 0.8) !important;
+                backdrop-filter: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        console.log('🍓 Pi Optimization Test initialized');
+        console.log('🔧 Run tests using the buttons above');
+        console.log('📊 Check console for detailed logs');
+    </script>
+</body>
+</html> 

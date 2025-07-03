@@ -5,7 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&family=Nunito:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="config.example.js"></script>
+    <!-- Load configuration file -->
+    <script>
+        // Try to load config.js, fall back to config.example.js if not found
+        const configScript = document.createElement('script');
+        configScript.src = 'config.js';
+        configScript.onerror = function() {
+            console.warn('config.js not found, loading config.example.js');
+            const fallbackScript = document.createElement('script');
+            fallbackScript.src = 'config.example.js';
+            document.head.appendChild(fallbackScript);
+        };
+        document.head.appendChild(configScript);
+    </script>
     <style>
         * {
             margin: 0;
@@ -283,11 +295,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 24px 32px 32px 32px;
+            padding: 20px;
             position: relative;
             overflow: hidden;
             min-height: 0;
             z-index: 5;
+            max-height: calc(100vh - 120px); /* Account for header */
         }
 
         .slide {
@@ -327,9 +340,10 @@
         /* Make announcements board significantly larger */
         .slide:has(.announcements-slide),
         .slide.announcements-slide-container {
-            max-width: 98vw;
-            max-height: calc(100vh - 160px); /* Account for header + padding */
-            padding: 16px;
+            max-width: calc(100vw - 40px);
+            width: calc(100vw - 40px);
+            max-height: calc(100vh - 140px); /* Account for header + padding */
+            padding: 10px;
         }
 
         @keyframes slideFloat {
@@ -569,10 +583,10 @@
 
         /* Announcements Board Styles - Bright & Friendly */
         .announcements-slide {
-            width: 100%;
-            height: 100%;
-            max-width: 100%;
-            max-height: 100%;
+            width: calc(100% - 20px);
+            height: calc(100% - 20px);
+            max-width: calc(100vw - 40px);
+            max-height: calc(100vh - 160px);
             display: flex;
             flex-direction: column;
             background: linear-gradient(180deg, 
@@ -585,6 +599,7 @@
             backdrop-filter: blur(40px) saturate(180%);
             -webkit-backdrop-filter: blur(40px) saturate(180%);
             border: 0.5px solid rgba(255, 255, 255, 0.25);
+            margin: 10px;
         }
 
         .announcements-slide::before {
@@ -656,24 +671,89 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* Compact announcements header */
         .announcements-header {
-            background: linear-gradient(180deg, 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 24px 6px 24px;
+            position: relative;
+            z-index: 10;
+            background: linear-gradient(135deg, 
                 rgba(255, 255, 255, 0.08) 0%,
                 rgba(255, 255, 255, 0.04) 100%);
-            padding: 32px 80px 28px 80px;
-            text-align: center;
-            border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-            z-index: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 48px;
         }
 
         .announcements-title {
-            font-size: 3rem;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.95);
-            margin: 0;
-            letter-spacing: -0.02em;
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            font-family: 'Outfit', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            position: relative;
+            text-shadow: 
+                0 0 20px rgba(255, 255, 255, 0.2),
+                0 2px 8px rgba(0, 0, 0, 0.3);
+            line-height: 1;
+        }
+
+        /* Desktop only - subtle title animation */
+        body:not(.raspberry-pi-mode) .announcements-title {
+            animation: titlePulse 6s ease-in-out infinite;
+        }
+
+        /* Raspberry Pi mode - static title */
+        body.raspberry-pi-mode .announcements-title {
+            animation: none;
+        }
+
+        /* Subtle animated gradient text effect for desktop */
+        @keyframes titlePulse {
+            0%, 100% { 
+                opacity: 0.95;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(1.01);
+            }
+        }
+
+        /* Animated rainbow underline for title - desktop only */
+        body:not(.raspberry-pi-mode) .announcements-title::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                #ff6b6b, #f06595, #c77dff, #7950f2, 
+                #4c6ef5, #15aabf, #12b886, #51cf66);
+            background-size: 200% 100%;
+            animation: rainbowSlide 4s linear infinite;
+            border-radius: 1px;
+            box-shadow: 0 1px 6px rgba(255, 107, 107, 0.2);
+        }
+
+        /* Static underline for Raspberry Pi */
+        body.raspberry-pi-mode .announcements-title::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #ff6b6b;
+            border-radius: 1px;
+        }
+
+        @keyframes rainbowSlide {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
         }
 
         .add-announcement-btn {
@@ -681,237 +761,517 @@
             top: 50%;
             right: 20px;
             transform: translateY(-50%);
-            width: 52px;
-            height: 52px;
-            border-radius: 26px;
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
             background: linear-gradient(135deg, 
                 #ff6b6b 0%,
+                #f06595 25%,
                 #c77dff 50%,
+                #7950f2 75%,
                 #4c6ef5 100%);
-            border: 0.5px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.4);
             color: white;
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 300;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 
-                0 4px 20px rgba(199, 125, 255, 0.3),
-                0 1px 3px rgba(0, 0, 0, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3);
-            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+                0 4px 16px rgba(199, 125, 255, 0.3),
+                0 2px 8px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            transition: all 0.2s ease;
             z-index: 10;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+        }
+
+        /* Desktop only - subtle button animations */
+        body:not(.raspberry-pi-mode) .add-announcement-btn {
+            background-size: 200% 200%;
+            animation: gradientShift 6s ease infinite, buttonPulse 4s ease-in-out infinite;
+        }
+
+        /* Raspberry Pi mode - static button */
+        body.raspberry-pi-mode .add-announcement-btn {
+            background: #ff6b6b;
+            animation: none;
+        }
+
+        @keyframes buttonPulse {
+            0%, 100% { 
+                box-shadow: 
+                    0 4px 16px rgba(199, 125, 255, 0.3),
+                    0 2px 8px rgba(0, 0, 0, 0.15),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            }
+            50% { 
+                box-shadow: 
+                    0 6px 20px rgba(199, 125, 255, 0.4),
+                    0 3px 12px rgba(0, 0, 0, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            }
         }
 
         .add-announcement-btn:hover {
-            transform: translateY(-50%) scale(1.05);
+            transform: translateY(-50%) scale(1.1) rotate(90deg);
+            border-color: rgba(255, 255, 255, 0.6);
             box-shadow: 
-                0 6px 25px rgba(199, 125, 255, 0.4),
-                0 2px 5px rgba(0, 0, 0, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.35);
-            background: linear-gradient(135deg, 
-                #ff6b6b 0%,
-                #c77dff 45%,
-                #15aabf 100%);
+                0 12px 48px rgba(199, 125, 255, 0.6),
+                0 6px 24px rgba(0, 0, 0, 0.3),
+                inset 0 2px 0 rgba(255, 255, 255, 0.5),
+                0 0 0 4px rgba(255, 255, 255, 0.2);
         }
 
         .add-announcement-btn:active {
-            transform: translateY(-50%) scale(1.02);
+            transform: translateY(-50%) scale(1.05) rotate(45deg);
             transition-duration: 0.1s;
         }
 
         .announcements-content {
             flex: 1;
-            padding: 32px 48px 48px 48px;
-            overflow-y: auto;
+            padding: 10px;
+            overflow: visible;
             scrollbar-width: none;
             -ms-overflow-style: none;
             display: flex;
             flex-direction: column;
             position: relative;
             z-index: 1;
+            max-height: calc(100vh - 240px);
+            width: auto;
+            min-width: 100%;
         }
 
         .announcements-content::-webkit-scrollbar {
             display: none;
         }
 
+        /* Clean, adaptive flex layout */
         .announcements-grid {
-            display: grid;
-            gap: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 10px;
+            width: 100%;
             height: 100%;
-            align-content: start;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
-
-        .announcements-grid.single {
-            grid-template-columns: 1fr;
-            grid-template-rows: 1fr;
+        
+        /* Dynamic text sizing based on content length */
+        .announcement-item[data-text-length="long"] .announcement-text {
+            font-size: 1.5rem !important;
         }
-
-        .announcements-grid.two {
-            grid-template-columns: 1fr;
-            grid-template-rows: 1fr 1fr;
+        
+        .announcement-item[data-text-length="very-long"] .announcement-text {
+            font-size: 1.25rem !important;
         }
-
-        .announcements-grid.three {
-            grid-template-columns: 1fr;
-            grid-template-rows: 1fr 1fr 1fr;
+        
+        .announcement-item[data-text-length="extra-long"] .announcement-text {
+            font-size: 1.1rem !important;
         }
-
-        .announcements-grid.four {
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
+        
+        /* Dynamic layouts based on announcement count */
+        .announcements-grid[data-count="1"] {
+            align-items: center;
+            justify-content: center;
         }
-
-        .announcements-grid.six {
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr 1fr;
+        
+        .announcements-grid[data-count="1"] .announcement-item {
+            padding: 60px 80px;
+            min-height: 200px;
+            max-width: 90%;
+            width: 90%;
         }
-
-        .announcements-grid.many {
-            grid-template-columns: 1fr 1fr 1fr;
-            grid-template-rows: repeat(auto-fit, minmax(85px, 1fr));
-            gap: 10px;
+        
+        .announcements-grid[data-count="1"] .announcement-text {
+            font-size: 3.5rem;
         }
-
-        .announcements-grid.ultra {
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(auto-fit, minmax(70px, 1fr));
-            gap: 8px;
+        
+        .announcements-grid[data-count="2"] {
+            gap: 40px;
+            justify-content: space-evenly;
         }
-
-        /* Apple-inspired sizing based on grid type - Enhanced for larger display */
-        .announcements-grid.single .announcement-item {
-            min-height: 220px;
-            padding: 40px 36px;
+        
+        .announcements-grid[data-count="2"] .announcement-item {
+            flex: 0 1 calc(50% - 20px);
+            max-width: calc(50% - 20px);
+            min-width: 0;
         }
-
-        .announcements-grid.single .announcement-item .announcement-text {
-            font-size: 1.8rem;
-            line-height: 1.4;
+        
+        .announcements-grid[data-count="2"] .announcement-text {
+            font-size: 2.5rem;
         }
-
-        .announcements-grid.two .announcement-item,
-        .announcements-grid.three .announcement-item {
-            min-height: 140px;
-            padding: 32px 28px;
+        
+        .announcements-grid[data-count="3"] .announcement-item {
+            flex: 0 1 calc(50% - 20px);
+            max-width: calc(50% - 20px);
+            min-width: 0;
         }
-
-        .announcements-grid.two .announcement-item .announcement-text,
-        .announcements-grid.three .announcement-item .announcement-text {
-            font-size: 1.5rem;
-            line-height: 1.4;
+        
+        .announcements-grid[data-count="4"] .announcement-item {
+            flex: 0 1 calc(50% - 20px);
+            max-width: calc(50% - 20px);
+            min-width: 0;
         }
-
-        .announcements-grid.four .announcement-item,
-        .announcements-grid.six .announcement-item {
-            min-height: 120px;
-            padding: 28px 24px;
+        
+        .announcements-grid[data-count="3"] .announcement-text,
+        .announcements-grid[data-count="4"] .announcement-text {
+            font-size: 2.25rem;
         }
-
-        .announcements-grid.four .announcement-item .announcement-text,
-        .announcements-grid.six .announcement-item .announcement-text {
-            font-size: 1.4rem;
+        
+        /* 5-6 announcements - 3 per row */
+        .announcements-grid[data-count="5"] .announcement-item,
+        .announcements-grid[data-count="6"] .announcement-item {
+            flex: 0 1 calc(33.333% - 16px);
+            max-width: calc(33.333% - 16px);
+            min-width: 0;
+            padding: 28px 40px;
+            min-height: 110px;
         }
-
-        .announcements-grid.many .announcement-item {
+        
+        .announcements-grid[data-count="5"] .announcement-text,
+        .announcements-grid[data-count="6"] .announcement-text {
+            font-size: 1.75rem;
+        }
+        
+        /* 7+ announcements - more compact, still 3 per row */
+        .announcements-grid[data-count="7"] .announcement-item,
+        .announcements-grid[data-count="8"] .announcement-item,
+        .announcements-grid[data-count="9"] .announcement-item {
+            flex: 0 1 calc(33.333% - 16px);
+            max-width: calc(33.333% - 16px);
+            min-width: 0;
+            padding: 24px 32px;
             min-height: 100px;
-            padding: 24px 20px;
+        }
+        
+        .announcements-grid[data-count="7"] .announcement-text,
+        .announcements-grid[data-count="8"] .announcement-text,
+        .announcements-grid[data-count="9"] .announcement-text {
+            font-size: 1.5rem;
+        }
+        
+        .announcements-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .announcements-grid::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .announcements-grid::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
         }
 
-        .announcements-grid.many .announcement-item .announcement-text {
-            font-size: 1.25rem;
-            line-height: 1.3;
+        /* Responsive adjustments */
+        @media (max-width: 1400px) {
+            .announcements-grid[data-count="1"] .announcement-text {
+                font-size: 3rem;
+            }
+            
+            .announcements-grid[data-count="2"] .announcement-text {
+                font-size: 2.25rem;
+            }
+            
+            .announcements-grid[data-count="3"] .announcement-text,
+            .announcements-grid[data-count="4"] .announcement-text {
+                font-size: 2rem;
+            }
         }
 
-        .announcements-grid.ultra .announcement-item {
-            min-height: 85px;
-            padding: 18px 16px;
+        @media (max-width: 1200px) {
+            .announcement-item {
+                padding: 24px 36px;
+                min-height: 100px;
+            }
+            
+            .announcement-text {
+                font-size: 1.75rem;
+            }
+            
+            .announcements-grid[data-count="1"] .announcement-text {
+                font-size: 2.5rem;
+            }
+            
+            .announcements-grid[data-count="2"] .announcement-text {
+                font-size: 2rem;
+            }
         }
 
-        .announcements-grid.ultra .announcement-item .announcement-text {
-            font-size: 1.1rem;
-            line-height: 1.3;
+        @media (max-width: 900px) {
+            .announcements-slide {
+                width: calc(100% - 20px);
+                margin: 10px;
+            }
+            
+            .announcement-item {
+                padding: 20px 28px;
+                min-height: 90px;
+            }
+            
+            .announcement-text {
+                font-size: 1.5rem;
+            }
+            
+            .announcements-title {
+                font-size: 1.5rem;
+            }
+            
+            /* Force 1 column on smaller screens */
+            .announcements-grid[data-count="3"] .announcement-item,
+            .announcements-grid[data-count="4"] .announcement-item {
+                flex: 0 1 100%;
+                max-width: 100%;
+            }
         }
 
+        @media (max-width: 600px) {
+            .announcements-slide {
+                width: calc(100% - 20px);
+                margin: 10px;
+            }
+            
+            .announcements-grid {
+                gap: 16px;
+                padding: 16px;
+            }
+            
+            .announcement-item {
+                padding: 20px 24px;
+                min-height: 90px;
+            }
+            
+            .announcement-text {
+                font-size: 1.25rem;
+            }
+            
+            .announcements-title {
+                font-size: 1.25rem;
+            }
+        }
+        
+        /* Landscape mode - prioritize horizontal space */
+        @media (orientation: landscape) and (max-height: 700px) {
+            .announcements-slide {
+                max-height: calc(100vh - 140px);
+            }
+            
+            .announcements-header {
+                padding: 8px 20px 8px 20px;
+            }
+            
+            .announcements-title {
+                font-size: 1.5rem;
+            }
+            
+            .announcements-grid {
+                padding: 12px;
+                gap: 12px;
+            }
+            
+            .announcement-item {
+                padding: 20px 32px;
+                min-height: 80px;
+            }
+            
+            .announcement-text {
+                font-size: 1.5rem;
+            }
+        }
+
+
+
+
+
+        /* Clean, scalable announcement cards */
         .announcement-item {
             background: linear-gradient(145deg, 
-                rgba(255, 255, 255, 0.18) 0%, 
-                rgba(255, 255, 255, 0.12) 50%,
+                rgba(255, 255, 255, 0.2) 0%, 
                 rgba(255, 255, 255, 0.15) 100%);
-            backdrop-filter: blur(30px) saturate(150%);
-            -webkit-backdrop-filter: blur(30px) saturate(150%);
-            border: 0.5px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px) saturate(130%);
+            -webkit-backdrop-filter: blur(20px) saturate(130%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 16px;
-            padding: 32px 28px;
-            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+            transition: all 0.2s ease;
             position: relative;
-            overflow: hidden;
             cursor: pointer;
             display: flex;
             align-items: center;
-            min-height: 140px;
+            justify-content: center;
+            padding: 28px 40px;
+            min-height: 100px;
+            height: auto;
+            flex: 0 1 auto;
             box-shadow: 
-                0 2px 20px rgba(0, 0, 0, 0.05),
-                0 1px 3px rgba(0, 0, 0, 0.05),
+                0 4px 16px rgba(0, 0, 0, 0.1),
+                0 2px 8px rgba(0, 0, 0, 0.05),
                 inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            overflow: visible;
+            max-width: 100%;
         }
 
-        .announcement-item::after {
-            content: 'Tap to edit';
-            position: absolute;
-            bottom: 6px;
-            right: 12px;
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.5);
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            pointer-events: none;
-            font-weight: 500;
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+        /* Raspberry Pi mode - disable heavy animations */
+        body.raspberry-pi-mode .announcement-item {
+            animation: none;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
-        .announcement-item:hover::after {
-            opacity: 1;
+        body.raspberry-pi-mode .announcement-item::before {
+            display: none;
         }
 
-        .announcement-item::before {
+        /* Desktop mode - enable subtle floating animation */
+        body:not(.raspberry-pi-mode) .announcement-item {
+            animation: announcementFloat 12s ease-in-out infinite;
+            animation-delay: calc(var(--index) * 0.3s);
+        }
+
+        /* Subtle floating animation for desktop */
+        @keyframes announcementFloat {
+            0%, 100% { 
+                transform: translateY(0px);
+            }
+            50% { 
+                transform: translateY(-4px);
+            }
+        }
+
+        /* Simplified gradient border for desktop only */
+        body:not(.raspberry-pi-mode) .announcement-item::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, 
-                #ff6b6b,
-                #f06595,
-                #c77dff,
-                #7950f2,
-                #4c6ef5,
-                #15aabf,
-                #12b886,
-                #51cf66);
-            background-size: 200% 100%;
-            animation: gradientShift 8s linear infinite;
-            border-radius: 16px 16px 0 0;
-            opacity: 0.8;
+            bottom: 0;
+            border-radius: 16px;
+            padding: 1px;
+            background: linear-gradient(45deg, 
+                #ff6b6b, #f06595, #c77dff, #7950f2, 
+                #4c6ef5, #15aabf, #12b886, #51cf66);
+            background-size: 200% 200%;
+            animation: borderGradient 8s ease infinite;
+            -webkit-mask: 
+                linear-gradient(#fff 0 0) content-box, 
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.4;
+            transition: opacity 0.2s ease;
         }
 
-        .announcement-item:hover {
-            transform: translateY(-1px);
-            background: linear-gradient(145deg, 
-                rgba(255, 255, 255, 0.18) 0%, 
-                rgba(255, 255, 255, 0.12) 50%,
-                rgba(255, 255, 255, 0.08) 100%);
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 
-                0 4px 25px rgba(0, 0, 0, 0.12),
-                0 2px 8px rgba(0, 0, 0, 0.08),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        @keyframes borderGradient {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
         }
+
+        .announcement-item:hover::before {
+            opacity: 0.7;
+        }
+
+        /* Hover effects */
+        .announcement-item:hover {
+            transform: translateY(-4px) scale(1.02);
+            background: linear-gradient(145deg, 
+                rgba(255, 255, 255, 0.3) 0%, 
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0.25) 100%);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 
+                0 12px 48px rgba(0, 0, 0, 0.2),
+                0 4px 16px rgba(0, 0, 0, 0.1),
+                inset 0 2px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        /* Clean, responsive text styling */
+        .announcement-text {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #ffffff;
+            line-height: 1.4;
+            text-align: center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+            letter-spacing: -0.01em;
+            text-shadow: 
+                0 1px 4px rgba(0, 0, 0, 0.3),
+                0 1px 2px rgba(0, 0, 0, 0.4);
+            white-space: normal;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            width: 100%;
+            max-width: 100%;
+            padding: 0 4px;
+        }
+
+        /* Pulsing effect for new announcements */
+        @keyframes newAnnouncementPulse {
+            0%, 100% { 
+                box-shadow: 
+                    0 8px 32px rgba(0, 0, 0, 0.1),
+                    0 2px 8px rgba(0, 0, 0, 0.05),
+                    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+                    0 0 0 0 rgba(255, 255, 255, 0.4);
+            }
+            50% { 
+                box-shadow: 
+                    0 8px 32px rgba(0, 0, 0, 0.1),
+                    0 2px 8px rgba(0, 0, 0, 0.05),
+                    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+                    0 0 0 20px rgba(255, 255, 255, 0);
+            }
+        }
+
+        .announcement-item.new {
+            animation: newAnnouncementPulse 2s ease-out 3;
+        }
+
+        /* No announcements state - make it more prominent */
+        .no-announcements {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.75rem;
+            font-weight: 400;
+            text-align: center;
+            padding: 40px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .no-announcements-icon {
+            font-size: 6rem;
+            margin-bottom: 30px;
+            opacity: 0.5;
+            animation: iconBounce 2s ease-in-out infinite;
+        }
+
+        @keyframes iconBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
 
         .announcement-item.clicked {
             background: linear-gradient(145deg, 
@@ -923,19 +1283,6 @@
                 0 0 0 1px rgba(0, 122, 255, 0.2),
                 0 4px 25px rgba(0, 122, 255, 0.15),
                 inset 0 1px 0 rgba(255, 255, 255, 0.25);
-        }
-
-        .announcement-text {
-            font-size: 1.5rem;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.95);
-            line-height: 1.4;
-            white-space: pre-wrap;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
-            letter-spacing: -0.01em;
         }
 
         .announcement-actions {
@@ -985,24 +1332,7 @@
             color: #f87171;
         }
 
-        .no-announcements {
-            text-align: center;
-            padding: 60px 40px;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1.2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
-        }
 
-        .no-announcements-icon {
-            font-size: 3.5rem;
-            margin-bottom: 20px;
-            opacity: 0.4;
-        }
 
         /* Modal Styles */
         .modal-overlay {
@@ -1432,59 +1762,14 @@
                 padding: 24px 40px 16px 40px;
             }
             
-            /* Scale up announcement text significantly */
-            .announcements-grid.single .announcement-item {
-                min-height: 280px;
-                padding: 60px 48px;
-            }
-            
-            .announcements-grid.single .announcement-item .announcement-text {
-                font-size: 2.5rem;
-                line-height: 1.4;
-            }
-            
-            .announcements-grid.two .announcement-item,
-            .announcements-grid.three .announcement-item {
-                min-height: 200px;
-                padding: 48px 40px;
-            }
-            
-            .announcements-grid.two .announcement-item .announcement-text,
-            .announcements-grid.three .announcement-item .announcement-text {
-                font-size: 2rem;
-                line-height: 1.4;
-            }
-            
-            .announcements-grid.four .announcement-item,
-            .announcements-grid.six .announcement-item {
-                min-height: 160px;
-                padding: 40px 32px;
-            }
-            
-            .announcements-grid.four .announcement-item .announcement-text,
-            .announcements-grid.six .announcement-item .announcement-text {
-                font-size: 1.75rem;
-                line-height: 1.3;
-            }
-            
-            .announcements-grid.many .announcement-item {
+            /* Scale up for Full HD */
+            .announcement-item {
+                padding: 32px 48px;
                 min-height: 140px;
-                padding: 36px 28px;
             }
             
-            .announcements-grid.many .announcement-item .announcement-text {
-                font-size: 1.5rem;
-                line-height: 1.3;
-            }
-            
-            .announcements-grid.ultra .announcement-item {
-                min-height: 120px;
-                padding: 28px 24px;
-            }
-            
-            .announcements-grid.ultra .announcement-item .announcement-text {
-                font-size: 1.375rem;
-                line-height: 1.3;
+            .announcement-text {
+                font-size: 2rem;
             }
         }
 
@@ -1565,59 +1850,14 @@
                 padding: 32px 48px 20px 48px;
             }
             
-            /* Massive text scaling for 4K viewing distance */
-            .announcements-grid.single .announcement-item {
-                min-height: 360px;
-                padding: 80px 64px;
-            }
-            
-            .announcements-grid.single .announcement-item .announcement-text {
-                font-size: 3.25rem;
-                line-height: 1.4;
-            }
-            
-            .announcements-grid.two .announcement-item,
-            .announcements-grid.three .announcement-item {
-                min-height: 260px;
-                padding: 64px 52px;
-            }
-            
-            .announcements-grid.two .announcement-item .announcement-text,
-            .announcements-grid.three .announcement-item .announcement-text {
-                font-size: 2.75rem;
-                line-height: 1.4;
-            }
-            
-            .announcements-grid.four .announcement-item,
-            .announcements-grid.six .announcement-item {
-                min-height: 200px;
-                padding: 52px 40px;
-            }
-            
-            .announcements-grid.four .announcement-item .announcement-text,
-            .announcements-grid.six .announcement-item .announcement-text {
-                font-size: 2.25rem;
-                line-height: 1.3;
-            }
-            
-            .announcements-grid.many .announcement-item {
+            /* Scale up for 4K viewing distance */
+            .announcement-item {
+                padding: 48px 64px;
                 min-height: 180px;
-                padding: 48px 36px;
             }
             
-            .announcements-grid.many .announcement-item .announcement-text {
-                font-size: 2rem;
-                line-height: 1.3;
-            }
-            
-            .announcements-grid.ultra .announcement-item {
-                min-height: 160px;
-                padding: 40px 32px;
-            }
-            
-            .announcements-grid.ultra .announcement-item .announcement-text {
-                font-size: 1.75rem;
-                line-height: 1.3;
+            .announcement-text {
+                font-size: 2.5rem;
             }
         }
 
@@ -1775,59 +2015,7 @@
                 padding: 20px 16px 24px 16px;
             }
             
-            .announcements-grid.single .announcement-item {
-                min-height: 160px;
-                padding: 24px 20px;
-            }
-            
-            .announcements-grid.single .announcement-item .announcement-text {
-                font-size: 1.4rem;
-                line-height: 1.3;
-            }
-            
-            .announcements-grid.two .announcement-item,
-            .announcements-grid.three .announcement-item {
-                min-height: 120px;
-                padding: 20px 16px;
-            }
-            
-            .announcements-grid.two .announcement-item .announcement-text,
-            .announcements-grid.three .announcement-item .announcement-text {
-                font-size: 1.25rem;
-                line-height: 1.3;
-            }
-            
-            .announcements-grid.four .announcement-item,
-            .announcements-grid.six .announcement-item {
-                min-height: 100px;
-                padding: 16px 14px;
-            }
-            
-            .announcements-grid.four .announcement-item .announcement-text,
-            .announcements-grid.six .announcement-item .announcement-text {
-                font-size: 1.1rem;
-                line-height: 1.2;
-            }
-            
-            .announcements-grid.many .announcement-item {
-                min-height: 85px;
-                padding: 14px 12px;
-            }
-            
-            .announcements-grid.many .announcement-item .announcement-text {
-                font-size: 1rem;
-                line-height: 1.2;
-            }
-            
-            .announcements-grid.ultra .announcement-item {
-                min-height: 75px;
-                padding: 12px 10px;
-            }
-            
-            .announcements-grid.ultra .announcement-item .announcement-text {
-                font-size: 0.95rem;
-                line-height: 1.2;
-            }
+
         }
 
         @media (max-width: 480px) {
@@ -1904,23 +2092,7 @@
                 font-size: 0.825rem;
             }
             
-            /* Force single column layout on very small screens */
-            .announcements-grid.four,
-            .announcements-grid.six,
-            .announcements-grid.many,
-            .announcements-grid.ultra {
-                grid-template-columns: 1fr !important;
-                gap: 8px;
-            }
-            
-            .announcements-grid.single .announcement-item {
-                min-height: 140px;
-                padding: 20px 16px;
-            }
-            
-            .announcements-grid.single .announcement-item .announcement-text {
-                font-size: 1.25rem;
-            }
+
             
             .announcement-item {
                 min-height: 80px;
@@ -2054,6 +2226,20 @@
                 this.clockInterval = null;
                 this.hourlyChimeInterval = null;
                 this.manifestUrl = 'slides/slides.json';
+                
+                // Get slide durations from config or use defaults
+                this.slideDurations = window.DASHBOARD_CONFIG?.slideDurations || {};
+                this.defaultSlideDuration = window.DASHBOARD_CONFIG?.slideInterval || 60000; // Default 60 seconds
+                
+                // Debug logging for slide durations
+                console.log('🎬 SLIDE DURATION CONFIGURATION:');
+                console.log('  Default duration:', this.defaultSlideDuration/1000, 'seconds');
+                console.log('  Custom durations:', this.slideDurations);
+                if (Object.keys(this.slideDurations).length > 0) {
+                    Object.entries(this.slideDurations).forEach(([slide, duration]) => {
+                        console.log(`    ${slide}: ${duration/1000} seconds`);
+                    });
+                }
                 
                 // API Configuration - GitHub Pages compatible
                 this.openWeatherApiKey = window.OPENWEATHER_API_KEY || 'YOUR_API_KEY_HERE';
@@ -2688,8 +2874,11 @@
                     }
                 }
 
+                // Reorder slides according to user preference
+                const orderedSlides = this.reorderSlides(validSlides);
+                
                 // Add announcements slide as the first slide
-                this.slides = ['announcements', ...validSlides];
+                this.slides = ['announcements', ...orderedSlides];
                 this.announcementsSlideIndex = 0;
                 
                 if (this.isProduction) {
@@ -2703,6 +2892,75 @@
                 
                 // Hide any existing error message
                 this.hideError();
+            }
+
+            reorderSlides(slides) {
+                // Get slide order from configuration or use defaults
+                const slideOrder = window.DASHBOARD_CONFIG?.slideOrder || {
+                    'daily': 1,    // Happening Today
+                    'weekly': 2,   // Happening This Week
+                    'current': 3,  // This Month
+                    'next': 4,     // Next Month
+                    'third': 5,    // Third Month
+                    'calendar': 6  // Calendar
+                };
+                
+                // Get current date for month comparison
+                const currentDate = new Date();
+                const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-based
+                const currentYear = currentDate.getFullYear();
+                
+                // Categorize and sort slides
+                const categorizedSlides = slides.map(slide => {
+                    let category = 'other';
+                    let order = 999;
+                    
+                    // Check slide type
+                    if (slide.includes('gantt_daily')) {
+                        category = 'daily';
+                        order = slideOrder.daily;
+                    } else if (slide.includes('gantt_weekly')) {
+                        category = 'weekly';
+                        order = slideOrder.weekly;
+                    } else if (slide.includes('calendar')) {
+                        category = 'calendar';
+                        order = slideOrder.calendar;
+                    } else if (slide.includes('gantt_')) {
+                        // Extract year and month from gantt filename (gantt_YYYY_MM.png)
+                        const match = slide.match(/gantt_(\d{4})_(\d{2})\.png/);
+                        if (match) {
+                            const slideYear = parseInt(match[1]);
+                            const slideMonth = parseInt(match[2]);
+                            
+                            // Calculate months difference
+                            const monthsDiff = (slideYear - currentYear) * 12 + (slideMonth - currentMonth);
+                            
+                            if (monthsDiff === 0) {
+                                category = 'current';
+                                order = slideOrder.current;
+                            } else if (monthsDiff === 1) {
+                                category = 'next';
+                                order = slideOrder.next;
+                            } else if (monthsDiff === 2) {
+                                category = 'third';
+                                order = slideOrder.third;
+                            }
+                        }
+                    }
+                    
+                    return { slide, category, order };
+                });
+                
+                // Sort by order and return just the slide names
+                categorizedSlides.sort((a, b) => a.order - b.order);
+                const orderedSlides = categorizedSlides.map(item => item.slide);
+                
+                console.log('Slide reordering:');
+                categorizedSlides.forEach((item, index) => {
+                    console.log(`  ${index + 1}. ${item.slide} (${item.category})`);
+                });
+                
+                return orderedSlides;
             }
 
             hideError() {
@@ -2773,6 +3031,11 @@
             startProgressAnimation() {
                 const progressBar = document.getElementById('slide-progress-bar');
                 if (progressBar) {
+                    // Get duration for current slide
+                    const currentSlide = this.slides[this.currentSlideIndex];
+                    const duration = this.slideDurations[currentSlide] || this.defaultSlideDuration;
+                    const durationSeconds = duration / 1000;
+                    
                     // Clear any existing transition and reset to 0% immediately
                     progressBar.style.transition = 'none';
                     progressBar.style.width = '0%';
@@ -2780,9 +3043,9 @@
                     // Force a reflow to ensure the reset takes effect
                     progressBar.offsetHeight;
                     
-                    // Start animation after a brief delay
+                    // Start animation after a brief delay with the correct duration
                     setTimeout(() => {
-                        progressBar.style.transition = 'width 60s linear';
+                        progressBar.style.transition = `width ${durationSeconds}s linear`;
                         progressBar.style.width = '100%';
                     }, 100);
                 }
@@ -2803,9 +3066,31 @@
                 // Start progress animation for first slide
                 this.startProgressAnimation();
                 
-                this.slideInterval = setInterval(() => {
+                // Set initial slide timer
+                this.setSlideTimer();
+            }
+            
+            setSlideTimer() {
+                // Clear any existing timer
+                if (this.slideInterval) {
+                    clearInterval(this.slideInterval);
+                }
+                
+                // Get duration for current slide
+                const currentSlide = this.slides[this.currentSlideIndex];
+                const configuredDuration = this.slideDurations[currentSlide];
+                const duration = configuredDuration || this.defaultSlideDuration;
+                
+                console.log(`⏱️ Setting timer for slide ${currentSlide}:`);
+                console.log(`   Index: ${this.currentSlideIndex}`);
+                console.log(`   Configured duration: ${configuredDuration ? configuredDuration/1000 + ' seconds' : 'none (using default)'}`);
+                console.log(`   Actual duration: ${duration/1000} seconds`);
+                console.log(`   Available durations:`, this.slideDurations);
+                
+                // Set timer for this specific slide
+                this.slideInterval = setTimeout(() => {
                     this.nextSlide();
-                }, 60000); // 60 seconds per slide
+                }, duration);
             }
 
             nextSlide() {
@@ -2871,6 +3156,9 @@
                 // Update slide counter and restart progress animation
                 this.updateSlideInfo();
                 this.startProgressAnimation();
+                
+                // Set timer for the new slide with its specific duration
+                this.setSlideTimer();
             }
 
             showError(message) {
@@ -3193,10 +3481,11 @@
 
                 console.log('Starting automatic cloud sync...');
                 
-                // Sync every 30 seconds to catch updates from other devices
+                // Use configurable sync interval (default: 5 minutes)
+                const syncInterval = window.DASHBOARD_CONFIG?.cloudSync?.syncInterval || 300000;
                 setInterval(() => {
                     this.syncAnnouncementsFromCloud();
-                }, 30000);
+                }, syncInterval);
                 
                 // Initial sync after a short delay
                 setTimeout(() => {
@@ -3230,39 +3519,20 @@
                 if (currentAnnouncements.length === 0) {
                     content.innerHTML = `
                         <div class="no-announcements">
-                            <div class="no-announcements-icon">📝</div>
-                            <div>No announcements at this time</div>
-                            <div style="font-size: 1rem; margin-top: 16px; opacity: 0.6; font-weight: 400;">Tap the + button to create your first announcement</div>
+                            <div class="no-announcements-icon">📢</div>
+                            <div style="font-size: 2.5rem; font-weight: 600; margin-bottom: 16px;">No Announcements</div>
+                            <div style="font-size: 1.5rem; opacity: 0.7; font-weight: 400;">Tap the + button to create your first announcement</div>
                         </div>
                     `;
                 } else {
-                    // Apple-inspired dynamic grid sizing for up to 20+ announcements
-                    let gridClass;
-                    const count = currentAnnouncements.length;
-                    
-                    if (count === 1) {
-                        gridClass = 'single';
-                    } else if (count === 2) {
-                        gridClass = 'two';
-                    } else if (count === 3) {
-                        gridClass = 'three';
-                    } else if (count === 4) {
-                        gridClass = 'four';
-                    } else if (count <= 6) {
-                        gridClass = 'six';
-                    } else if (count <= 12) {
-                        gridClass = 'many';
-                    } else {
-                        // 13+ announcements use ultra-compact 4-column grid
-                        gridClass = 'ultra';
-                    }
-                    
-                    const announcementItems = currentAnnouncements.map(announcement => 
-                        this.createAnnouncementHTML(announcement)
+                    const announcementItems = currentAnnouncements.map((announcement, index) => 
+                        this.createAnnouncementHTML(announcement, index)
                     ).join('');
                     
+                    const count = Math.min(currentAnnouncements.length, 9); // Cap at 9 for CSS classes
+                    
                     content.innerHTML = `
-                        <div class="announcements-grid ${gridClass}">
+                        <div class="announcements-grid" data-count="${count}">
                             ${announcementItems}
                         </div>
                     `;
@@ -3283,9 +3553,20 @@
                 });
             }
 
-            createAnnouncementHTML(announcement) {
+            createAnnouncementHTML(announcement, index) {
+                const textLength = announcement.text.length;
+                let lengthClass = '';
+                
+                if (textLength > 200) {
+                    lengthClass = 'extra-long';
+                } else if (textLength > 150) {
+                    lengthClass = 'very-long';
+                } else if (textLength > 100) {
+                    lengthClass = 'long';
+                }
+                
                 return `
-                    <div class="announcement-item" onclick="toggleAnnouncementActions('${announcement.id}')">
+                    <div class="announcement-item" onclick="toggleAnnouncementActions('${announcement.id}')" style="--index: ${index}" ${lengthClass ? `data-text-length="${lengthClass}"` : ''}>
                         <div class="announcement-text">${this.escapeHtml(announcement.text)}</div>
                         <div class="announcement-actions">
                             <button class="announcement-btn edit" onclick="event.stopPropagation(); editAnnouncement('${announcement.id}')" title="Edit announcement">
@@ -3857,6 +4138,13 @@
 
         // Detect if running on Raspberry Pi or low-powered device
         function isRaspberryPi() {
+            // Check for forced mode in configuration
+            const config = window.DASHBOARD_CONFIG;
+            if (config && config.raspberryPi && typeof config.raspberryPi.forceMode === 'boolean') {
+                console.log('🍓 Pi mode forced via configuration:', config.raspberryPi.forceMode);
+                return config.raspberryPi.forceMode;
+            }
+            
             const ua = navigator.userAgent.toLowerCase();
             const platform = navigator.platform.toLowerCase();
             
@@ -3869,21 +4157,39 @@
                                     !ua.includes('android');
             
             // Check for specific Pi indicators
-            const isPiUserAgent = ua.includes('raspbian') || ua.includes('raspberry');
+            const isPiUserAgent = ua.includes('raspbian') || ua.includes('raspberry') || 
+                                 ua.includes('pi') || ua.includes('armv');
             
             // Check performance - Pi typically has fewer cores and less memory
             const lowCores = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4;
             
-            // Combine checks
-            const isPi = (isARM && isLinuxChromium) || isPiUserAgent || (isLinuxChromium && lowCores);
+            // Check for limited memory (Pi typically has 1-8GB)
+            const lowMemory = navigator.deviceMemory && navigator.deviceMemory <= 8;
             
-            console.log('Device detection:', {
-                userAgent: ua,
+            // Check for mobile device that might be low-powered
+            const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua);
+            
+            // Check for specific hardware limitations
+            const hasLimitedGPU = !window.WebGLRenderingContext;
+            
+            // Combine checks - more comprehensive detection
+            const isPi = isPiUserAgent || 
+                        (isARM && isLinuxChromium) || 
+                        (isLinuxChromium && lowCores && !isMobileDevice) ||
+                        (isLinuxChromium && lowMemory) ||
+                        (isARM && lowCores && !isMobileDevice);
+            
+            console.log('🔍 Device detection analysis:', {
+                userAgent: ua.substring(0, 100) + '...',
                 platform: platform,
                 isARM: isARM,
                 isLinuxChromium: isLinuxChromium,
+                isPiUserAgent: isPiUserAgent,
                 cores: navigator.hardwareConcurrency,
-                isPi: isPi
+                memory: navigator.deviceMemory + 'GB',
+                hasWebGL: !!window.WebGLRenderingContext,
+                isMobile: isMobileDevice,
+                decision: isPi ? '🍓 RASPBERRY PI DETECTED' : '🖥️ DESKTOP/LAPTOP DETECTED'
             });
             
             return isPi;
@@ -3991,8 +4297,171 @@
                     animation: none !important;
                     display: none !important;
                 }
+                
+                /* Additional Pi-specific optimizations */
+                
+                /* Reduce image quality for faster loading */
+                .raspberry-pi-mode img {
+                    image-rendering: optimizeSpeed !important;
+                    image-rendering: -moz-crisp-edges !important;
+                    image-rendering: -webkit-optimize-contrast !important;
+                    image-rendering: optimize-contrast !important;
+                    image-rendering: crisp-edges !important;
+                    image-rendering: pixelated !important;
+                    filter: none !important;
+                }
+                
+                /* Disable transform3d for better compatibility */
+                .raspberry-pi-mode * {
+                    transform-style: flat !important;
+                    backface-visibility: visible !important;
+                    perspective: none !important;
+                }
+                
+                /* Reduce font smoothing for better performance */
+                .raspberry-pi-mode * {
+                    -webkit-font-smoothing: auto !important;
+                    -moz-osx-font-smoothing: auto !important;
+                    text-rendering: optimizeSpeed !important;
+                }
+                
+                /* Simplify gradients to solid colors */
+                .raspberry-pi-mode .announcement-item {
+                    background: rgba(60, 60, 100, 0.8) !important;
+                    backdrop-filter: none !important;
+                }
+                
+                /* Disable expensive CSS filters */
+                .raspberry-pi-mode *::before,
+                .raspberry-pi-mode *::after {
+                    filter: none !important;
+                    backdrop-filter: none !important;
+                }
+                
+                /* Reduce complexity of borders */
+                .raspberry-pi-mode * {
+                    border-radius: 8px !important;
+                }
+                
+                /* Optimize for low memory - reduce cached elements */
+                .raspberry-pi-mode .slide:not(.active) {
+                    display: none !important;
+                }
+                
+                /* Disable will-change for better memory usage */
+                .raspberry-pi-mode * {
+                    will-change: auto !important;
+                }
+                
+                /* Reduce DOM complexity by hiding decorative elements */
+                .raspberry-pi-mode .glass-effect::before,
+                .raspberry-pi-mode .announcement-item::before {
+                    display: none !important;
+                }
+                
+                /* Use system fonts for better performance */
+                .raspberry-pi-mode * {
+                    font-family: system-ui, -apple-system, sans-serif !important;
+                }
+                
+                /* Reduce update frequency styles */
+                .raspberry-pi-mode .clock {
+                    transition: none !important;
+                }
+                
+                /* Disable pointer events on decorative elements */
+                .raspberry-pi-mode body::before,
+                .raspberry-pi-mode body::after {
+                    pointer-events: none !important;
+                }
             `;
             document.head.appendChild(style);
+            
+            // Additional JavaScript optimizations for Pi
+            console.log('🔧 Applying JavaScript optimizations for Pi...');
+            
+            // Reduce update frequencies
+            if (window.DASHBOARD_CONFIG) {
+                window.DASHBOARD_CONFIG.weatherUpdateInterval = 1200000; // 20 minutes instead of 10
+                window.DASHBOARD_CONFIG.autoReloadInterval = 600000; // 10 minutes instead of 5
+                window.DASHBOARD_CONFIG.slideInterval = 90000; // 90 seconds instead of 60
+            }
+            
+            // Disable requestAnimationFrame optimizations that might cause issues
+            const originalRAF = window.requestAnimationFrame;
+            window.requestAnimationFrame = function(callback) {
+                return setTimeout(callback, 16); // Simple 60fps fallback
+            };
+            
+            // Reduce image preloading on Pi
+            const piImageOptimizer = {
+                processImage: function(img) {
+                    // Disable image smoothing for performance
+                    if (img.style) {
+                        img.style.imageRendering = 'pixelated';
+                    }
+                    
+                    // Add loading attribute for lazy loading
+                    img.setAttribute('loading', 'lazy');
+                    
+                    // Reduce image size if too large
+                    if (img.naturalWidth > 1920 || img.naturalHeight > 1080) {
+                        console.log('🖼️ Large image detected, may cause performance issues on Pi');
+                    }
+                }
+            };
+            
+            // Apply image optimization to existing images
+            document.querySelectorAll('img').forEach(piImageOptimizer.processImage);
+            
+            // Optimize future images
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) { // Element node
+                            if (node.tagName === 'IMG') {
+                                piImageOptimizer.processImage(node);
+                            }
+                            node.querySelectorAll && node.querySelectorAll('img').forEach(piImageOptimizer.processImage);
+                        }
+                    });
+                });
+            });
+            
+            observer.observe(document.body, { childList: true, subtree: true });
+            
+            // Garbage collection hints for Pi
+            if (window.gc) {
+                setInterval(() => {
+                    window.gc();
+                }, 300000); // Every 5 minutes
+            }
+            
+            // Disable service worker if present (can cause memory issues on Pi)
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for(let registration of registrations) {
+                        registration.unregister();
+                    }
+                });
+            }
+            
+            // Reduce localStorage usage on Pi
+            const originalSetItem = localStorage.setItem;
+            localStorage.setItem = function(key, value) {
+                try {
+                    // Limit storage size to prevent memory issues
+                    if (JSON.stringify(value).length > 50000) {
+                        console.warn('🍓 Pi mode: Large localStorage write detected, truncating...');
+                        value = JSON.stringify(value).substring(0, 50000);
+                    }
+                    originalSetItem.call(this, key, value);
+                } catch (e) {
+                    console.warn('🍓 Pi mode: localStorage write failed:', e);
+                }
+            };
+            
+            console.log('✅ Pi optimizations applied successfully');
         }
 
         // Initialize dashboard when page loads
