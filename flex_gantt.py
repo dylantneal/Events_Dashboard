@@ -718,24 +718,29 @@ def gantt_for_day(df: pd.DataFrame, outdir: Path) -> None:
     sub = sub.loc[marriott_mask]
     
     if sub.empty:
-        print(f"[Today]  No events happening today.")
-        return
+        print(f"[Today]  No events happening today, but generating chart anyway.")
+        # Create a placeholder chart even with no events
     
-    # Sort by start date in descending order (most recent first)
-    # This will display most recent events at the top of the chart
-    sub = sub.sort_values("Event Start Date", ascending=False)
+    # Handle empty events case
+    if not sub.empty:
+        # Sort by start date in descending order (most recent first)
+        # This will display most recent events at the top of the chart
+        sub = sub.sort_values("Event Start Date", ascending=False)
 
-    # Clip to the day window and prepare data
-    starts, durations, colors = [], [], []
-    for _, row in sub.iterrows():
-        s = max(row["Event Start Date"], day_start)
-        e = min(row["Event End Date"], day_end)
-        starts.append(s)
-        durations.append((e - s).total_seconds() / 86400 + 1)  # Convert to days
-        colors.append(get_seller_color(row.get("Owner", "")))
+        # Clip to the day window and prepare data
+        starts, durations, colors = [], [], []
+        for _, row in sub.iterrows():
+            s = max(row["Event Start Date"], day_start)
+            e = min(row["Event End Date"], day_end)
+            starts.append(s)
+            durations.append((e - s).total_seconds() / 86400 + 1)  # Convert to days
+            colors.append(get_seller_color(row.get("Owner", "")))
+    else:
+        # No events - create empty chart with placeholder
+        starts, durations, colors = [], [], []
 
     # Enhanced plotting with modern styling for daily view
-    fig_h = max(5.0, len(sub) * 0.5 + 4.0)  # More space for daily view
+    fig_h = max(5.0, max(len(sub) * 0.5, 2.0) + 4.0)  # Minimum height even with no events
     fig_w = 20.0
     
     # Create figure with modern styling
@@ -747,14 +752,21 @@ def gantt_for_day(df: pd.DataFrame, outdir: Path) -> None:
     ax.set_facecolor('#ffffff')
     
     # Create the horizontal bar chart with enhanced styling
-    bars = ax.barh(sub["Event Name"], durations, left=starts, color=colors, 
-                   alpha=0.9, edgecolor='white', linewidth=1.5, height=0.7)
-    
-    # Enhanced bar styling with transparency
-    for bar, color in zip(bars, colors):
-        bar.set_alpha(0.85)
-        bar.set_linewidth(1.5)
-        bar.set_edgecolor('white')
+    if not sub.empty:
+        bars = ax.barh(sub["Event Name"], durations, left=starts, color=colors, 
+                       alpha=0.9, edgecolor='white', linewidth=1.5, height=0.7)
+        
+        # Enhanced bar styling with transparency
+        for bar, color in zip(bars, colors):
+            bar.set_alpha(0.85)
+            bar.set_linewidth(1.5)
+            bar.set_edgecolor('white')
+    else:
+        # No events - show a message
+        ax.text(0.5, 0.5, 'No Events Scheduled Today', 
+                transform=ax.transAxes, ha='center', va='center',
+                fontsize=24, fontweight='600', color='#64748b',
+                fontfamily='sans-serif')
     
     # Enhanced styling for daily view
     ax.set_xlim(day_start - pd.Timedelta(minutes=30), day_end + pd.Timedelta(hours=1))
@@ -808,7 +820,7 @@ def gantt_for_day(df: pd.DataFrame, outdir: Path) -> None:
     ax.spines['right'].set_visible(False)
     
     # Create an enhanced legend for the color coding
-    if 'Owner' in sub.columns:
+    if not sub.empty and 'Owner' in sub.columns:
         unique_owners = sub['Owner'].dropna().unique()
         legend_elements = []
         for owner in sorted(unique_owners):
