@@ -4983,11 +4983,38 @@
             }
         });
 
-        // Auto-reload every 5 minutes for kiosk mode to ensure fresh content
+        // Smart refresh system - coordinates with existing refresh systems
+        // This ensures content stays fresh while preserving authentication state
         setInterval(() => {
-            console.log('Performing scheduled page reload...');
-            location.reload();
-        }, 300000); // 5 minutes
+            console.log('🔄 Performing comprehensive smart refresh...');
+            
+            try {
+                if (window.dashboard) {
+                    // Force weather refresh (existing system refreshes every 10 min, this ensures 5 min)
+                    console.log('  🌤️ Force refreshing weather data...');
+                    window.dashboard.loadWeather();
+                    
+                    // Announcements refresh (if cloud sync enabled)
+                    if (window.dashboard.cloudSyncEnabled) {
+                        console.log('  📢 Force syncing announcements from cloud...');
+                        window.dashboard.syncAnnouncementsFromCloud();
+                    } else {
+                        console.log('  📢 Updating local announcements display...');
+                        window.dashboard.updateAnnouncementsDisplay();
+                    }
+                    
+                    // Note: Slides already refresh every 2 minutes via startSlideReloader()
+                    // so we don't need to force that here
+                    
+                    console.log('✅ Smart refresh completed - no page reload needed!');
+                } else {
+                    console.warn('⚠️ Dashboard not available for smart refresh');
+                }
+            } catch (error) {
+                console.error('❌ Smart refresh failed:', error);
+                console.log('🔄 Will retry on next interval');
+            }
+        }, 300000); // 5 minutes - maintains fresh content without authentication interruption
     </script>
     
     <!-- ENHANCED CLOUD SYNC FIX -->
