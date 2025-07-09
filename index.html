@@ -7,16 +7,55 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&family=Nunito:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- Load configuration file -->
     <script>
-        // Try to load config.js, fall back to config.example.js if not found
-        const configScript = document.createElement('script');
-        configScript.src = 'config.js';
-        configScript.onerror = function() {
-            console.warn('config.js not found, loading config.example.js');
-            const fallbackScript = document.createElement('script');
-            fallbackScript.src = 'config.example.js';
-            document.head.appendChild(fallbackScript);
-        };
-        document.head.appendChild(configScript);
+        // Enhanced config loading with better error handling for GitHub Pages
+        window.CONFIG_LOADED = false;
+        
+        function loadConfig() {
+            return new Promise((resolve, reject) => {
+                // Try to load config.js first
+                const configScript = document.createElement('script');
+                configScript.src = 'config.js?' + Date.now(); // Cache busting
+                
+                configScript.onload = function() {
+                    console.log('✅ config.js loaded successfully');
+                    window.CONFIG_LOADED = true;
+                    resolve('config.js');
+                };
+                
+                configScript.onerror = function() {
+                    console.warn('⚠️ config.js not found, loading config.example.js');
+                    // Remove failed script
+                    document.head.removeChild(configScript);
+                    
+                    // Load fallback
+                    const fallbackScript = document.createElement('script');
+                    fallbackScript.src = 'config.example.js?' + Date.now(); // Cache busting
+                    
+                    fallbackScript.onload = function() {
+                        console.log('✅ config.example.js loaded successfully');
+                        window.CONFIG_LOADED = true;
+                        resolve('config.example.js');
+                    };
+                    
+                    fallbackScript.onerror = function() {
+                        console.error('❌ Failed to load any config file');
+                        window.CONFIG_LOADED = true; // Continue anyway
+                        reject('No config file found');
+                    };
+                    
+                    document.head.appendChild(fallbackScript);
+                };
+                
+                document.head.appendChild(configScript);
+            });
+        }
+        
+        // Load config immediately
+        loadConfig().then(configFile => {
+            console.log(`🔧 Configuration loaded from: ${configFile}`);
+        }).catch(error => {
+            console.error('🔧 Configuration loading failed:', error);
+        });
     </script>
     <style>
         * {
@@ -5217,19 +5256,30 @@
         // Authentication System - Improved Version
         class AuthSystem {
             constructor() {
-                this.config = window.DASHBOARD_CONFIG?.authentication || {};
-                this.enabled = this.config.enabled || false;
-                this.password = this.config.password || 'dashboard123';
-                this.sessionTimeout = this.config.sessionTimeout || 3600000; // 1 hour default
-                this.requirePasswordOnRefresh = this.config.requirePasswordOnRefresh || false;
-                this.allowLogout = this.config.allowLogout || true;
+                console.log('🔐 AuthSystem constructor called');
+                console.log('🔍 Raw DASHBOARD_CONFIG:', window.DASHBOARD_CONFIG);
+                console.log('🔍 Raw authentication config:', window.DASHBOARD_CONFIG?.authentication);
                 
-                console.log('🔐 Authentication Config:', {
+                this.config = window.DASHBOARD_CONFIG?.authentication || {};
+                this.enabled = this.config.enabled !== undefined ? this.config.enabled : true; // Default to true
+                this.password = this.config.password || 'dashboard123';
+                this.sessionTimeout = this.config.sessionTimeout !== undefined ? this.config.sessionTimeout : 0; // Default to 0
+                this.requirePasswordOnRefresh = this.config.requirePasswordOnRefresh !== undefined ? this.config.requirePasswordOnRefresh : true; // Default to true
+                this.allowLogout = this.config.allowLogout !== undefined ? this.config.allowLogout : false; // Default to false
+                
+                console.log('🔐 Final Authentication Config:', {
                     enabled: this.enabled,
+                    password: this.password ? '***' : 'UNDEFINED',
                     sessionTimeout: this.sessionTimeout,
                     requirePasswordOnRefresh: this.requirePasswordOnRefresh,
                     allowLogout: this.allowLogout
                 });
+                
+                if (!this.enabled) {
+                    console.warn('⚠️ Authentication is DISABLED');
+                } else {
+                    console.log('✅ Authentication is ENABLED');
+                }
                 
                 this.setupEventListeners();
                 this.init();
@@ -5264,20 +5314,31 @@
 
             handleAuth(event) {
                 console.log('🔐 Handling authentication...');
+                console.log('🔐 Event:', event);
                 event.preventDefault();
                 
                 const passwordField = document.getElementById('authPassword');
                 const password = passwordField ? passwordField.value : '';
                 
-                console.log('🔐 Password entered:', password ? '***' : 'EMPTY');
+                console.log('🔐 Password field found:', !!passwordField);
+                console.log('🔐 Password entered:', password ? `*** (length: ${password.length})` : 'EMPTY');
+                console.log('🔐 Expected password:', this.password ? `*** (length: ${this.password.length})` : 'UNDEFINED');
+                console.log('🔐 Authentication enabled:', this.enabled);
                 
                 if (!password) {
+                    console.log('❌ No password entered');
                     this.showError('Please enter an access code.');
                     return false;
                 }
                 
                 const success = this.authenticate(password);
                 console.log('🔐 Authentication result:', success);
+                
+                if (!success) {
+                    console.log('❌ Authentication failed');
+                } else {
+                    console.log('✅ Authentication successful');
+                }
                 
                 return false;
             }
@@ -5458,18 +5519,46 @@
 
         // Initialize authentication when config is loaded
         function initializeAuthentication() {
+            console.log('🔄 Starting authentication initialization...');
+            
             const initAuth = () => {
-                if (typeof window.DASHBOARD_CONFIG !== 'undefined' && window.DASHBOARD_CONFIG.authentication) {
-                    console.log('🔐 Initializing authentication system...');
-                    console.log('Authentication config:', window.DASHBOARD_CONFIG.authentication);
-                    
-                    // Initialize authentication system
-                    authSystem = new AuthSystem();
-                    
-                    console.log('✅ Authentication system initialized!');
+                // Debug current state
+                console.log('🔍 Debug state:', {
+                    'CONFIG_LOADED': window.CONFIG_LOADED,
+                    'DASHBOARD_CONFIG exists': typeof window.DASHBOARD_CONFIG !== 'undefined',
+                    'DASHBOARD_CONFIG': window.DASHBOARD_CONFIG,
+                    'authentication exists': window.DASHBOARD_CONFIG?.authentication !== undefined
+                });
+                
+                if (window.CONFIG_LOADED && typeof window.DASHBOARD_CONFIG !== 'undefined') {
+                    // Config is loaded, check authentication config
+                    if (window.DASHBOARD_CONFIG.authentication) {
+                        console.log('🔐 Authentication config found, initializing...');
+                        console.log('Authentication config:', window.DASHBOARD_CONFIG.authentication);
+                        
+                        // Initialize authentication system
+                        authSystem = new AuthSystem();
+                        
+                        console.log('✅ Authentication system initialized!');
+                    } else {
+                        console.warn('⚠️ No authentication config found, creating default config');
+                        // Create default authentication config
+                        window.DASHBOARD_CONFIG.authentication = {
+                            enabled: true,
+                            password: 'dashboard123',
+                            sessionTimeout: 0,
+                            requirePasswordOnRefresh: true,
+                            allowLogout: false
+                        };
+                        
+                        console.log('🔐 Using default authentication config:', window.DASHBOARD_CONFIG.authentication);
+                        authSystem = new AuthSystem();
+                        console.log('✅ Authentication system initialized with defaults!');
+                    }
                 } else {
-                    console.log('⏳ Waiting for config to load...');
-                    setTimeout(initAuth, 50);
+                    // Still waiting for config
+                    console.log('⏳ Waiting for config to load... (CONFIG_LOADED:', window.CONFIG_LOADED, ')');
+                    setTimeout(initAuth, 100);
                 }
             };
             
