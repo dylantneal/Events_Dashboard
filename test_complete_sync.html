@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Cloud Sync Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .pass { background-color: #d4edda; color: #155724; }
+        .fail { background-color: #f8d7da; color: #721c24; }
+        .pending { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Complete Cloud Sync Test Suite</h1>
+        
+        <div id="overall-status" class="status info">
+            ⏳ Initializing comprehensive sync tests...
+        </div>
+        
+        <div class="test-grid">
+            <div class="test-section">
+                <h3>📡 Cloud Connectivity Tests</h3>
+                <div id="connectivity-results"></div>
+                <button onclick="runConnectivityTests()">🔍 Test Cloud Connection</button>
+            </div>
+            
+            <div class="test-section">
+                <h3>📋 Current Cloud State</h3>
+                <div id="cloud-state-results"></div>
+                <button onclick="checkCloudState()">☁️ Check Cloud State</button>
+            </div>
+            
+            <div class="test-section">
+                <h3>➕ Creation Sync Test</h3>
+                <div id="creation-results"></div>
+                <button onclick="testCreationSync()">🚀 Test Creation Sync</button>
+            </div>
+            
+            <div class="test-section">
+                <h3>🗑️ Deletion Sync Test</h3>
+                <div id="deletion-results"></div>
+                <button onclick="testDeletionSync()">🗑️ Test Deletion Sync</button>
+            </div>
+            
+            <div class="test-section">
+                <h3>🔄 Bidirectional Sync Test</h3>
+                <div id="bidirectional-results"></div>
+                <button onclick="testBidirectionalSync()">🔄 Test Bidirectional Sync</button>
+            </div>
+            
+            <div class="test-section">
+                <h3>⚡ Performance Tests</h3>
+                <div id="performance-results"></div>
+                <button onclick="testPerformance()">⚡ Test Performance</button>
+            </div>
+        </div>
+        
+        <div class="container">
+            <h3>🧹 Cleanup & Utilities</h3>
+            <button onclick="clearAllData()">🗑️ Clear All Data</button>
+            <button onclick="runAllTests()">🚀 Run All Tests</button>
+            <button onclick="generateReport()">📊 Generate Report</button>
+        </div>
+        
+        <div class="container">
+            <h3>📝 Test Log</h3>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        const CLOUD_URL = 'https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1';
+        let testResults = {};
+        let logDiv = document.getElementById('log');
+        let overallStatus = document.getElementById('overall-status');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateOverallStatus(message, type = 'info') {
+            overallStatus.textContent = message;
+            overallStatus.className = `status ${type}`;
+        }
+        
+        function displayResult(containerId, test, status, message) {
+            const container = document.getElementById(containerId);
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${status}`;
+            resultDiv.textContent = `${test}: ${message}`;
+            container.appendChild(resultDiv);
+            
+            testResults[test] = { status, message };
+        }
+        
+        async function runConnectivityTests() {
+            log('🔍 Starting connectivity tests...');
+            const container = document.getElementById('connectivity-results');
+            container.innerHTML = '';
+            
+            // Test 1: Basic connectivity
+            try {
+                const response = await fetch(CLOUD_URL + '/latest');
+                if (response.ok) {
+                    displayResult('connectivity-results', 'Basic Connection', 'pass', 'Connected successfully');
+                } else {
+                    displayResult('connectivity-results', 'Basic Connection', 'fail', `HTTP ${response.status}`);
+                }
+            } catch (error) {
+                displayResult('connectivity-results', 'Basic Connection', 'fail', error.message);
+            }
+            
+            // Test 2: Response time
+            const startTime = Date.now();
+            try {
+                await fetch(CLOUD_URL + '/latest');
+                const responseTime = Date.now() - startTime;
+                displayResult('connectivity-results', 'Response Time', 
+                    responseTime < 2000 ? 'pass' : 'warning', 
+                    `${responseTime}ms`);
+            } catch (error) {
+                displayResult('connectivity-results', 'Response Time', 'fail', 'Failed to measure');
+            }
+            
+            // Test 3: CORS headers
+            try {
+                const response = await fetch(CLOUD_URL + '/latest');
+                const corsHeader = response.headers.get('access-control-allow-origin');
+                displayResult('connectivity-results', 'CORS Headers', 
+                    corsHeader ? 'pass' : 'warning', 
+                    corsHeader || 'No CORS header found');
+            } catch (error) {
+                displayResult('connectivity-results', 'CORS Headers', 'fail', 'Failed to check');
+            }
+            
+            log('✅ Connectivity tests completed');
+        }
+        
+        async function checkCloudState() {
+            log('☁️ Checking current cloud state...');
+            const container = document.getElementById('cloud-state-results');
+            container.innerHTML = '';
+            
+            try {
+                const response = await fetch(CLOUD_URL + '/latest');
+                const data = await response.json();
+                const announcements = data.record.announcements || [];
+                
+                displayResult('cloud-state-results', 'Cloud Access', 'pass', 'Successfully retrieved data');
+                displayResult('cloud-state-results', 'Announcement Count', 'info', `${announcements.length} announcements`);
+                
+                if (announcements.length > 0) {
+                    announcements.forEach((ann, i) => {
+                        displayResult('cloud-state-results', `Announcement ${i + 1}`, 'info', 
+                            `"${ann.text.substring(0, 30)}..." (${ann.startTime}-${ann.endTime})`);
+                    });
+                }
+                
+                log(`☁️ Cloud has ${announcements.length} announcements`);
+            } catch (error) {
+                displayResult('cloud-state-results', 'Cloud Access', 'fail', error.message);
+                log(`❌ Cloud check failed: ${error.message}`);
+            }
+        }
+        
+        async function testCreationSync() {
+            log('🚀 Testing creation sync...');
+            const container = document.getElementById('creation-results');
+            container.innerHTML = '';
+            
+            const testAnnouncement = {
+                id: `test_creation_${Date.now()}`,
+                text: `Test creation sync - ${new Date().toLocaleTimeString()}`,
+                startDate: new Date().toISOString().split('T')[0],
+                startTime: '09:00',
+                endDate: new Date().toISOString().split('T')[0],
+                endTime: '17:00',
+                createdAt: new Date().toISOString(),
+                lastModified: new Date().toISOString()
+            };
+            
+            try {
+                // Get current state
+                const beforeResponse = await fetch(CLOUD_URL + '/latest');
+                const beforeData = await beforeResponse.json();
+                const beforeCount = beforeData.record.announcements.length;
+                
+                // Create announcement
+                const createResponse = await fetch(CLOUD_URL.replace('/latest', ''), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        announcements: [...beforeData.record.announcements, testAnnouncement]
+                    })
+                });
+                
+                if (createResponse.ok) {
+                    displayResult('creation-results', 'Creation Request', 'pass', 'Successfully sent to cloud');
+                    
+                    // Verify creation
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+                    const afterResponse = await fetch(CLOUD_URL + '/latest');
+                    const afterData = await afterResponse.json();
+                    const afterCount = afterData.record.announcements.length;
+                    
+                    if (afterCount > beforeCount) {
+                        displayResult('creation-results', 'Creation Verification', 'pass', 
+                            `Count increased from ${beforeCount} to ${afterCount}`);
+                        
+                        // Check if our specific announcement is there
+                        const found = afterData.record.announcements.find(a => a.id === testAnnouncement.id);
+                        if (found) {
+                            displayResult('creation-results', 'Specific Announcement', 'pass', 
+                                'Test announcement found in cloud');
+                        } else {
+                            displayResult('creation-results', 'Specific Announcement', 'fail', 
+                                'Test announcement not found');
+                        }
+                    } else {
+                        displayResult('creation-results', 'Creation Verification', 'fail', 
+                            'Announcement count did not increase');
+                    }
+                } else {
+                    displayResult('creation-results', 'Creation Request', 'fail', 
+                        `HTTP ${createResponse.status}`);
+                }
+                
+            } catch (error) {
+                displayResult('creation-results', 'Creation Test', 'fail', error.message);
+                log(`❌ Creation test failed: ${error.message}`);
+            }
+        }
+        
+        async function testDeletionSync() {
+            log('🗑️ Testing deletion sync...');
+            const container = document.getElementById('deletion-results');
+            container.innerHTML = '';
+            
+            try {
+                // Get current state
+                const response = await fetch(CLOUD_URL + '/latest');
+                const data = await response.json();
+                const announcements = data.record.announcements || [];
+                
+                if (announcements.length === 0) {
+                    displayResult('deletion-results', 'Deletion Test', 'warning', 
+                        'No announcements to delete');
+                    return;
+                }
+                
+                // Find a test announcement to delete
+                const testAnnouncement = announcements.find(a => a.id.includes('test_'));
+                if (!testAnnouncement) {
+                    displayResult('deletion-results', 'Deletion Test', 'warning', 
+                        'No test announcements found to delete');
+                    return;
+                }
+                
+                const beforeCount = announcements.length;
+                const filteredAnnouncements = announcements.filter(a => a.id !== testAnnouncement.id);
+                
+                // Delete announcement
+                const deleteResponse = await fetch(CLOUD_URL.replace('/latest', ''), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        announcements: filteredAnnouncements
+                    })
+                });
+                
+                if (deleteResponse.ok) {
+                    displayResult('deletion-results', 'Deletion Request', 'pass', 'Successfully sent to cloud');
+                    
+                    // Verify deletion
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    const afterResponse = await fetch(CLOUD_URL + '/latest');
+                    const afterData = await afterResponse.json();
+                    const afterCount = afterData.record.announcements.length;
+                    
+                    if (afterCount < beforeCount) {
+                        displayResult('deletion-results', 'Deletion Verification', 'pass', 
+                            `Count decreased from ${beforeCount} to ${afterCount}`);
+                    } else {
+                        displayResult('deletion-results', 'Deletion Verification', 'fail', 
+                            'Announcement count did not decrease');
+                    }
+                } else {
+                    displayResult('deletion-results', 'Deletion Request', 'fail', 
+                        `HTTP ${deleteResponse.status}`);
+                }
+                
+            } catch (error) {
+                displayResult('deletion-results', 'Deletion Test', 'fail', error.message);
+                log(`❌ Deletion test failed: ${error.message}`);
+            }
+        }
+        
+        async function testBidirectionalSync() {
+            log('🔄 Testing bidirectional sync...');
+            const container = document.getElementById('bidirectional-results');
+            container.innerHTML = '';
+            
+            // This test simulates two devices making changes
+            displayResult('bidirectional-results', 'Bidirectional Test', 'pending', 
+                'Would require multiple browser instances to test properly');
+            
+            // For now, just test that we can read and write consistently
+            try {
+                const response = await fetch(CLOUD_URL + '/latest');
+                const data = await response.json();
+                
+                // Write the same data back
+                const writeResponse = await fetch(CLOUD_URL.replace('/latest', ''), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data.record)
+                });
+                
+                if (writeResponse.ok) {
+                    displayResult('bidirectional-results', 'Read-Write Consistency', 'pass', 
+                        'Successfully read and wrote same data');
+                } else {
+                    displayResult('bidirectional-results', 'Read-Write Consistency', 'fail', 
+                        `Write failed: HTTP ${writeResponse.status}`);
+                }
+                
+            } catch (error) {
+                displayResult('bidirectional-results', 'Bidirectional Test', 'fail', error.message);
+            }
+        }
+        
+        async function testPerformance() {
+            log('⚡ Testing performance...');
+            const container = document.getElementById('performance-results');
+            container.innerHTML = '';
+            
+            // Test multiple rapid requests
+            const requests = [];
+            const startTime = Date.now();
+            
+            for (let i = 0; i < 5; i++) {
+                requests.push(fetch(CLOUD_URL + '/latest'));
+            }
+            
+            try {
+                await Promise.all(requests);
+                const totalTime = Date.now() - startTime;
+                const avgTime = totalTime / 5;
+                
+                displayResult('performance-results', 'Concurrent Requests', 'pass', 
+                    `5 requests completed in ${totalTime}ms (avg: ${avgTime}ms)`);
+                
+                // Test rate limiting
+                if (avgTime < 200) {
+                    displayResult('performance-results', 'Response Speed', 'pass', 'Fast response times');
+                } else {
+                    displayResult('performance-results', 'Response Speed', 'warning', 'Slow response times');
+                }
+                
+            } catch (error) {
+                displayResult('performance-results', 'Performance Test', 'fail', error.message);
+            }
+        }
+        
+        async function clearAllData() {
+            if (!confirm('Clear all announcements from cloud? This cannot be undone.')) {
+                return;
+            }
+            
+            log('🧹 Clearing all data...');
+            
+            try {
+                const response = await fetch(CLOUD_URL.replace('/latest', ''), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ announcements: [] })
+                });
+                
+                if (response.ok) {
+                    log('✅ All data cleared successfully');
+                    updateOverallStatus('All data cleared', 'success');
+                } else {
+                    log(`❌ Failed to clear data: HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ Error clearing data: ${error.message}`);
+            }
+        }
+        
+        async function runAllTests() {
+            log('🚀 Running all tests...');
+            updateOverallStatus('Running comprehensive tests...', 'info');
+            
+            await runConnectivityTests();
+            await checkCloudState();
+            await testCreationSync();
+            await testDeletionSync();
+            await testBidirectionalSync();
+            await testPerformance();
+            
+            log('✅ All tests completed');
+            updateOverallStatus('All tests completed', 'success');
+        }
+        
+        function generateReport() {
+            log('📊 Generating test report...');
+            
+            const report = {
+                timestamp: new Date().toISOString(),
+                results: testResults,
+                summary: {
+                    total: Object.keys(testResults).length,
+                    passed: Object.values(testResults).filter(r => r.status === 'pass').length,
+                    failed: Object.values(testResults).filter(r => r.status === 'fail').length,
+                    warnings: Object.values(testResults).filter(r => r.status === 'warning').length
+                }
+            };
+            
+            console.log('📊 TEST REPORT:', report);
+            
+            // Create downloadable report
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `cloud-sync-test-report-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            log('📊 Report generated and downloaded');
+        }
+        
+        // Initialize
+        log('🔧 Cloud sync test suite initialized');
+        updateOverallStatus('Test suite ready - click buttons to run tests', 'info');
+    </script>
+</body>
+</html> 

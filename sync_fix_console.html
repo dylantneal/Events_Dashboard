@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sync Fix Console Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover { background: #0056b3; }
+        .success { background: #28a745; }
+        .success:hover { background: #218838; }
+        .steps {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .steps li {
+            margin: 10px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Direct Sync Fix</h1>
+        
+        <div class="steps">
+            <h3>📋 Instructions:</h3>
+            <ol>
+                <li>Open <strong>marquisdashboard.com</strong> in a new tab</li>
+                <li>Press <strong>F12</strong> to open Developer Tools</li>
+                <li>Go to the <strong>Console</strong> tab</li>
+                <li>Click the button below to copy the fix code</li>
+                <li>Paste the code into the console and press <strong>Enter</strong></li>
+                <li>Look for "✅ Direct Sync Active" indicator in top-right</li>
+                <li><strong>Repeat on ALL devices</strong> that need sync</li>
+            </ol>
+        </div>
+
+        <button onclick="copyCode()" class="success">📋 Copy Direct Sync Fix Code</button>
+        
+        <div class="code-block" id="code-block">
+// DIRECT SYNC FIX - Paste this into your dashboard console
+console.log('🔧 DIRECT SYNC FIX: Starting...');
+
+function waitForDashboard() {
+    return new Promise((resolve) => {
+        const check = () => {
+            if (window.dashboard) {
+                resolve(window.dashboard);
+            } else {
+                setTimeout(check, 100);
+            }
+        };
+        check();
+    });
+}
+
+waitForDashboard().then(dashboard => {
+    console.log('✅ Dashboard found, applying direct sync fix...');
+    
+    dashboard.cloudSyncEnabled = true;
+    dashboard.cloudSyncUrl = 'https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1/latest';
+    
+    const originalSubmit = dashboard.handleAnnouncementSubmit;
+    dashboard.handleAnnouncementSubmit = async function() {
+        console.log('📝 DIRECT FIX: Creating/updating announcement...');
+        
+        const text = document.getElementById('announcementText').value.trim();
+        const startDate = document.getElementById('startDate').value;
+        const startTime = document.getElementById('startTime').value;
+        const endDate = document.getElementById('endDate').value;
+        const endTime = document.getElementById('endTime').value;
+
+        if (!text || !startDate || !startTime || !endDate || !endTime) {
+            alert('Please fill in all fields');
+            return;
+        }
+
+        const start = new Date(startDate + 'T' + startTime);
+        const end = new Date(endDate + 'T' + endTime);
+
+        if (end <= start) {
+            alert('End date/time must be after start date/time');
+            return;
+        }
+
+        const announcement = {
+            id: this.editingAnnouncementId || this.generateId(),
+            text,
+            startDate,
+            startTime,
+            endDate,
+            endTime,
+            createdAt: this.editingAnnouncementId ? 
+                (this.announcements.find(a => a.id === this.editingAnnouncementId)?.createdAt || new Date().toISOString()) : 
+                new Date().toISOString(),
+            lastModified: new Date().toISOString()
+        };
+
+        if (this.editingAnnouncementId) {
+            const index = this.announcements.findIndex(a => a.id === this.editingAnnouncementId);
+            if (index !== -1) {
+                this.announcements[index] = announcement;
+            }
+        } else {
+            this.announcements.push(announcement);
+        }
+
+        try {
+            console.log('☁️ DIRECT FIX: Syncing to cloud...');
+            const response = await fetch('https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ announcements: this.announcements })
+            });
+            
+            if (response.ok) {
+                console.log('✅ DIRECT FIX: Cloud sync successful!');
+                localStorage.setItem('dashboard_announcements', JSON.stringify(this.announcements));
+            } else {
+                throw new Error(`HTTP ${response.status}`);
+            }
+        } catch (error) {
+            console.error('❌ DIRECT FIX: Cloud sync failed:', error);
+            alert('Failed to sync to cloud. Saved locally only.');
+            localStorage.setItem('dashboard_announcements', JSON.stringify(this.announcements));
+        }
+
+        this.updateAnnouncementsDisplay();
+        this.closeAnnouncementModal();
+    };
+    
+    const originalDelete = dashboard.deleteAnnouncement;
+    dashboard.deleteAnnouncement = async function(id) {
+        if (!confirm('Delete this announcement?')) return;
+        
+        console.log('🗑️ DIRECT FIX: Deleting announcement...');
+        this.announcements = this.announcements.filter(a => a.id !== id);
+        
+        try {
+            const response = await fetch('https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ announcements: this.announcements })
+            });
+            
+            if (response.ok) {
+                console.log('✅ DIRECT FIX: Delete synced to cloud!');
+                localStorage.setItem('dashboard_announcements', JSON.stringify(this.announcements));
+            } else {
+                throw new Error(`HTTP ${response.status}`);
+            }
+        } catch (error) {
+            console.error('❌ DIRECT FIX: Delete sync failed:', error);
+            localStorage.setItem('dashboard_announcements', JSON.stringify(this.announcements));
+        }
+        
+        this.updateAnnouncementsDisplay();
+    };
+    
+    if (dashboard.cloudSyncInterval) {
+        clearInterval(dashboard.cloudSyncInterval);
+    }
+    
+    dashboard.cloudSyncInterval = setInterval(async () => {
+        if (dashboard.syncInProgress) return;
+        
+        try {
+            dashboard.syncInProgress = true;
+            console.log('🔄 DIRECT FIX: Checking for updates...');
+            
+            const response = await fetch('https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1/latest?t=' + Date.now());
+            const data = await response.json();
+            const cloudAnnouncements = data.record.announcements || [];
+            
+            if (cloudAnnouncements.length !== dashboard.announcements.length) {
+                console.log('📝 DIRECT FIX: Updating from cloud...');
+                dashboard.announcements = cloudAnnouncements;
+                localStorage.setItem('dashboard_announcements', JSON.stringify(dashboard.announcements));
+                dashboard.updateAnnouncementsDisplay();
+            }
+        } catch (error) {
+            console.warn('❌ DIRECT FIX: Sync check failed:', error);
+        } finally {
+            dashboard.syncInProgress = false;
+        }
+    }, 30000);
+    
+    setTimeout(() => {
+        console.log('🚀 DIRECT FIX: Performing initial sync...');
+        dashboard.cloudSyncInterval();
+    }, 2000);
+    
+    const indicator = document.createElement('div');
+    indicator.textContent = '✅ Direct Sync Active';
+    indicator.style.cssText = `
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: #28a745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 3px;
+        font-size: 12px;
+        z-index: 10000;
+        font-family: Arial, sans-serif;
+    `;
+    document.body.appendChild(indicator);
+    
+    console.log('🎉 DIRECT SYNC FIX APPLIED SUCCESSFULLY!');
+    console.log('✅ Create, Update, Delete will now sync immediately');
+    console.log('✅ Automatic sync every 30 seconds');
+    console.log('✅ Visual indicator added');
+});
+        </div>
+
+        <div class="steps">
+            <h3>✅ What this fix does:</h3>
+            <ul>
+                <li><strong>Immediate CRUD sync</strong> - Create, Update, Delete sync to cloud instantly</li>
+                <li><strong>Automatic updates</strong> - Checks for changes every 30 seconds</li>
+                <li><strong>Visual confirmation</strong> - Shows "✅ Direct Sync Active" indicator</li>
+                <li><strong>Error handling</strong> - Fallback to local storage if cloud fails</li>
+                <li><strong>Console logging</strong> - Shows sync activity for debugging</li>
+            </ul>
+        </div>
+
+        <div class="steps">
+            <h3>🔍 Troubleshooting:</h3>
+            <ul>
+                <li>If you don't see the green indicator, the fix didn't load properly</li>
+                <li>Check the console for error messages</li>
+                <li>Make sure you're on the correct dashboard URL</li>
+                <li>Try refreshing the page and running the fix again</li>
+                <li>Apply the fix to ALL devices that need to sync</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function copyCode() {
+            const codeBlock = document.getElementById('code-block');
+            const textArea = document.createElement('textarea');
+            textArea.value = codeBlock.textContent;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '✅ Copied! Paste into console';
+            button.style.background = '#28a745';
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '#007bff';
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 
