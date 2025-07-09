@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcement Sync Test</title>
+    <script src="config.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .status { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .announcements {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .announcement {
+            padding: 10px;
+            margin: 10px 0;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Announcement Sync Test</h1>
+    
+    <div id="status"></div>
+    
+    <div class="announcements">
+        <h2>Cloud Announcements</h2>
+        <div id="cloudAnnouncements">Loading...</div>
+    </div>
+    
+    <div class="announcements">
+        <h2>Local Announcements</h2>
+        <div id="localAnnouncements">Loading...</div>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <button onclick="createTestAnnouncement()">Create Test Announcement</button>
+        <button onclick="syncFromCloud()">Force Sync from Cloud</button>
+        <button onclick="location.reload()">Refresh Page</button>
+    </div>
+
+    <script>
+        let cloudSyncUrl = null;
+        let cloudSyncEnabled = false;
+        
+        // Initialize
+        function init() {
+            const config = window.DASHBOARD_CONFIG;
+            if (config && config.cloudSync) {
+                cloudSyncEnabled = config.cloudSync.enabled;
+                cloudSyncUrl = config.cloudSync.url;
+                
+                showStatus('info', `Cloud sync ${cloudSyncEnabled ? 'ENABLED' : 'DISABLED'}`);
+                if (cloudSyncUrl) {
+                    showStatus('info', `Cloud URL: ${cloudSyncUrl}`);
+                }
+            } else {
+                showStatus('error', 'No cloud sync configuration found!');
+            }
+            
+            loadLocalAnnouncements();
+            if (cloudSyncEnabled) {
+                loadCloudAnnouncements();
+            }
+        }
+        
+        function showStatus(type, message) {
+            const statusDiv = document.getElementById('status');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            statusDiv.appendChild(div);
+        }
+        
+        function loadLocalAnnouncements() {
+            const stored = localStorage.getItem('dashboard_announcements');
+            const announcements = stored ? JSON.parse(stored) : [];
+            
+            const div = document.getElementById('localAnnouncements');
+            if (announcements.length === 0) {
+                div.innerHTML = '<p>No local announcements</p>';
+            } else {
+                div.innerHTML = announcements.map(a => 
+                    `<div class="announcement">
+                        <strong>${a.text}</strong><br>
+                        <small>ID: ${a.id} | Created: ${new Date(a.createdAt).toLocaleString()}</small>
+                    </div>`
+                ).join('');
+            }
+            
+            showStatus('success', `Loaded ${announcements.length} local announcements`);
+        }
+        
+        async function loadCloudAnnouncements() {
+            if (!cloudSyncUrl) {
+                showStatus('error', 'No cloud URL configured');
+                return;
+            }
+            
+            try {
+                const response = await fetch(cloudSyncUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                let announcements = [];
+                
+                // Handle different response formats
+                if (data.record && data.record.announcements) {
+                    announcements = data.record.announcements;
+                } else if (data.record && Array.isArray(data.record)) {
+                    announcements = data.record;
+                } else if (Array.isArray(data)) {
+                    announcements = data;
+                }
+                
+                const div = document.getElementById('cloudAnnouncements');
+                if (announcements.length === 0) {
+                    div.innerHTML = '<p>No cloud announcements</p>';
+                } else {
+                    div.innerHTML = announcements.map(a => 
+                        `<div class="announcement">
+                            <strong>${a.text}</strong><br>
+                            <small>ID: ${a.id} | Created: ${new Date(a.createdAt).toLocaleString()}</small>
+                        </div>`
+                    ).join('');
+                }
+                
+                showStatus('success', `Loaded ${announcements.length} cloud announcements`);
+                
+            } catch (error) {
+                showStatus('error', `Failed to load cloud announcements: ${error.message}`);
+                document.getElementById('cloudAnnouncements').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function createTestAnnouncement() {
+            const now = new Date();
+            const announcement = {
+                id: 'test-' + Date.now(),
+                text: `Test announcement created at ${now.toLocaleTimeString()}`,
+                startDate: now.toISOString().split('T')[0],
+                startTime: '00:00',
+                endDate: new Date(now.getTime() + 86400000).toISOString().split('T')[0],
+                endTime: '23:59',
+                createdAt: now.toISOString(),
+                lastModified: now.toISOString()
+            };
+            
+            // Save locally
+            const stored = localStorage.getItem('dashboard_announcements');
+            const announcements = stored ? JSON.parse(stored) : [];
+            announcements.push(announcement);
+            localStorage.setItem('dashboard_announcements', JSON.stringify(announcements));
+            
+            showStatus('success', 'Created test announcement locally');
+            
+            // Try to save to cloud
+            if (cloudSyncEnabled && cloudSyncUrl) {
+                try {
+                    const saveUrl = cloudSyncUrl.replace('/latest', '');
+                    const response = await fetch(saveUrl, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ announcements: announcements })
+                    });
+                    
+                    if (response.ok) {
+                        showStatus('success', 'Saved to cloud successfully!');
+                    } else {
+                        showStatus('error', `Cloud save failed: ${response.status}`);
+                    }
+                } catch (error) {
+                    showStatus('error', `Cloud save error: ${error.message}`);
+                }
+            }
+            
+            // Reload displays
+            loadLocalAnnouncements();
+            if (cloudSyncEnabled) {
+                setTimeout(() => loadCloudAnnouncements(), 1000);
+            }
+        }
+        
+        async function syncFromCloud() {
+            if (!cloudSyncEnabled || !cloudSyncUrl) {
+                showStatus('error', 'Cloud sync not enabled');
+                return;
+            }
+            
+            try {
+                const response = await fetch(cloudSyncUrl);
+                const data = await response.json();
+                
+                let cloudAnnouncements = [];
+                if (data.record && data.record.announcements) {
+                    cloudAnnouncements = data.record.announcements;
+                }
+                
+                localStorage.setItem('dashboard_announcements', JSON.stringify(cloudAnnouncements));
+                showStatus('success', `Synced ${cloudAnnouncements.length} announcements from cloud`);
+                
+                loadLocalAnnouncements();
+                loadCloudAnnouncements();
+                
+            } catch (error) {
+                showStatus('error', `Sync failed: ${error.message}`);
+            }
+        }
+        
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            if (cloudSyncEnabled) {
+                loadCloudAnnouncements();
+            }
+        }, 30000);
+        
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html> 

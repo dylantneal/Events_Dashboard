@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcement Timing Test</title>
+    <script src="config.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .current-time {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        .announcement {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 5px solid #007bff;
+        }
+        .active { background: #d4edda; border-left-color: #28a745; }
+        .future { background: #fff3cd; border-left-color: #ffc107; }
+        .expired { background: #f8d7da; border-left-color: #dc3545; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .timing-details {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>📅 Announcement Timing & Sync Test</h1>
+    
+    <div class="test-section">
+        <h2>⏰ Current Time</h2>
+        <div class="current-time" id="currentTime"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🧪 Quick Tests</h2>
+        <button onclick="createCurrentAnnouncement()">Create Active Announcement (Now - 1 Hour)</button>
+        <button onclick="createTimedAnnouncement()">Create 9AM-5PM Today Announcement</button>
+        <button onclick="createFutureAnnouncement()">Create Future Announcement (In 2 Minutes)</button>
+        <button onclick="testCloudSync()">Test Cloud Sync</button>
+        <button onclick="clearAllTests()">Clear Test Announcements</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>📋 All Announcements</h2>
+        <div id="allAnnouncements">Loading...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>✅ Currently Active Announcements</h2>
+        <div id="activeAnnouncements">Loading...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>☁️ Cloud Sync Status</h2>
+        <div id="cloudStatus">Checking...</div>
+    </div>
+
+    <script>
+        let announcements = [];
+        let cloudSyncUrl = null;
+        let cloudSyncEnabled = false;
+        
+        // Initialize
+        function init() {
+            const config = window.DASHBOARD_CONFIG;
+            if (config && config.cloudSync) {
+                cloudSyncEnabled = config.cloudSync.enabled;
+                cloudSyncUrl = config.cloudSync.url;
+            }
+            
+            loadAnnouncements();
+            updateDisplay();
+            
+            // Update time every second
+            setInterval(updateCurrentTime, 1000);
+            
+            // Update announcements every 10 seconds
+            setInterval(updateDisplay, 10000);
+            
+            updateCurrentTime();
+        }
+        
+        function updateCurrentTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleString();
+        }
+        
+        function loadAnnouncements() {
+            const stored = localStorage.getItem('dashboard_announcements');
+            announcements = stored ? JSON.parse(stored) : [];
+            console.log('Loaded announcements:', announcements.length);
+        }
+        
+        function saveAnnouncements() {
+            localStorage.setItem('dashboard_announcements', JSON.stringify(announcements));
+            console.log('Saved announcements:', announcements.length);
+            
+            // Try to sync to cloud
+            if (cloudSyncEnabled && cloudSyncUrl) {
+                syncToCloud();
+            }
+        }
+        
+        async function syncToCloud() {
+            try {
+                const saveUrl = cloudSyncUrl.replace('/latest', '');
+                const response = await fetch(saveUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ announcements: announcements })
+                });
+                
+                if (response.ok) {
+                    console.log('✅ Synced to cloud successfully');
+                    updateCloudStatus('✅ Cloud sync successful', 'success');
+                } else {
+                    console.log('⚠️ Cloud sync failed:', response.status);
+                    updateCloudStatus(`⚠️ Cloud sync failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Cloud sync error:', error);
+                updateCloudStatus(`❌ Cloud sync error: ${error.message}`, 'error');
+            }
+        }
+        
+        function updateCloudStatus(message, type) {
+            const status = document.getElementById('cloudStatus');
+            status.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function getCurrentAnnouncements() {
+            const now = new Date();
+            return announcements.filter(announcement => {
+                const startDate = new Date(announcement.startDate + 'T' + announcement.startTime);
+                const endDate = new Date(announcement.endDate + 'T' + announcement.endTime);
+                return now >= startDate && now <= endDate;
+            });
+        }
+        
+        function updateDisplay() {
+            const now = new Date();
+            
+            // Update all announcements
+            const allDiv = document.getElementById('allAnnouncements');
+            if (announcements.length === 0) {
+                allDiv.innerHTML = '<p>No announcements found.</p>';
+            } else {
+                allDiv.innerHTML = announcements.map(ann => {
+                    const startDate = new Date(ann.startDate + 'T' + ann.startTime);
+                    const endDate = new Date(ann.endDate + 'T' + ann.endTime);
+                    const isActive = now >= startDate && now <= endDate;
+                    const isFuture = now < startDate;
+                    const isExpired = now > endDate;
+                    
+                    let statusClass = 'expired';
+                    let statusText = 'EXPIRED';
+                    if (isActive) {
+                        statusClass = 'active';
+                        statusText = 'ACTIVE';
+                    } else if (isFuture) {
+                        statusClass = 'future';
+                        statusText = 'FUTURE';
+                    }
+                    
+                    return `
+                        <div class="announcement ${statusClass}">
+                            <strong>${ann.text}</strong>
+                            <div class="timing-details">
+                                Status: <strong>${statusText}</strong><br>
+                                Start: ${startDate.toLocaleString()}<br>
+                                End: ${endDate.toLocaleString()}<br>
+                                ID: ${ann.id}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Update active announcements
+            const activeDiv = document.getElementById('activeAnnouncements');
+            const currentAnnouncements = getCurrentAnnouncements();
+            if (currentAnnouncements.length === 0) {
+                activeDiv.innerHTML = '<p>No active announcements right now.</p>';
+            } else {
+                activeDiv.innerHTML = currentAnnouncements.map(ann => `
+                    <div class="announcement active">
+                        <strong>${ann.text}</strong>
+                        <div class="timing-details">
+                            ✅ This announcement should be visible on the dashboard<br>
+                            Ends: ${new Date(ann.endDate + 'T' + ann.endTime).toLocaleString()}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function createCurrentAnnouncement() {
+            const now = new Date();
+            const start = new Date(now.getTime() - 30 * 60 * 1000); // 30 minutes ago
+            const end = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour from now
+            
+            const announcement = {
+                id: 'test_current_' + Date.now(),
+                text: `🔴 ACTIVE TEST: Created at ${now.toLocaleTimeString()} - should be visible NOW!`,
+                startDate: start.toISOString().split('T')[0],
+                startTime: start.toTimeString().split(' ')[0].slice(0, 5),
+                endDate: end.toISOString().split('T')[0],
+                endTime: end.toTimeString().split(' ')[0].slice(0, 5),
+                createdAt: now.toISOString(),
+                lastModified: now.toISOString()
+            };
+            
+            announcements.push(announcement);
+            saveAnnouncements();
+            updateDisplay();
+            
+            alert('✅ Active announcement created! This should be visible on the dashboard right now.');
+        }
+        
+        function createTimedAnnouncement() {
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            
+            const announcement = {
+                id: 'test_9to5_' + Date.now(),
+                text: `🕘 9AM-5PM TEST: Business hours announcement for ${today}`,
+                startDate: today,
+                startTime: '09:00',
+                endDate: today,
+                endTime: '17:00',
+                createdAt: now.toISOString(),
+                lastModified: now.toISOString()
+            };
+            
+            announcements.push(announcement);
+            saveAnnouncements();
+            updateDisplay();
+            
+            const currentHour = now.getHours();
+            const shouldBeActive = currentHour >= 9 && currentHour < 17;
+            
+            alert(`✅ 9AM-5PM announcement created!\nCurrent time: ${now.toLocaleTimeString()}\nShould be ${shouldBeActive ? 'ACTIVE' : 'INACTIVE'} right now.`);
+        }
+        
+        function createFutureAnnouncement() {
+            const now = new Date();
+            const start = new Date(now.getTime() + 2 * 60 * 1000); // 2 minutes from now
+            const end = new Date(now.getTime() + 10 * 60 * 1000); // 10 minutes from now
+            
+            const announcement = {
+                id: 'test_future_' + Date.now(),
+                text: `⏰ FUTURE TEST: Should appear at ${start.toLocaleTimeString()} and last until ${end.toLocaleTimeString()}`,
+                startDate: start.toISOString().split('T')[0],
+                startTime: start.toTimeString().split(' ')[0].slice(0, 5),
+                endDate: end.toISOString().split('T')[0],
+                endTime: end.toTimeString().split(' ')[0].slice(0, 5),
+                createdAt: now.toISOString(),
+                lastModified: now.toISOString()
+            };
+            
+            announcements.push(announcement);
+            saveAnnouncements();
+            updateDisplay();
+            
+            alert(`✅ Future announcement created!\nWill appear in 2 minutes at: ${start.toLocaleTimeString()}\nWatch the dashboard to see it appear automatically.`);
+        }
+        
+        async function testCloudSync() {
+            if (!cloudSyncEnabled || !cloudSyncUrl) {
+                alert('❌ Cloud sync is not enabled in config.js');
+                return;
+            }
+            
+            updateCloudStatus('🔄 Testing cloud sync...', 'info');
+            
+            try {
+                // Test read
+                const response = await fetch(cloudSyncUrl);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Cloud data:', data);
+                    updateCloudStatus('✅ Cloud read test successful', 'success');
+                    
+                    // Test write
+                    await syncToCloud();
+                } else {
+                    updateCloudStatus(`❌ Cloud read failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                updateCloudStatus(`❌ Cloud test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearAllTests() {
+            if (confirm('Clear all test announcements?')) {
+                announcements = announcements.filter(ann => !ann.id.startsWith('test_'));
+                saveAnnouncements();
+                updateDisplay();
+                alert('✅ Test announcements cleared');
+            }
+        }
+        
+        // Initialize when page loads
+        init();
+    </script>
+</body>
+</html> 
