@@ -3229,38 +3229,76 @@
 
             async loadAnnouncements() {
                 try {
+                    console.log('🔄 LOADING ANNOUNCEMENTS...');
+                    console.log('  Cloud sync enabled:', this.cloudSyncEnabled);
+                    console.log('  Cloud URL:', this.cloudSyncUrl);
+                    
                     // Try cloud sync first if enabled
                     if (this.cloudSyncEnabled && this.cloudSyncUrl) {
-                        console.log('Attempting to load announcements from cloud...');
+                        console.log('🌐 Attempting to load announcements from cloud...');
                         try {
                             const cloudData = await this.loadFromCloud();
                             if (cloudData && Array.isArray(cloudData)) {
                                 this.announcements = cloudData;
                                 // Also save to localStorage as backup
                                 localStorage.setItem('dashboard_announcements', JSON.stringify(this.announcements));
-                                console.log('✓ Loaded announcements from cloud:', this.announcements.length, 'items');
+                                console.log('✅ LOADED FROM CLOUD:', this.announcements.length, 'items');
+                                
+                                // Immediately check which ones are active
+                                const now = new Date();
+                                const activeCount = this.announcements.filter(ann => {
+                                    const startDate = new Date(ann.startDate + 'T' + ann.startTime);
+                                    const endDate = new Date(ann.endDate + 'T' + ann.endTime);
+                                    return now >= startDate && now <= endDate;
+                                }).length;
+                                console.log('📊 ACTIVE ANNOUNCEMENTS RIGHT NOW:', activeCount);
+                                
                                 return;
+                            } else {
+                                console.warn('⚠️ Cloud returned invalid data format:', cloudData);
                             }
                         } catch (cloudError) {
-                            console.warn('Cloud sync failed, falling back to localStorage:', cloudError.message);
+                            console.error('❌ Cloud sync failed:', cloudError.message);
+                            console.error('   Full error:', cloudError);
                         }
+                    } else {
+                        console.log('⚠️ Cloud sync not enabled or URL missing');
                     }
                     
                     // Fallback to localStorage
+                    console.log('📱 Falling back to localStorage...');
                     const stored = localStorage.getItem('dashboard_announcements');
                     this.announcements = stored ? JSON.parse(stored) : [];
-                    console.log('Loaded announcements from localStorage:', this.announcements.length, 'items');
+                    console.log('📱 Loaded from localStorage:', this.announcements.length, 'items');
+                    
+                    // If we have no announcements and cloud sync is enabled, try one more time
+                    if (this.announcements.length === 0 && this.cloudSyncEnabled && this.cloudSyncUrl) {
+                        console.log('🔄 No local data, retrying cloud sync...');
+                        setTimeout(async () => {
+                            try {
+                                const retryData = await this.loadFromCloud();
+                                if (retryData && Array.isArray(retryData) && retryData.length > 0) {
+                                    console.log('✅ RETRY SUCCESS: Got', retryData.length, 'announcements');
+                                    this.announcements = retryData;
+                                    localStorage.setItem('dashboard_announcements', JSON.stringify(this.announcements));
+                                    this.updateAnnouncementsDisplay();
+                                }
+                            } catch (retryError) {
+                                console.error('❌ Retry also failed:', retryError.message);
+                            }
+                        }, 2000);
+                    }
                     
                     // Sync status info
                     if (this.cloudSyncEnabled) {
-                        console.log('Cloud sync is enabled - announcements will sync across devices');
+                        console.log('✅ Cloud sync is enabled - announcements will sync across devices');
                     } else if (window.DASHBOARD_CONFIG?.isProduction) {
-                        console.log('Running on GitHub Pages - announcements are stored locally per device');
-                        console.log('Use Ctrl+E to export and Ctrl+I to import announcements between devices');
-                        console.log('Enable cloud sync in config.js for automatic multi-device sync');
+                        console.log('📄 Running on GitHub Pages - announcements are stored locally per device');
+                        console.log('💡 Use Ctrl+E to export and Ctrl+I to import announcements between devices');
+                        console.log('☁️ Enable cloud sync in config.js for automatic multi-device sync');
                     }
                 } catch (error) {
-                    console.error('Error loading announcements:', error);
+                    console.error('💥 Error loading announcements:', error);
                     this.announcements = [];
                 }
             }
@@ -3299,7 +3337,8 @@
                     throw new Error('Cloud sync URL not configured');
                 }
 
-                console.log('🔄 LOADING FROM CLOUD:', this.cloudSyncUrl);
+                console.log('🌐 LOADING FROM CLOUD:', this.cloudSyncUrl);
+                
                 const response = await fetch(this.cloudSyncUrl, {
                     method: 'GET',
                     headers: {
@@ -3308,23 +3347,32 @@
                     }
                 });
 
+                console.log('📡 Cloud response status:', response.status, response.statusText);
+                
                 if (!response.ok) {
                     throw new Error(`Cloud fetch failed: ${response.status} ${response.statusText}`);
                 }
 
                 const data = await response.json();
+                console.log('📦 Raw cloud data structure:', Object.keys(data));
+                console.log('📦 Full cloud data:', JSON.stringify(data, null, 2));
                 
                 // Handle different cloud storage formats
                 if (data.record && data.record.announcements && Array.isArray(data.record.announcements)) {
+                    console.log('✅ Using JSONBin format with wrapper, found', data.record.announcements.length, 'announcements');
                     return data.record.announcements; // JSONBin format with wrapper
                 } else if (data.record && Array.isArray(data.record)) {
+                    console.log('✅ Using JSONBin format direct array, found', data.record.length, 'announcements');
                     return data.record; // JSONBin format direct array
                 } else if (Array.isArray(data)) {
+                    console.log('✅ Using direct array format, found', data.length, 'announcements');
                     return data; // Direct array format
                 } else if (data.announcements && Array.isArray(data.announcements)) {
+                    console.log('✅ Using wrapped format, found', data.announcements.length, 'announcements');
                     return data.announcements; // Wrapped format
                 }
                 
+                console.error('❌ Invalid cloud data format. Data structure:', data);
                 throw new Error('Invalid cloud data format');
             }
 
