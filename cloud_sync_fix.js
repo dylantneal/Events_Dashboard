@@ -123,11 +123,11 @@ waitForDashboard().then(dashboard => {
         clearInterval(dashboard.cloudSyncInterval);
     }
     
-    // Set up more frequent sync (every 5 seconds instead of 15)
+    // Set up optimized sync (every 60 seconds to save API calls)
     dashboard.cloudSyncInterval = setInterval(() => {
         console.log('⏰ ENHANCED: Periodic cloud sync check...');
         dashboard.syncAnnouncementsFromCloud();
-    }, 5000); // Every 5 seconds
+    }, 60000); // Every 60 seconds (1 minute)
     
     // 4. ENHANCED ANNOUNCEMENT DISPLAY UPDATES
     // Clear any existing announcement update interval
@@ -135,13 +135,13 @@ waitForDashboard().then(dashboard => {
         clearInterval(dashboard.announcementUpdateInterval);
     }
     
-    // More frequent display updates
+    // Optimized display updates
     dashboard.announcementUpdateInterval = setInterval(() => {
         if (dashboard.currentSlideIndex === dashboard.announcementsSlideIndex) {
             console.log('📺 ENHANCED: Periodic announcement display update...');
             dashboard.updateAnnouncementsDisplay();
         }
-    }, 3000); // Every 3 seconds when on announcement slide
+    }, 30000); // Every 30 seconds when on announcement slide
     
     // 5. ENHANCED MERGE FUNCTION
     const originalMergeAnnouncements = dashboard.mergeAnnouncements.bind(dashboard);

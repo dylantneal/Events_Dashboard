@@ -3529,8 +3529,8 @@
 
                 console.log('Starting automatic cloud sync...');
                 
-                // Use configurable sync interval (default: 5 minutes)
-                const syncInterval = window.DASHBOARD_CONFIG?.cloudSync?.syncInterval || 300000;
+                // Use configurable sync interval (default: 1 minute)
+                const syncInterval = window.DASHBOARD_CONFIG?.cloudSync?.syncInterval || 60000;
                 setInterval(() => {
                     this.syncAnnouncementsFromCloud();
                 }, syncInterval);
@@ -4854,11 +4854,11 @@
                 clearInterval(dashboard.cloudSyncInterval);
             }
             
-            // Set up more frequent sync (every 5 seconds instead of 15)
+            // Set up optimized sync (every 60 seconds to save API calls)
             dashboard.cloudSyncInterval = setInterval(() => {
                 console.log('⏰ ENHANCED: Periodic cloud sync check...');
                 dashboard.syncAnnouncementsFromCloud();
-            }, 5000); // Every 5 seconds
+            }, 60000); // Every 60 seconds (1 minute)
             
             // 3. IMMEDIATE INITIAL SYNC
             console.log('🚀 ENHANCED: Performing immediate initial sync...');

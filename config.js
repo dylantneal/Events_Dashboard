@@ -42,7 +42,7 @@ window.DASHBOARD_CONFIG = {
         // Using the public collaborative JSONBin from config.example.js
         url: 'https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1/latest',
         // No API key needed for public bins
-        syncInterval: 15000 // 15 seconds sync interval for faster updates
+        syncInterval: 60000 // 60 seconds (1 minute) sync interval to save on API calls
     },
     
     // Raspberry Pi Performance Settings
