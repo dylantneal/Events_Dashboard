@@ -65,9 +65,14 @@ def auto_commit_and_push(commit_message=None):
             logger.error("Failed to add slides directory")
             return False
         
-        # Also add any other relevant files
-        if not run_command("git add slides.json config.js", cwd=repo_root)[0]:
-            logger.info("No additional files to add (this is normal)")
+        # Also add any other relevant files that might exist
+        additional_files = ["slides/slides.json", "config.js"]
+        for file in additional_files:
+            if (repo_root / file).exists():
+                run_command(f"git add {file}", cwd=repo_root)
+                logger.info(f"Added {file}")
+            else:
+                logger.debug(f"File {file} doesn't exist, skipping")
         
         # Check if there are changes to commit
         result = subprocess.run(
