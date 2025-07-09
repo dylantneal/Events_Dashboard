@@ -639,4 +639,4 @@ For issues and questions:
    - Open browser console (F12) to see error messages
    - Check if your API key is valid and has quota remaining
    - The dashboard falls back to Open-Meteo if OpenWeatherMap fails
-   - Weather updates every 10 minutes and caches for 10 minutes 
+   - Weather updates every 10 minutes and caches for 10 minutes # Trigger GitHub Pages deployment
