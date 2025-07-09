@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Sync Loader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .status {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px;
+        }
+        button:hover { background-color: #c82333; }
+        .instructions {
+            text-align: left;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚨 Emergency Sync Loader</h1>
+        
+        <div id="status" class="status info">
+            Ready to apply emergency sync fix
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 Instructions:</h3>
+            <ol>
+                <li><strong>Open your dashboard</strong> (marquisdashboard.com) in a new tab</li>
+                <li><strong>Open Developer Tools</strong> (F12 or right-click → Inspect)</li>
+                <li><strong>Go to Console tab</strong></li>
+                <li><strong>Click "Apply Emergency Fix"</strong> below</li>
+                <li><strong>Copy the generated code</strong></li>
+                <li><strong>Paste it into the console</strong> and press Enter</li>
+                <li><strong>Repeat on ALL devices</strong> that need sync</li>
+            </ol>
+        </div>
+        
+        <button onclick="generateEmergencyCode()">🚨 Apply Emergency Fix</button>
+        
+        <div id="code-output" style="display: none;">
+            <h3>📋 Copy this code to your dashboard console:</h3>
+            <textarea id="emergency-code" style="width: 100%; height: 200px; font-family: monospace; font-size: 12px;" readonly></textarea>
+            <button onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>✅ What this fix does:</h3>
+            <ul>
+                <li><strong>Perfect CRUD sync</strong> - Create, Read, Update, Delete all sync immediately</li>
+                <li><strong>Immediate cloud sync</strong> - No waiting for periodic sync</li>
+                <li><strong>Retry logic</strong> - Automatically retries failed syncs</li>
+                <li><strong>Visual feedback</strong> - Shows sync status in top-left corner</li>
+                <li><strong>Manual sync button</strong> - Force sync anytime</li>
+                <li><strong>Frequent updates</strong> - Checks for changes every 30 seconds</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function generateEmergencyCode() {
+            const code = `
+// EMERGENCY SYNC FIX - PASTE THIS INTO YOUR DASHBOARD CONSOLE
+(function() {
+    console.log('🚨 LOADING EMERGENCY SYNC FIX...');
+    
+    // Load the emergency sync script
+    const script = document.createElement('script');
+    script.src = 'emergency_complete_sync.js';
+    script.onload = function() {
+        console.log('✅ Emergency sync fix loaded successfully!');
+        console.log('🎯 Perfect CRUD sync is now active');
+        console.log('👀 Look for sync status indicator in top-left corner');
+    };
+    script.onerror = function() {
+        console.error('❌ Failed to load emergency sync fix');
+        console.log('🔄 Trying alternative method...');
+        
+        // Alternative: Load from GitHub raw
+        const altScript = document.createElement('script');
+        altScript.src = 'https://raw.githubusercontent.com/dylantneal/Encore_Dashboard/main/emergency_complete_sync.js';
+        altScript.onload = function() {
+            console.log('✅ Emergency sync fix loaded from GitHub!');
+        };
+        altScript.onerror = function() {
+            console.error('❌ All loading methods failed');
+            alert('Emergency sync fix failed to load. Please check your internet connection.');
+        };
+        document.head.appendChild(altScript);
+    };
+    document.head.appendChild(script);
+})();
+`;
+            
+            document.getElementById('emergency-code').value = code.trim();
+            document.getElementById('code-output').style.display = 'block';
+            document.getElementById('status').textContent = 'Emergency code generated! Copy and paste into dashboard console.';
+            document.getElementById('status').className = 'status success';
+        }
+        
+        function copyToClipboard() {
+            const textarea = document.getElementById('emergency-code');
+            textarea.select();
+            document.execCommand('copy');
+            
+            document.getElementById('status').textContent = 'Code copied to clipboard! Paste into dashboard console.';
+            document.getElementById('status').className = 'status success';
+        }
+    </script>
+</body>
+</html> 
