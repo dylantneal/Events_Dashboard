@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Sync Debug Tool</title>
+    <script src="config.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .code-block {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            border-left: 4px solid #007bff;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Cloud Sync Debug Tool</h1>
+    <p>This tool will help identify why announcements aren't syncing between devices.</p>
+    
+    <div class="debug-section">
+        <h2>📋 Configuration Check</h2>
+        <div id="configStatus">Checking...</div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>🌐 Cloud URL Test</h2>
+        <button onclick="testCloudRead()">Test Cloud Read</button>
+        <button onclick="testCloudWrite()">Test Cloud Write</button>
+        <button onclick="testCloudCORS()">Test CORS</button>
+        <div id="cloudTests"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>💾 Local vs Cloud Data</h2>
+        <button onclick="compareData()">Compare Local vs Cloud</button>
+        <button onclick="forceCloudSync()">Force Sync to Cloud</button>
+        <button onclick="clearLocalData()">Clear Local Data</button>
+        <div id="dataComparison"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>🧪 Live Sync Test</h2>
+        <button onclick="createTestAnnouncement()">Create Test Announcement</button>
+        <button onclick="startLiveMonitoring()">Start Live Monitoring</button>
+        <button onclick="stopLiveMonitoring()">Stop Live Monitoring</button>
+        <div id="liveTest"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>🔧 Manual Cloud Operations</h2>
+        <button onclick="createNewCloudBin()">Create New Cloud Bin</button>
+        <button onclick="resetCloudData()">Reset Cloud Data</button>
+        <div id="manualOps"></div>
+    </div>
+
+    <script>
+        let config = null;
+        let cloudSyncUrl = null;
+        let cloudSyncEnabled = false;
+        let cloudSyncKey = null;
+        let monitoringInterval = null;
+        
+        function init() {
+            config = window.DASHBOARD_CONFIG;
+            if (config && config.cloudSync) {
+                cloudSyncEnabled = config.cloudSync.enabled;
+                cloudSyncUrl = config.cloudSync.url;
+                cloudSyncKey = config.cloudSync.key;
+            }
+            
+            checkConfiguration();
+        }
+        
+        function log(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            container.appendChild(div);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function checkConfiguration() {
+            const container = document.getElementById('configStatus');
+            container.innerHTML = '';
+            
+            if (!config) {
+                log('configStatus', '❌ No DASHBOARD_CONFIG found in config.js', 'error');
+                return;
+            }
+            
+            log('configStatus', '✅ DASHBOARD_CONFIG found', 'success');
+            
+            if (!config.cloudSync) {
+                log('configStatus', '❌ No cloudSync configuration found', 'error');
+                return;
+            }
+            
+            log('configStatus', `Cloud sync enabled: ${cloudSyncEnabled}`, cloudSyncEnabled ? 'success' : 'warning');
+            log('configStatus', `Cloud URL: ${cloudSyncUrl}`, cloudSyncUrl ? 'success' : 'error');
+            log('configStatus', `API Key present: ${!!cloudSyncKey}`, cloudSyncKey ? 'success' : 'warning');
+            
+            if (cloudSyncUrl) {
+                const binId = extractBinId(cloudSyncUrl);
+                log('configStatus', `Extracted Bin ID: ${binId}`, binId ? 'success' : 'error');
+            }
+        }
+        
+        function extractBinId(url) {
+            const match = url.match(/\/b\/([a-zA-Z0-9]+)/);
+            return match ? match[1] : null;
+        }
+        
+        async function testCloudRead() {
+            const container = document.getElementById('cloudTests');
+            
+            if (!cloudSyncUrl) {
+                log('cloudTests', '❌ No cloud URL configured', 'error');
+                return;
+            }
+            
+            log('cloudTests', `🔄 Testing read from: ${cloudSyncUrl}`, 'info');
+            
+            try {
+                const response = await fetch(cloudSyncUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(cloudSyncKey && { 'X-Master-Key': cloudSyncKey })
+                    }
+                });
+                
+                log('cloudTests', `📡 Response status: ${response.status} ${response.statusText}`, 
+                    response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('cloudTests', `📦 Response data structure: ${JSON.stringify(Object.keys(data))}`, 'info');
+                    
+                    if (data.record) {
+                        log('cloudTests', `📋 Record found with keys: ${JSON.stringify(Object.keys(data.record))}`, 'success');
+                        
+                        if (data.record.announcements) {
+                            log('cloudTests', `📢 Found ${data.record.announcements.length} announcements in cloud`, 'success');
+                        } else {
+                            log('cloudTests', '⚠️ No announcements array in record', 'warning');
+                        }
+                    } else {
+                        log('cloudTests', '⚠️ No record property in response', 'warning');
+                    }
+                } else {
+                    const errorText = await response.text();
+                    log('cloudTests', `❌ Error response: ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log('cloudTests', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testCloudWrite() {
+            if (!cloudSyncUrl) {
+                log('cloudTests', '❌ No cloud URL configured', 'error');
+                return;
+            }
+            
+            const testData = {
+                announcements: [{
+                    id: 'test_write_' + Date.now(),
+                    text: 'Test write operation',
+                    startDate: new Date().toISOString().split('T')[0],
+                    startTime: '09:00',
+                    endDate: new Date().toISOString().split('T')[0],
+                    endTime: '17:00',
+                    createdAt: new Date().toISOString(),
+                    lastModified: new Date().toISOString()
+                }]
+            };
+            
+            const writeUrl = cloudSyncUrl.replace('/latest', '');
+            log('cloudTests', `🔄 Testing write to: ${writeUrl}`, 'info');
+            
+            try {
+                const response = await fetch(writeUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(cloudSyncKey && { 'X-Master-Key': cloudSyncKey })
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                log('cloudTests', `📡 Write response: ${response.status} ${response.statusText}`, 
+                    response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    log('cloudTests', `✅ Write successful! Response: ${JSON.stringify(result)}`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    log('cloudTests', `❌ Write failed: ${errorText}`, 'error');
+                    
+                    // Try creating a new public bin
+                    log('cloudTests', '🔄 Trying to create new public bin...', 'info');
+                    await createNewCloudBin();
+                }
+            } catch (error) {
+                log('cloudTests', `❌ Write error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testCloudCORS() {
+            log('cloudTests', '🔄 Testing CORS policy...', 'info');
+            
+            try {
+                const response = await fetch(cloudSyncUrl, {
+                    method: 'OPTIONS'
+                });
+                
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                    'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers')
+                };
+                
+                log('cloudTests', `📡 CORS Headers: ${JSON.stringify(corsHeaders)}`, 'info');
+                
+                if (corsHeaders['Access-Control-Allow-Origin']) {
+                    log('cloudTests', '✅ CORS is properly configured', 'success');
+                } else {
+                    log('cloudTests', '⚠️ CORS may be an issue', 'warning');
+                }
+            } catch (error) {
+                log('cloudTests', `❌ CORS test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function compareData() {
+            const container = document.getElementById('dataComparison');
+            container.innerHTML = '';
+            
+            // Get local data
+            const localData = localStorage.getItem('dashboard_announcements');
+            const localAnnouncements = localData ? JSON.parse(localData) : [];
+            
+            log('dataComparison', `📱 Local announcements: ${localAnnouncements.length}`, 'info');
+            
+            // Get cloud data
+            if (cloudSyncUrl) {
+                try {
+                    const response = await fetch(cloudSyncUrl);
+                    if (response.ok) {
+                        const data = await response.json();
+                        let cloudAnnouncements = [];
+                        
+                        if (data.record && data.record.announcements) {
+                            cloudAnnouncements = data.record.announcements;
+                        } else if (data.record && Array.isArray(data.record)) {
+                            cloudAnnouncements = data.record;
+                        }
+                        
+                        log('dataComparison', `☁️ Cloud announcements: ${cloudAnnouncements.length}`, 'info');
+                        
+                        // Compare
+                        const localIds = new Set(localAnnouncements.map(a => a.id));
+                        const cloudIds = new Set(cloudAnnouncements.map(a => a.id));
+                        
+                        const onlyLocal = localAnnouncements.filter(a => !cloudIds.has(a.id));
+                        const onlyCloud = cloudAnnouncements.filter(a => !localIds.has(a.id));
+                        
+                        if (onlyLocal.length > 0) {
+                            log('dataComparison', `📱 Only in local: ${onlyLocal.length} announcements`, 'warning');
+                            onlyLocal.forEach(a => {
+                                log('dataComparison', `  - ${a.text} (${a.id})`, 'info');
+                            });
+                        }
+                        
+                        if (onlyCloud.length > 0) {
+                            log('dataComparison', `☁️ Only in cloud: ${onlyCloud.length} announcements`, 'warning');
+                            onlyCloud.forEach(a => {
+                                log('dataComparison', `  - ${a.text} (${a.id})`, 'info');
+                            });
+                        }
+                        
+                        if (onlyLocal.length === 0 && onlyCloud.length === 0) {
+                            log('dataComparison', '✅ Local and cloud data are in sync!', 'success');
+                        } else {
+                            log('dataComparison', '⚠️ Local and cloud data are out of sync!', 'warning');
+                        }
+                    } else {
+                        log('dataComparison', '❌ Could not fetch cloud data', 'error');
+                    }
+                } catch (error) {
+                    log('dataComparison', `❌ Error fetching cloud data: ${error.message}`, 'error');
+                }
+            } else {
+                log('dataComparison', '❌ No cloud URL configured', 'error');
+            }
+        }
+        
+        async function forceCloudSync() {
+            const localData = localStorage.getItem('dashboard_announcements');
+            const localAnnouncements = localData ? JSON.parse(localData) : [];
+            
+            log('dataComparison', `🔄 Force syncing ${localAnnouncements.length} local announcements to cloud...`, 'info');
+            
+            if (!cloudSyncUrl) {
+                log('dataComparison', '❌ No cloud URL configured', 'error');
+                return;
+            }
+            
+            try {
+                const writeUrl = cloudSyncUrl.replace('/latest', '');
+                const response = await fetch(writeUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(cloudSyncKey && { 'X-Master-Key': cloudSyncKey })
+                    },
+                    body: JSON.stringify({ announcements: localAnnouncements })
+                });
+                
+                if (response.ok) {
+                    log('dataComparison', '✅ Force sync successful!', 'success');
+                } else {
+                    const errorText = await response.text();
+                    log('dataComparison', `❌ Force sync failed: ${response.status} - ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log('dataComparison', `❌ Force sync error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function createTestAnnouncement() {
+            const now = new Date();
+            const testAnnouncement = {
+                id: 'debug_test_' + Date.now(),
+                text: `🧪 DEBUG TEST: Created at ${now.toLocaleTimeString()} on ${location.hostname}`,
+                startDate: now.toISOString().split('T')[0],
+                startTime: now.toTimeString().split(' ')[0].slice(0, 5),
+                endDate: now.toISOString().split('T')[0],
+                endTime: '23:59',
+                createdAt: now.toISOString(),
+                lastModified: now.toISOString()
+            };
+            
+            // Add to local storage
+            const localData = localStorage.getItem('dashboard_announcements');
+            const announcements = localData ? JSON.parse(localData) : [];
+            announcements.push(testAnnouncement);
+            localStorage.setItem('dashboard_announcements', JSON.stringify(announcements));
+            
+            log('liveTest', `📱 Created test announcement locally: ${testAnnouncement.text}`, 'success');
+            
+            // Try to sync to cloud
+            if (cloudSyncUrl) {
+                try {
+                    const writeUrl = cloudSyncUrl.replace('/latest', '');
+                    const response = await fetch(writeUrl, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(cloudSyncKey && { 'X-Master-Key': cloudSyncKey })
+                        },
+                        body: JSON.stringify({ announcements: announcements })
+                    });
+                    
+                    if (response.ok) {
+                        log('liveTest', '✅ Test announcement synced to cloud!', 'success');
+                        log('liveTest', '🔍 Now check this same page on another device to see if it appears', 'info');
+                    } else {
+                        log('liveTest', `❌ Failed to sync to cloud: ${response.status}`, 'error');
+                    }
+                } catch (error) {
+                    log('liveTest', `❌ Sync error: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        async function createNewCloudBin() {
+            log('manualOps', '🔄 Creating new public cloud bin...', 'info');
+            
+            const initialData = {
+                announcements: []
+            };
+            
+            try {
+                const response = await fetch('https://api.jsonbin.io/v3/b', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Bin-Private': 'false'
+                    },
+                    body: JSON.stringify(initialData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    const newBinId = result.metadata.id;
+                    const newUrl = `https://api.jsonbin.io/v3/b/${newBinId}/latest`;
+                    
+                    log('manualOps', `✅ Created new bin: ${newBinId}`, 'success');
+                    log('manualOps', `📝 New URL: ${newUrl}`, 'info');
+                    log('manualOps', '🔧 Update your config.js with this new URL:', 'warning');
+                    
+                    const codeBlock = document.createElement('div');
+                    codeBlock.className = 'code-block';
+                    codeBlock.textContent = `cloudSync: {
+    enabled: true,
+    url: '${newUrl}',
+    syncInterval: 30000
+}`;
+                    document.getElementById('manualOps').appendChild(codeBlock);
+                    
+                    // Update current session
+                    cloudSyncUrl = newUrl;
+                    
+                } else {
+                    log('manualOps', `❌ Failed to create bin: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log('manualOps', `❌ Error creating bin: ${error.message}`, 'error');
+            }
+        }
+        
+        function startLiveMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+            }
+            
+            log('liveTest', '🔄 Starting live monitoring (every 10 seconds)...', 'info');
+            
+            monitoringInterval = setInterval(async () => {
+                if (cloudSyncUrl) {
+                    try {
+                        const response = await fetch(cloudSyncUrl);
+                        if (response.ok) {
+                            const data = await response.json();
+                            let cloudAnnouncements = [];
+                            
+                            if (data.record && data.record.announcements) {
+                                cloudAnnouncements = data.record.announcements;
+                            }
+                            
+                            const debugTests = cloudAnnouncements.filter(a => a.id.startsWith('debug_test_'));
+                            
+                            if (debugTests.length > 0) {
+                                log('liveTest', `📡 Found ${debugTests.length} debug test announcements in cloud`, 'success');
+                                debugTests.forEach(a => {
+                                    log('liveTest', `  - ${a.text}`, 'info');
+                                });
+                            }
+                        }
+                    } catch (error) {
+                        log('liveTest', `❌ Monitoring error: ${error.message}`, 'error');
+                    }
+                }
+            }, 10000);
+        }
+        
+        function stopLiveMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+                log('liveTest', '⏹️ Stopped live monitoring', 'info');
+            }
+        }
+        
+        function clearLocalData() {
+            if (confirm('Clear all local announcement data?')) {
+                localStorage.removeItem('dashboard_announcements');
+                log('dataComparison', '🧹 Cleared local announcement data', 'success');
+            }
+        }
+        
+        // Initialize when page loads
+        init();
+    </script>
+</body>
+</html> 
