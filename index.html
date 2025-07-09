@@ -4725,5 +4725,105 @@
             location.reload();
         }, 300000); // 5 minutes
     </script>
+    
+    <!-- ENHANCED CLOUD SYNC FIX -->
+    <script>
+        // COMPREHENSIVE CLOUD SYNC FIX
+        console.log('🔧 APPLYING COMPREHENSIVE CLOUD SYNC FIX...');
+
+        // Wait for dashboard to be ready
+        function waitForDashboardSync() {
+            return new Promise((resolve) => {
+                const checkInterval = setInterval(() => {
+                    if (window.dashboard && window.dashboard.cloudSyncEnabled) {
+                        clearInterval(checkInterval);
+                        resolve(window.dashboard);
+                    }
+                }, 100);
+            });
+        }
+
+        // Apply the fix
+        waitForDashboardSync().then(dashboard => {
+            console.log('✅ Dashboard ready, applying cloud sync fixes...');
+            
+            // 1. REDUCE LOCAL SAVE PROTECTION WINDOW
+            const originalSyncFromCloud = dashboard.syncAnnouncementsFromCloud.bind(dashboard);
+            dashboard.syncAnnouncementsFromCloud = async function() {
+                if (!this.cloudSyncEnabled || this.syncInProgress) {
+                    return;
+                }
+
+                try {
+                    this.syncInProgress = true;
+                    console.log('🔄 ENHANCED: Checking for cloud updates...');
+                    
+                    const cloudData = await this.loadFromCloud();
+                    if (cloudData && Array.isArray(cloudData)) {
+                        // REDUCED protection window from 5000ms to 1000ms
+                        const timeSinceLastLocalSave = Date.now() - (this.lastLocalSaveTime || 0);
+                        if (timeSinceLastLocalSave < 1000) { // Changed from 5000 to 1000
+                            console.log('🚫 ENHANCED: Skipping cloud merge - recent local changes detected (1s window)');
+                            this.lastSyncTime = Date.now();
+                            return;
+                        }
+                        
+                        // Enhanced merge with better logging
+                        const mergedAnnouncements = this.mergeAnnouncements(this.announcements, cloudData);
+                        const localDataStr = JSON.stringify(this.announcements.sort((a,b) => a.id.localeCompare(b.id)));
+                        const mergedDataStr = JSON.stringify(mergedAnnouncements.sort((a,b) => a.id.localeCompare(b.id)));
+                        
+                        if (localDataStr !== mergedDataStr) {
+                            console.log('📝 ENHANCED: Applying cloud changes to local data');
+                            console.log(`   Before: ${this.announcements.length} announcements`);
+                            console.log(`   After: ${mergedAnnouncements.length} announcements`);
+                            
+                            this.announcements = mergedAnnouncements;
+                            localStorage.setItem('dashboard_announcements', JSON.stringify(this.announcements));
+                            this.updateAnnouncementsDisplay();
+                            
+                            // Force immediate display update
+                            if (this.currentSlideIndex === this.announcementsSlideIndex) {
+                                console.log('📺 ENHANCED: Updating announcement display immediately');
+                                this.updateAnnouncementsDisplay();
+                            }
+                        } else {
+                            console.log('✅ ENHANCED: Announcements are up to date');
+                        }
+                        
+                        this.lastSyncTime = Date.now();
+                    }
+                } catch (error) {
+                    console.warn('❌ ENHANCED: Background cloud sync failed:', error.message);
+                } finally {
+                    this.syncInProgress = false;
+                }
+            };
+            
+            // 2. MORE FREQUENT SYNC CHECKS
+            // Clear any existing sync interval
+            if (dashboard.cloudSyncInterval) {
+                clearInterval(dashboard.cloudSyncInterval);
+            }
+            
+            // Set up more frequent sync (every 5 seconds instead of 15)
+            dashboard.cloudSyncInterval = setInterval(() => {
+                console.log('⏰ ENHANCED: Periodic cloud sync check...');
+                dashboard.syncAnnouncementsFromCloud();
+            }, 5000); // Every 5 seconds
+            
+            // 3. IMMEDIATE INITIAL SYNC
+            console.log('🚀 ENHANCED: Performing immediate initial sync...');
+            setTimeout(() => {
+                dashboard.syncAnnouncementsFromCloud();
+            }, 1000); // Immediate sync after 1 second
+            
+            console.log('🎉 ENHANCED CLOUD SYNC FIX APPLIED SUCCESSFULLY!');
+            console.log('   • Reduced local save protection to 1 second');
+            console.log('   • Increased sync frequency to every 5 seconds');
+            console.log('   • Enhanced merge logic with better logging');
+            console.log('   • Immediate initial sync');
+        });
+    </script>
 </body>
 </html>
