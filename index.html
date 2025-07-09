@@ -2142,12 +2142,189 @@
                 font-size: 14px;
             }
         }
+
+        /* Authentication Styles */
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .auth-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .auth-form {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 24px;
+            padding: 48px;
+            width: 100%;
+            max-width: 480px;
+            margin: 20px;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                0 8px 32px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            text-align: center;
+            position: relative;
+        }
+
+        .auth-form::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 24px;
+            padding: 1px;
+            background: linear-gradient(135deg, 
+                rgba(59, 130, 246, 0.3),
+                rgba(147, 51, 234, 0.2),
+                rgba(6, 182, 212, 0.3));
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            -webkit-mask-composite: xor;
+            opacity: 0.8;
+        }
+
+        .auth-title {
+            font-family: 'Outfit', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .auth-subtitle {
+            font-family: 'Inter', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        .auth-input-group {
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 18px 24px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: #ffffff;
+            font-family: 'Inter', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+            backdrop-filter: blur(12px);
+        }
+
+        .auth-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .auth-input:focus {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(59, 130, 246, 0.6);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .auth-button {
+            width: 100%;
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-family: 'Inter', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .auth-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+            background: linear-gradient(135deg, #2563eb, #5b21b6);
+        }
+
+        .auth-button:active {
+            transform: translateY(0);
+        }
+
+        .auth-error {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            display: none;
+        }
+
+
+
+        .main-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .main-content.authenticated {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
-    <div class="floating-elements" id="floatingElements"></div>
-    
-    <div class="header">
+    <!-- Authentication Overlay -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-form">
+            <h1 class="auth-title">Dashboard Access</h1>
+            <p class="auth-subtitle">Please enter the access code to continue</p>
+            
+            <form id="authForm">
+                <div class="auth-input-group">
+                    <input type="password" id="authPassword" class="auth-input" placeholder="Enter access code" required>
+                </div>
+                <button type="submit" class="auth-button">ACCESS DASHBOARD</button>
+                <div class="auth-error" id="authError">Invalid access code. Please try again.</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Content -->
+    <div class="main-content" id="mainContent">
+        <div class="floating-elements" id="floatingElements"></div>
+        
+        <div class="header">
         <div class="weather" id="weather">
             <span class="weather-icon">🌤️</span>
             <div class="weather-info">
@@ -5034,5 +5211,288 @@
         // Apply the fix
         fixCreationSync();
     </script>
+
+    <!-- Authentication JavaScript -->
+    <script>
+        // Authentication System - Improved Version
+        class AuthSystem {
+            constructor() {
+                this.config = window.DASHBOARD_CONFIG?.authentication || {};
+                this.enabled = this.config.enabled || false;
+                this.password = this.config.password || 'dashboard123';
+                this.sessionTimeout = this.config.sessionTimeout || 3600000; // 1 hour default
+                this.requirePasswordOnRefresh = this.config.requirePasswordOnRefresh || false;
+                this.allowLogout = this.config.allowLogout || true;
+                
+                console.log('🔐 Authentication Config:', {
+                    enabled: this.enabled,
+                    sessionTimeout: this.sessionTimeout,
+                    requirePasswordOnRefresh: this.requirePasswordOnRefresh,
+                    allowLogout: this.allowLogout
+                });
+                
+                this.setupEventListeners();
+                this.init();
+            }
+
+            setupEventListeners() {
+                console.log('🔐 Setting up event listeners...');
+                
+                // Handle form submission
+                const authForm = document.getElementById('authForm');
+                if (authForm) {
+                    authForm.addEventListener('submit', (event) => {
+                        event.preventDefault();
+                        this.handleAuth(event);
+                        return false;
+                    });
+                }
+
+                // Handle Enter key in password field
+                const passwordField = document.getElementById('authPassword');
+                if (passwordField) {
+                    passwordField.addEventListener('keydown', (event) => {
+                        if (event.key === 'Enter') {
+                            event.preventDefault();
+                            this.handleAuth(event);
+                        }
+                    });
+                }
+
+
+            }
+
+            handleAuth(event) {
+                console.log('🔐 Handling authentication...');
+                event.preventDefault();
+                
+                const passwordField = document.getElementById('authPassword');
+                const password = passwordField ? passwordField.value : '';
+                
+                console.log('🔐 Password entered:', password ? '***' : 'EMPTY');
+                
+                if (!password) {
+                    this.showError('Please enter an access code.');
+                    return false;
+                }
+                
+                const success = this.authenticate(password);
+                console.log('🔐 Authentication result:', success);
+                
+                return false;
+            }
+
+            init() {
+                console.log('🔐 Initializing authentication system...');
+                
+                // Always start with dashboard hidden
+                this.hideDashboard();
+                
+                if (!this.enabled) {
+                    console.log('  → Authentication disabled, showing dashboard');
+                    // Authentication disabled, show dashboard immediately
+                    this.showDashboard();
+                    return;
+                }
+
+                console.log('  → Authentication enabled, checking if user is authenticated');
+                
+                // Check if user is already authenticated
+                if (this.isAuthenticated()) {
+                    console.log('  → User is authenticated, showing dashboard');
+                    this.showDashboard();
+                } else {
+                    console.log('  → User is not authenticated, showing login');
+                    this.showLogin();
+                }
+
+                // Set up auto-logout timer if session timeout is configured
+                if (this.sessionTimeout > 0) {
+                    this.setupAutoLogout();
+                }
+            }
+
+            hideDashboard() {
+                const authOverlay = document.getElementById('authOverlay');
+                const mainContent = document.getElementById('mainContent');
+                
+                if (authOverlay) authOverlay.classList.remove('hidden');
+                if (mainContent) mainContent.classList.remove('authenticated');
+            }
+
+            isAuthenticated() {
+                console.log('🔐 Checking authentication...');
+                console.log('  requirePasswordOnRefresh:', this.requirePasswordOnRefresh);
+                
+                if (this.requirePasswordOnRefresh) {
+                    // Clear any existing session data on refresh
+                    sessionStorage.removeItem('dashboard_auth');
+                    console.log('  → Password required on refresh, returning false');
+                    return false; // Always require password on refresh
+                }
+
+                const authData = sessionStorage.getItem('dashboard_auth');
+                console.log('  authData:', authData);
+                
+                if (!authData) {
+                    console.log('  → No auth data found, returning false');
+                    return false;
+                }
+
+                try {
+                    const { timestamp, authenticated } = JSON.parse(authData);
+                    const now = Date.now();
+                    
+                    console.log('  → Auth data parsed:', { timestamp, authenticated, now });
+                    
+                    // Check if session has expired
+                    if (this.sessionTimeout > 0 && (now - timestamp) > this.sessionTimeout) {
+                        console.log('  → Session expired, logging out');
+                        this.logout();
+                        return false;
+                    }
+
+                    console.log('  → Returning authenticated:', authenticated);
+                    return authenticated;
+                } catch (error) {
+                    console.error('Error parsing auth data:', error);
+                    return false;
+                }
+            }
+
+            authenticate(password) {
+                console.log('🔐 Authenticating with password:', password ? '***' : 'EMPTY');
+                console.log('🔐 Expected password:', this.password ? '***' : 'EMPTY');
+                
+                if (password === this.password) {
+                    console.log('✅ Password correct!');
+                    
+                    // Store authentication state
+                    const authData = {
+                        authenticated: true,
+                        timestamp: Date.now()
+                    };
+                    sessionStorage.setItem('dashboard_auth', JSON.stringify(authData));
+                    
+                    this.showDashboard();
+                    return true;
+                } else {
+                    console.log('❌ Password incorrect!');
+                    this.showError('Invalid access code. Please try again.');
+                    return false;
+                }
+            }
+
+            showLogin() {
+                const authOverlay = document.getElementById('authOverlay');
+                const mainContent = document.getElementById('mainContent');
+                
+                if (authOverlay) authOverlay.classList.remove('hidden');
+                if (mainContent) mainContent.classList.remove('authenticated');
+                
+                // Focus on password input
+                setTimeout(() => {
+                    const passwordField = document.getElementById('authPassword');
+                    if (passwordField) {
+                        passwordField.focus();
+                    }
+                }, 100);
+            }
+
+            showDashboard() {
+                const authOverlay = document.getElementById('authOverlay');
+                const mainContent = document.getElementById('mainContent');
+                
+                if (authOverlay) authOverlay.classList.add('hidden');
+                if (mainContent) mainContent.classList.add('authenticated');
+                
+                // Clear any error messages
+                this.hideError();
+            }
+
+            showError(message) {
+                const errorElement = document.getElementById('authError');
+                const passwordField = document.getElementById('authPassword');
+                
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.style.display = 'block';
+                }
+                
+                // Clear password field
+                if (passwordField) {
+                    passwordField.value = '';
+                    passwordField.focus();
+                }
+            }
+
+            hideError() {
+                const errorElement = document.getElementById('authError');
+                if (errorElement) {
+                    errorElement.style.display = 'none';
+                }
+            }
+
+            logout() {
+                // Clear authentication state
+                sessionStorage.removeItem('dashboard_auth');
+                
+                // Show login screen
+                this.showLogin();
+            }
+
+            setupAutoLogout() {
+                if (this.sessionTimeout <= 0) return;
+
+                // Set up periodic session checks
+                setInterval(() => {
+                    if (!this.isAuthenticated()) {
+                        this.logout();
+                    }
+                }, 60000); // Check every minute
+            }
+        }
+
+        // Global authentication system instance
+        let authSystem;
+
+        // Initialize authentication when config is loaded
+        function initializeAuthentication() {
+            const initAuth = () => {
+                if (typeof window.DASHBOARD_CONFIG !== 'undefined' && window.DASHBOARD_CONFIG.authentication) {
+                    console.log('🔐 Initializing authentication system...');
+                    console.log('Authentication config:', window.DASHBOARD_CONFIG.authentication);
+                    
+                    // Initialize authentication system
+                    authSystem = new AuthSystem();
+                    
+                    console.log('✅ Authentication system initialized!');
+                } else {
+                    console.log('⏳ Waiting for config to load...');
+                    setTimeout(initAuth, 50);
+                }
+            };
+            
+            initAuth();
+        }
+
+        // Start initialization when DOM is loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeAuthentication);
+        } else {
+            initializeAuthentication();
+        }
+
+        // Legacy functions for backward compatibility
+        function handleAuth(event) {
+            if (authSystem) {
+                return authSystem.handleAuth(event);
+            }
+            console.error('Authentication system not initialized yet');
+            return false;
+        }
+    </script>
+    
+    </div> <!-- End main-content -->
 </body>
 </html>

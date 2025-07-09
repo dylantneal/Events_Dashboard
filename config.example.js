@@ -5,6 +5,15 @@ window.OPENWEATHER_API_KEY = 'YOUR_API_KEY_HERE';
 
 // Other configuration options
 window.DASHBOARD_CONFIG = {
+    // Authentication settings
+    authentication: {
+        enabled: true,
+        password: 'dashboard123', // Change this to your desired password
+        sessionTimeout: 0, // No timeout - session runs indefinitely while tab is open
+        requirePasswordOnRefresh: true, // Require password when tab is closed and reopened
+        allowLogout: false // No logout button - just close the tab to logout
+    },
+    
     slideInterval: 60000, // 60 seconds per slide (default for slides not in slideDurations)
     weatherUpdateInterval: 600000, // 10 minutes
     autoReloadInterval: 300000, // 5 minutes
