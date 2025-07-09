@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sync Diagnostic Tool</title>
+    <script src="config.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .diagnostic-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .announcement {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .live-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="live-status" id="liveStatus">Checking...</div>
+    
+    <h1>🔍 Sync Diagnostic Tool</h1>
+    <p>This tool helps diagnose announcement sync issues between devices.</p>
+    
+    <div class="diagnostic-section">
+        <h2>📋 Configuration Status</h2>
+        <div id="configStatus">Checking...</div>
+    </div>
+    
+    <div class="diagnostic-section">
+        <h2>☁️ Cloud Data</h2>
+        <button onclick="checkCloud()">Refresh Cloud Data</button>
+        <button onclick="forceCloudSync()">Force Sync from Cloud</button>
+        <div id="cloudData">Loading...</div>
+    </div>
+    
+    <div class="diagnostic-section">
+        <h2>💾 Local Data</h2>
+        <button onclick="checkLocal()">Refresh Local Data</button>
+        <button onclick="clearLocal()">Clear Local Data</button>
+        <div id="localData">Loading...</div>
+    </div>
+    
+    <div class="diagnostic-section">
+        <h2>🕐 Active Announcements (Right Now)</h2>
+        <div id="activeAnnouncements">Calculating...</div>
+    </div>
+    
+    <div class="diagnostic-section">
+        <h2>🧪 Quick Actions</h2>
+        <button onclick="createSyncTest()">Create Sync Test</button>
+        <button onclick="forceClearEverything()">Emergency Reset</button>
+        <button onclick="startLiveMonitoring()">Start Live Monitoring</button>
+        <button onclick="stopLiveMonitoring()">Stop Live Monitoring</button>
+    </div>
+    
+    <div class="diagnostic-section">
+        <h2>📊 Live Monitoring Log</h2>
+        <div id="monitoringLog"></div>
+    </div>
+
+    <script>
+        let config = null;
+        let cloudSyncUrl = null;
+        let cloudSyncEnabled = false;
+        let monitoringInterval = null;
+        
+        function init() {
+            config = window.DASHBOARD_CONFIG;
+            if (config && config.cloudSync) {
+                cloudSyncEnabled = config.cloudSync.enabled;
+                cloudSyncUrl = config.cloudSync.url;
+            }
+            
+            checkConfiguration();
+            checkCloud();
+            checkLocal();
+            checkActiveAnnouncements();
+            
+            // Auto-refresh every 10 seconds
+            setInterval(() => {
+                checkActiveAnnouncements();
+                updateLiveStatus();
+            }, 10000);
+        }
+        
+        function log(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            container.appendChild(div);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function checkConfiguration() {
+            const container = document.getElementById('configStatus');
+            container.innerHTML = '';
+            
+            if (!config) {
+                log('configStatus', '❌ No DASHBOARD_CONFIG found', 'error');
+                return;
+            }
+            
+            log('configStatus', '✅ DASHBOARD_CONFIG found', 'success');
+            log('configStatus', `Cloud sync enabled: ${cloudSyncEnabled}`, cloudSyncEnabled ? 'success' : 'error');
+            log('configStatus', `Cloud URL: ${cloudSyncUrl}`, cloudSyncUrl ? 'success' : 'error');
+            
+            if (cloudSyncUrl) {
+                const syncInterval = config.cloudSync.syncInterval || 15000;
+                log('configStatus', `Sync interval: ${syncInterval/1000} seconds`, 'info');
+            }
+        }
+        
+        async function checkCloud() {
+            const container = document.getElementById('cloudData');
+            container.innerHTML = '<div class="status info">Loading cloud data...</div>';
+            
+            if (!cloudSyncUrl) {
+                log('cloudData', '❌ No cloud URL configured', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(cloudSyncUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                let announcements = [];
+                
+                if (data.record && data.record.announcements) {
+                    announcements = data.record.announcements;
+                } else if (data.record && Array.isArray(data.record)) {
+                    announcements = data.record;
+                }
+                
+                container.innerHTML = '';
+                log('cloudData', `✅ Found ${announcements.length} announcements in cloud`, 'success');
+                
+                announcements.forEach((ann, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'announcement';
+                    div.innerHTML = `
+                        <strong>${index + 1}. ${ann.text}</strong><br>
+                        <small>
+                            ID: ${ann.id}<br>
+                            Time: ${ann.startDate} ${ann.startTime} - ${ann.endDate} ${ann.endTime}<br>
+                            Created: ${new Date(ann.createdAt).toLocaleString()}
+                        </small>
+                    `;
+                    container.appendChild(div);
+                });
+                
+            } catch (error) {
+                log('cloudData', `❌ Failed to load cloud data: ${error.message}`, 'error');
+            }
+        }
+        
+        function checkLocal() {
+            const container = document.getElementById('localData');
+            container.innerHTML = '';
+            
+            const stored = localStorage.getItem('dashboard_announcements');
+            const announcements = stored ? JSON.parse(stored) : [];
+            
+            log('localData', `📱 Found ${announcements.length} announcements locally`, 'info');
+            
+            announcements.forEach((ann, index) => {
+                const div = document.createElement('div');
+                div.className = 'announcement';
+                div.innerHTML = `
+                    <strong>${index + 1}. ${ann.text}</strong><br>
+                    <small>
+                        ID: ${ann.id}<br>
+                        Time: ${ann.startDate} ${ann.startTime} - ${ann.endDate} ${ann.endTime}<br>
+                        Created: ${new Date(ann.createdAt).toLocaleString()}
+                    </small>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function checkActiveAnnouncements() {
+            const container = document.getElementById('activeAnnouncements');
+            container.innerHTML = '';
+            
+            const stored = localStorage.getItem('dashboard_announcements');
+            const announcements = stored ? JSON.parse(stored) : [];
+            const now = new Date();
+            
+            const activeAnnouncements = announcements.filter(ann => {
+                const startDate = new Date(ann.startDate + 'T' + ann.startTime);
+                const endDate = new Date(ann.endDate + 'T' + ann.endTime);
+                return now >= startDate && now <= endDate;
+            });
+            
+            log('activeAnnouncements', `🕐 Current time: ${now.toLocaleString()}`, 'info');
+            log('activeAnnouncements', `✅ ${activeAnnouncements.length} announcements should be visible now`, 
+                activeAnnouncements.length > 0 ? 'success' : 'warning');
+            
+            activeAnnouncements.forEach((ann, index) => {
+                const div = document.createElement('div');
+                div.className = 'announcement';
+                div.style.background = '#d4edda';
+                div.innerHTML = `
+                    <strong>ACTIVE: ${ann.text}</strong><br>
+                    <small>
+                        Time: ${ann.startTime} - ${ann.endTime}<br>
+                        ID: ${ann.id}
+                    </small>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        async function forceCloudSync() {
+            if (!cloudSyncUrl) {
+                alert('Cloud sync not configured');
+                return;
+            }
+            
+            try {
+                log('cloudData', '🔄 Force syncing from cloud...', 'info');
+                
+                const response = await fetch(cloudSyncUrl);
+                const data = await response.json();
+                
+                let cloudAnnouncements = [];
+                if (data.record && data.record.announcements) {
+                    cloudAnnouncements = data.record.announcements;
+                }
+                
+                localStorage.setItem('dashboard_announcements', JSON.stringify(cloudAnnouncements));
+                log('cloudData', `✅ Force sync complete: ${cloudAnnouncements.length} announcements`, 'success');
+                
+                checkLocal();
+                checkActiveAnnouncements();
+                
+            } catch (error) {
+                log('cloudData', `❌ Force sync failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function createSyncTest() {
+            const now = new Date();
+            const testAnnouncement = {
+                id: 'diagnostic_test_' + Date.now(),
+                text: `🔧 DIAGNOSTIC TEST: Created at ${now.toLocaleTimeString()} from ${location.hostname}`,
+                startDate: now.toISOString().split('T')[0],
+                startTime: now.toTimeString().split(' ')[0].slice(0, 5),
+                endDate: now.toISOString().split('T')[0],
+                endTime: '23:59',
+                createdAt: now.toISOString(),
+                lastModified: now.toISOString()
+            };
+            
+            // Add to local storage
+            const stored = localStorage.getItem('dashboard_announcements');
+            const announcements = stored ? JSON.parse(stored) : [];
+            announcements.push(testAnnouncement);
+            localStorage.setItem('dashboard_announcements', JSON.stringify(announcements));
+            
+            log('monitoringLog', `📱 Created diagnostic test locally`, 'success');
+            
+            // Try to sync to cloud
+            if (cloudSyncUrl) {
+                try {
+                    const saveUrl = cloudSyncUrl.replace('/latest', '');
+                    const response = await fetch(saveUrl, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ announcements: announcements })
+                    });
+                    
+                    if (response.ok) {
+                        log('monitoringLog', '✅ Diagnostic test synced to cloud', 'success');
+                    } else {
+                        log('monitoringLog', `❌ Failed to sync to cloud: ${response.status}`, 'error');
+                    }
+                } catch (error) {
+                    log('monitoringLog', `❌ Sync error: ${error.message}`, 'error');
+                }
+            }
+            
+            checkLocal();
+            checkActiveAnnouncements();
+        }
+        
+        function clearLocal() {
+            if (confirm('Clear all local announcement data?')) {
+                localStorage.removeItem('dashboard_announcements');
+                log('localData', '🧹 Cleared local data', 'success');
+                checkLocal();
+                checkActiveAnnouncements();
+            }
+        }
+        
+        async function forceClearEverything() {
+            if (confirm('⚠️ EMERGENCY RESET: This will clear all announcements everywhere. Continue?')) {
+                // Clear local
+                localStorage.removeItem('dashboard_announcements');
+                
+                // Clear cloud
+                if (cloudSyncUrl) {
+                    try {
+                        const saveUrl = cloudSyncUrl.replace('/latest', '');
+                        await fetch(saveUrl, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ announcements: [] })
+                        });
+                        log('monitoringLog', '🧹 Emergency reset complete', 'warning');
+                    } catch (error) {
+                        log('monitoringLog', `❌ Failed to clear cloud: ${error.message}`, 'error');
+                    }
+                }
+                
+                checkCloud();
+                checkLocal();
+                checkActiveAnnouncements();
+            }
+        }
+        
+        function startLiveMonitoring() {
+            if (monitoringInterval) return;
+            
+            log('monitoringLog', '🔄 Starting live monitoring...', 'info');
+            
+            monitoringInterval = setInterval(async () => {
+                const localCount = JSON.parse(localStorage.getItem('dashboard_announcements') || '[]').length;
+                
+                if (cloudSyncUrl) {
+                    try {
+                        const response = await fetch(cloudSyncUrl);
+                        const data = await response.json();
+                        const cloudCount = data.record?.announcements?.length || 0;
+                        
+                        log('monitoringLog', `📊 Local: ${localCount}, Cloud: ${cloudCount}`, 
+                            localCount === cloudCount ? 'success' : 'warning');
+                    } catch (error) {
+                        log('monitoringLog', `❌ Monitoring error: ${error.message}`, 'error');
+                    }
+                }
+            }, 5000);
+        }
+        
+        function stopLiveMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+                log('monitoringLog', '⏹️ Stopped live monitoring', 'info');
+            }
+        }
+        
+        function updateLiveStatus() {
+            const stored = localStorage.getItem('dashboard_announcements');
+            const localCount = stored ? JSON.parse(stored).length : 0;
+            const now = new Date();
+            const activeCount = stored ? JSON.parse(stored).filter(ann => {
+                const startDate = new Date(ann.startDate + 'T' + ann.startTime);
+                const endDate = new Date(ann.endDate + 'T' + ann.endTime);
+                return now >= startDate && now <= endDate;
+            }).length : 0;
+            
+            document.getElementById('liveStatus').textContent = 
+                `Local: ${localCount} | Active: ${activeCount}`;
+        }
+        
+        // Initialize
+        init();
+    </script>
+</body>
+</html> 
