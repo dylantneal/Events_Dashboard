@@ -5292,6 +5292,7 @@
                 const authForm = document.getElementById('authForm');
                 if (authForm) {
                     authForm.addEventListener('submit', (event) => {
+                        console.log('📝 Form submit event triggered');
                         event.preventDefault();
                         this.handleAuth(event);
                         return false;
@@ -5303,12 +5304,26 @@
                 if (passwordField) {
                     passwordField.addEventListener('keydown', (event) => {
                         if (event.key === 'Enter') {
+                            console.log('⌨️ Enter key pressed');
                             event.preventDefault();
                             this.handleAuth(event);
                         }
                     });
                 }
 
+                // Handle direct button click (in case form submission doesn't work)
+                const authButton = document.querySelector('.auth-button');
+                if (authButton) {
+                    authButton.addEventListener('click', (event) => {
+                        console.log('🖱️ Button click event triggered');
+                        event.preventDefault();
+                        this.handleAuth(event);
+                        return false;
+                    });
+                    console.log('✅ Button click listener added');
+                } else {
+                    console.warn('⚠️ Auth button not found');
+                }
 
             }
 
