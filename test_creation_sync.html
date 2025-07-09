@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Creation Sync Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .test-form {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .test-form input, .test-form textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test Creation Sync Fix</h1>
+        
+        <div id="status" class="status info">
+            ⏳ Initializing test environment...
+        </div>
+        
+        <div class="test-form">
+            <h3>🧪 Test Announcement Creation</h3>
+            <input type="text" id="testText" placeholder="Test announcement text" value="Test sync message">
+            <input type="date" id="testStartDate" value="">
+            <input type="time" id="testStartTime" value="09:00">
+            <input type="date" id="testEndDate" value="">
+            <input type="time" id="testEndTime" value="17:00">
+            <button onclick="createTestAnnouncement()">🚀 Create Test Announcement</button>
+        </div>
+        
+        <div>
+            <button onclick="checkCloudStatus()">☁️ Check Cloud Status</button>
+            <button onclick="loadFixScript()">🔧 Load Creation Fix</button>
+            <button onclick="testLocalStorage()">💾 Check Local Storage</button>
+            <button onclick="clearAll()">🗑️ Clear All Data</button>
+        </div>
+        
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        // Set today's date as default
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('testStartDate').value = today;
+        document.getElementById('testEndDate').value = today;
+        
+        let logDiv = document.getElementById('log');
+        let statusDiv = document.getElementById('status');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStatus(message, type = 'info') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+        
+        async function checkCloudStatus() {
+            log('🔍 Checking cloud status...');
+            updateStatus('Checking cloud...', 'info');
+            
+            try {
+                const response = await fetch('https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1/latest');
+                const data = await response.json();
+                const announcements = data.record.announcements || [];
+                
+                log(`☁️ Cloud has ${announcements.length} announcements`);
+                
+                if (announcements.length > 0) {
+                    announcements.forEach((ann, i) => {
+                        log(`   ${i + 1}. "${ann.text}" (ID: ${ann.id})`);
+                    });
+                    updateStatus(`Cloud has ${announcements.length} announcements`, 'success');
+                } else {
+                    log('📭 Cloud is empty');
+                    updateStatus('Cloud is empty', 'warning');
+                }
+            } catch (error) {
+                log(`❌ Cloud check failed: ${error.message}`);
+                updateStatus('Cloud check failed', 'error');
+            }
+        }
+        
+        async function loadFixScript() {
+            log('🔧 Loading creation sync fix...');
+            updateStatus('Loading fix script...', 'info');
+            
+            try {
+                const script = document.createElement('script');
+                script.src = 'fix_creation_sync.js';
+                script.onload = () => {
+                    log('✅ Fix script loaded successfully');
+                    updateStatus('Fix script loaded', 'success');
+                };
+                script.onerror = () => {
+                    log('❌ Failed to load fix script');
+                    updateStatus('Failed to load fix script', 'error');
+                };
+                document.head.appendChild(script);
+            } catch (error) {
+                log(`❌ Error loading fix: ${error.message}`);
+                updateStatus('Error loading fix', 'error');
+            }
+        }
+        
+        function testLocalStorage() {
+            log('💾 Checking local storage...');
+            
+            try {
+                const stored = localStorage.getItem('dashboard_announcements');
+                if (stored) {
+                    const announcements = JSON.parse(stored);
+                    log(`💾 Local storage has ${announcements.length} announcements`);
+                    
+                    if (announcements.length > 0) {
+                        announcements.forEach((ann, i) => {
+                            log(`   ${i + 1}. "${ann.text}" (ID: ${ann.id})`);
+                        });
+                        updateStatus(`Local storage has ${announcements.length} announcements`, 'success');
+                    } else {
+                        updateStatus('Local storage is empty', 'warning');
+                    }
+                } else {
+                    log('💾 No announcements in local storage');
+                    updateStatus('No local storage data', 'warning');
+                }
+            } catch (error) {
+                log(`❌ Error reading local storage: ${error.message}`);
+                updateStatus('Error reading local storage', 'error');
+            }
+        }
+        
+        async function createTestAnnouncement() {
+            const text = document.getElementById('testText').value.trim();
+            const startDate = document.getElementById('testStartDate').value;
+            const startTime = document.getElementById('testStartTime').value;
+            const endDate = document.getElementById('testEndDate').value;
+            const endTime = document.getElementById('testEndTime').value;
+            
+            if (!text || !startDate || !startTime || !endDate || !endTime) {
+                log('❌ Please fill in all fields');
+                updateStatus('Please fill in all fields', 'error');
+                return;
+            }
+            
+            log('🚀 Creating test announcement...');
+            updateStatus('Creating test announcement...', 'info');
+            
+            const announcement = {
+                id: Date.now().toString(),
+                text,
+                startDate,
+                startTime,
+                endDate,
+                endTime,
+                createdAt: new Date().toISOString(),
+                lastModified: new Date().toISOString()
+            };
+            
+            log(`📝 Test announcement: "${text}"`);
+            
+            try {
+                // Save to local storage
+                const existing = JSON.parse(localStorage.getItem('dashboard_announcements') || '[]');
+                existing.push(announcement);
+                localStorage.setItem('dashboard_announcements', JSON.stringify(existing));
+                log('✅ Saved to local storage');
+                
+                // Try to save to cloud
+                const response = await fetch('https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    },
+                    body: JSON.stringify({
+                        announcements: existing
+                    })
+                });
+                
+                if (response.ok) {
+                    log('✅ Successfully synced to cloud!');
+                    updateStatus('Test announcement created and synced', 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+            } catch (error) {
+                log(`❌ Cloud sync failed: ${error.message}`);
+                updateStatus('Created locally but cloud sync failed', 'warning');
+            }
+        }
+        
+        async function clearAll() {
+            if (!confirm('Clear all announcements from both local storage and cloud?')) {
+                return;
+            }
+            
+            log('🗑️ Clearing all data...');
+            updateStatus('Clearing all data...', 'info');
+            
+            try {
+                // Clear local storage
+                localStorage.removeItem('dashboard_announcements');
+                log('✅ Cleared local storage');
+                
+                // Clear cloud
+                const response = await fetch('https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    },
+                    body: JSON.stringify({
+                        announcements: []
+                    })
+                });
+                
+                if (response.ok) {
+                    log('✅ Cleared cloud storage');
+                    updateStatus('All data cleared', 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+            } catch (error) {
+                log(`❌ Error clearing cloud: ${error.message}`);
+                updateStatus('Local cleared but cloud clear failed', 'warning');
+            }
+        }
+        
+        // Initialize
+        log('🧪 Test environment ready');
+        updateStatus('Test environment ready - Click "Check Cloud Status" to begin', 'info');
+    </script>
+</body>
+</html> 
