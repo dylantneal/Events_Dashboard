@@ -11,6 +11,7 @@ import sys
 import logging
 from pathlib import Path
 from datetime import datetime
+import time
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -29,15 +30,15 @@ def run_command(cmd, cwd=None):
         )
         logger.info(f"Command succeeded: {cmd}")
         logger.debug(f"Output: {result.stdout}")
-        return True
+        return True, result.stdout
     except subprocess.CalledProcessError as e:
         logger.error(f"Command failed: {cmd}")
         logger.error(f"Error: {e.stderr}")
-        return False
+        return False, e.stderr
 
 
 def auto_commit_and_push(commit_message=None):
-    """Automatically commit and push changes to GitHub."""
+    """Automatically commit and push changes to GitHub with better conflict handling."""
     try:
         # Default commit message if none provided
         if not commit_message:
@@ -52,9 +53,21 @@ def auto_commit_and_push(commit_message=None):
             logger.error("Not in a git repository")
             return False
         
+        # First, pull any remote changes to avoid conflicts
+        logger.info("Pulling latest changes from remote...")
+        success, output = run_command("git pull origin main --rebase", cwd=repo_root)
+        if not success:
+            logger.warning("Pull failed, but continuing with commit...")
+        
         # Add all changes in slides directory
-        if not run_command("git add slides/*", cwd=repo_root):
+        logger.info("Adding slide changes...")
+        if not run_command("git add slides/*", cwd=repo_root)[0]:
+            logger.error("Failed to add slides directory")
             return False
+        
+        # Also add any other relevant files
+        if not run_command("git add slides.json config.js", cwd=repo_root)[0]:
+            logger.info("No additional files to add (this is normal)")
         
         # Check if there are changes to commit
         result = subprocess.run(
@@ -70,21 +83,35 @@ def auto_commit_and_push(commit_message=None):
             return True
         
         # Commit changes
-        if not run_command(f'git commit -m "{commit_message}"', cwd=repo_root):
+        logger.info(f"Committing changes with message: {commit_message}")
+        if not run_command(f'git commit -m "{commit_message}"', cwd=repo_root)[0]:
+            logger.error("Failed to commit changes")
             return False
         
-        # Push to origin
-        if not run_command("git push origin main", cwd=repo_root):
-            # Try to pull and merge first, then push again
-            logger.info("Push failed, trying to pull and merge...")
-            if run_command("git pull origin main --rebase", cwd=repo_root):
-                if run_command("git push origin main", cwd=repo_root):
-                    logger.info("Successfully pushed after rebase")
-                    return True
-            return False
+        # Push to origin with retry logic
+        max_retries = 3
+        for attempt in range(max_retries):
+            logger.info(f"Pushing to GitHub (attempt {attempt + 1}/{max_retries})...")
+            success, output = run_command("git push origin main", cwd=repo_root)
+            
+            if success:
+                logger.info("Successfully pushed changes to GitHub")
+                return True
+            
+            if attempt < max_retries - 1:
+                logger.info("Push failed, pulling and retrying...")
+                # Pull and rebase before retrying
+                pull_success, pull_output = run_command("git pull origin main --rebase", cwd=repo_root)
+                if not pull_success:
+                    logger.warning("Pull failed during retry, but continuing...")
+                
+                # Wait a bit before retrying
+                time.sleep(2)
+            else:
+                logger.error("Failed to push after all retries")
+                return False
         
-        logger.info("Successfully committed and pushed changes")
-        return True
+        return False
         
     except Exception as e:
         logger.error(f"Unexpected error in auto_commit_and_push: {e}")
@@ -119,11 +146,12 @@ def main():
     
     # Generate commit message based on type
     if args.type and not args.message:
+        now = datetime.now()
         update_types = {
-            "monthly": "Monthly rolling window and calendar update",
-            "weekly": "Weekly 'Happening This Week' update",
-            "daily": "Daily 'Happening Today' update",
-            "calendar": "Monthly calendar view update"
+            "monthly": f"Monthly rolling window and calendar update - {now.strftime('%B %Y')}",
+            "weekly": f"Weekly 'Happening This Week' update - {now.strftime('%Y-%m-%d')}",
+            "daily": f"Daily 'Happening Today' update - {now.strftime('%A, %B %d, %Y')}",
+            "calendar": f"Monthly calendar view update - {now.strftime('%B %Y')}"
         }
         args.message = f"Auto-update: {update_types.get(args.type, 'Dashboard update')}"
     
@@ -132,9 +160,11 @@ def main():
     
     if success:
         print("✅ Changes committed and pushed successfully")
+        print("🌐 All connected devices will receive updates within minutes")
         sys.exit(0)
     else:
         print("❌ Failed to commit and push changes")
+        print("🔧 Manual intervention may be required")
         sys.exit(1)
 
 
