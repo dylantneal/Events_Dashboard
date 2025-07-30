@@ -2351,7 +2351,7 @@
             
             <form id="authForm">
                 <div class="auth-input-group">
-                    <input type="password" id="authPassword" class="auth-input" placeholder="Enter access code" required value="">
+                    <input type="password" id="authPassword" class="auth-input" placeholder="Enter access code" value="">
                 </div>
                 <button type="submit" class="auth-button">ACCESS DASHBOARD</button>
                 <div class="auth-error" id="authError">Invalid access code. Please try again.</div>
@@ -4906,12 +4906,35 @@
                 console.log('🔒 AUTH DEBUG: Adding submit event listener...');
                 authForm.addEventListener('submit', handleAuth);
                 
-                // Also test the form immediately
+                // Also add click handler to button as backup
+                const submitButton = authForm.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    console.log('🔒 AUTH DEBUG: Adding click handler to button...');
+                    submitButton.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        console.log('🔒 AUTH DEBUG: Button clicked, calling handleAuth...');
+                        handleAuth(e);
+                    });
+                }
+                
+                // Add Enter key handler to password field
+                const passwordField = document.getElementById('authPassword');
+                if (passwordField) {
+                    console.log('🔒 AUTH DEBUG: Adding Enter key handler...');
+                    passwordField.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            console.log('🔒 AUTH DEBUG: Enter pressed, calling handleAuth...');
+                            handleAuth(e);
+                        }
+                    });
+                }
+                
+                // Test the form setup
                 setTimeout(() => {
                     console.log('🔒 AUTH DEBUG: Testing form setup...');
-                    const passwordField = document.getElementById('authPassword');
                     console.log('🔒 AUTH DEBUG: Password field =', passwordField);
-                    console.log('🔒 AUTH DEBUG: Password field value =', passwordField?.value);
+                    console.log('🔒 AUTH DEBUG: Submit button =', submitButton);
                 }, 1000);
             } else {
                 console.error('🔒 AUTH DEBUG: authForm not found!');
