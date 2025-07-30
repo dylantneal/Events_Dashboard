@@ -131,14 +131,14 @@
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
             border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-            padding: 26px 48px;
+            padding: 12px 32px;
             display: grid;
-            grid-template-columns: 300px 1fr 320px;
+            grid-template-columns: 250px 1fr 250px;
             align-items: center;
-            gap: 24px;
+            gap: 16px;
             z-index: 10;
             position: relative;
-            min-height: 90px;
+            min-height: 50px;
             box-shadow: 
                 0 1px 0 0 rgba(255, 255, 255, 0.1) inset,
                 0 4px 20px rgba(0, 0, 0, 0.05);
@@ -147,12 +147,12 @@
         .weather {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
             justify-self: start;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            padding: 18px 22px;
-            border-radius: 16px;
+            padding: 8px 12px;
+            border-radius: 12px;
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(12px);
@@ -171,7 +171,7 @@
         }
 
         .weather-icon {
-            font-size: 2.25rem;
+            font-size: 1.5rem;
             filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
             animation: weatherBob 8s ease-in-out infinite;
             transition: transform 0.3s ease;
@@ -195,7 +195,7 @@
 
         .weather-temp {
             font-family: 'Poppins', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-size: 1.875rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: #ffffff;
             line-height: 1;
@@ -206,7 +206,7 @@
 
         .weather-location {
             font-family: 'Poppins', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-size: 1rem;
+            font-size: 0.75rem;
             font-weight: 500;
             color: rgba(255, 255, 255, 0.8);
             letter-spacing: 0.02em;
@@ -227,20 +227,20 @@
 
         .clock {
             font-family: 'Outfit', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-size: 3.5rem;
+            font-size: 2rem;
             font-weight: 400;
             color: #ffffff;
             letter-spacing: -0.01em;
             line-height: 1;
             font-variant-numeric: tabular-nums;
-            margin-bottom: 6px;
+            margin-bottom: 3px;
             text-shadow: 
                 0 0 40px rgba(59, 130, 246, 0.4),
                 0 4px 8px rgba(0, 0, 0, 0.3);
             position: relative;
-            padding: 18px 28px;
+            padding: 8px 16px;
             background: rgba(255, 255, 255, 0.08);
-            border-radius: 18px;
+            border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(12px);
             box-shadow: 
@@ -285,11 +285,11 @@
             flex-direction: row;
             align-items: center;
             justify-self: end;
-            gap: 16px;
+            gap: 12px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            padding: 18px 22px;
-            border-radius: 16px;
+            padding: 8px 12px;
+            border-radius: 12px;
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(12px);
@@ -309,7 +309,7 @@
 
         .date {
             font-family: 'Nunito', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-size: 1.375rem;
+            font-size: 0.9rem;
             font-weight: 500;
             color: rgba(255, 255, 255, 0.85);
             line-height: 1.1;
@@ -320,7 +320,7 @@
 
         .day {
             font-family: 'Nunito', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-size: 2rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: #ffffff;
             text-transform: uppercase;
@@ -334,12 +334,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 10px;
             position: relative;
             overflow: hidden;
             min-height: 0;
             z-index: 5;
-            max-height: calc(100vh - 120px); /* Account for header */
+            max-height: calc(100vh - 70px); /* Account for smaller header */
         }
 
         .slide {
@@ -347,8 +347,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            max-width: 92vw;
-            max-height: calc(100vh - 200px); /* Account for header space */
+            max-width: 95vw;
+            max-height: calc(100vh - 90px); /* Account for smaller header space */
             width: auto;
             height: auto;
             border-radius: 24px;
@@ -368,7 +368,7 @@
             align-items: center;
             justify-content: center;
             animation: slideFloat 12s ease-in-out infinite;
-            padding: 24px;
+            padding: 12px;
             /* Hardware acceleration for smooth animations */
             will-change: transform, opacity;
             transform-style: preserve-3d;
@@ -379,10 +379,10 @@
         /* Make announcements board significantly larger */
         .slide:has(.announcements-slide),
         .slide.announcements-slide-container {
-            max-width: calc(100vw - 40px);
-            width: calc(100vw - 40px);
-            max-height: calc(100vh - 140px); /* Account for header + padding */
-            padding: 10px;
+            max-width: calc(100vw - 20px);
+            width: calc(100vw - 20px);
+            max-height: calc(100vh - 80px); /* Account for smaller header + padding */
+            padding: 5px;
         }
 
         @keyframes slideFloat {
@@ -421,8 +421,8 @@
 
         .slide img {
             display: block;
-            max-width: calc(92vw - 48px);
-            max-height: calc(100vh - 250px); /* Account for header + padding */
+            max-width: calc(95vw - 24px);
+            max-height: calc(100vh - 110px); /* Account for smaller header + padding */
             width: auto;
             height: auto;
             border-radius: 16px;
@@ -1649,54 +1649,54 @@
         /* Large screen optimizations for TVs and large monitors */
         @media (min-width: 1600px) {
             .header {
-                padding: 40px 60px;
-                grid-template-columns: 400px 1fr 400px;
-                min-height: 120px;
+                padding: 16px 40px;
+                grid-template-columns: 300px 1fr 300px;
+                min-height: 60px;
             }
             
             .clock {
-                font-size: 4.5rem;
-                padding: 24px 36px;
+                font-size: 2.5rem;
+                padding: 12px 20px;
             }
             
             .weather-temp {
-                font-size: 2.5rem;
+                font-size: 1.5rem;
             }
             
             .weather-location {
-                font-size: 1.25rem;
+                font-size: 0.9rem;
             }
             
             .weather-icon {
-                font-size: 3rem;
-            }
-            
-            .day {
-                font-size: 2.75rem;
-            }
-            
-            .date {
                 font-size: 1.75rem;
             }
             
+            .day {
+                font-size: 1.5rem;
+            }
+            
+            .date {
+                font-size: 1rem;
+            }
+            
             .weather, .date-container {
-                padding: 24px 28px;
+                padding: 10px 14px;
             }
             
             /* Make announcements much larger for TV viewing */
             .slide:has(.announcements-slide),
             .slide.announcements-slide-container {
-                max-width: 85vw;
-                max-height: calc(100vh - 180px); /* Account for larger header */
-                padding: 32px;
+                max-width: 97vw;
+                max-height: calc(100vh - 80px); /* Account for smaller header */
+                padding: 10px;
             }
             
             .slide {
-                max-height: calc(100vh - 220px); /* Account for larger header */
+                max-height: calc(100vh - 90px); /* Account for smaller header */
             }
             
             .slide img {
-                max-height: calc(100vh - 280px); /* Account for larger header + padding */
+                max-height: calc(100vh - 110px); /* Account for smaller header + padding */
             }
             
             .announcements-header {
@@ -1726,55 +1726,55 @@
 
         @media (min-width: 1920px) {
             .header {
-                padding: 50px 80px;
-                grid-template-columns: 500px 1fr 500px;
-                min-height: 140px;
+                padding: 20px 50px;
+                grid-template-columns: 350px 1fr 350px;
+                min-height: 70px;
             }
             
             .clock {
-                font-size: 5.5rem;
-                padding: 32px 48px;
+                font-size: 3rem;
+                padding: 16px 24px;
             }
             
             .weather-temp {
-                font-size: 3rem;
+                font-size: 1.75rem;
             }
             
             .weather-location {
-                font-size: 1.5rem;
+                font-size: 1rem;
             }
             
             .weather-icon {
-                font-size: 3.5rem;
-            }
-            
-            .day {
-                font-size: 3.25rem;
-            }
-            
-            .date {
                 font-size: 2rem;
             }
             
+            .day {
+                font-size: 1.75rem;
+            }
+            
+            .date {
+                font-size: 1.125rem;
+            }
+            
             .weather, .date-container {
-                padding: 32px 36px;
-                gap: 20px;
+                padding: 12px 16px;
+                gap: 14px;
             }
             
             /* Announcements optimized for Full HD TVs */
             .slide:has(.announcements-slide),
             .slide.announcements-slide-container {
-                max-width: 90vw;
-                max-height: calc(100vh - 200px); /* Account for Full HD header */
-                padding: 40px;
+                max-width: 98vw;
+                max-height: calc(100vh - 90px); /* Account for smaller header */
+                padding: 10px;
             }
             
             .slide {
-                max-height: calc(100vh - 240px); /* Account for Full HD header */
+                max-height: calc(100vh - 100px); /* Account for smaller header */
             }
             
             .slide img {
-                max-height: calc(100vh - 320px); /* Account for Full HD header + padding */
+                max-height: calc(100vh - 120px); /* Account for smaller header + padding */
             }
             
             .announcements-header {
@@ -1814,55 +1814,55 @@
 
         @media (min-width: 2560px) {
             .header {
-                padding: 60px 100px;
-                grid-template-columns: 600px 1fr 600px;
-                min-height: 160px;
+                padding: 24px 60px;
+                grid-template-columns: 400px 1fr 400px;
+                min-height: 80px;
             }
             
             .clock {
-                font-size: 7rem;
-                padding: 40px 60px;
+                font-size: 3.5rem;
+                padding: 20px 30px;
             }
             
             .weather-temp {
-                font-size: 3.75rem;
+                font-size: 2rem;
             }
             
             .weather-location {
-                font-size: 1.875rem;
+                font-size: 1.125rem;
             }
             
             .weather-icon {
-                font-size: 4.5rem;
+                font-size: 2.25rem;
             }
             
             .day {
-                font-size: 4rem;
+                font-size: 2rem;
             }
             
             .date {
-                font-size: 2.5rem;
+                font-size: 1.25rem;
             }
             
             .weather, .date-container {
-                padding: 40px 44px;
-                gap: 24px;
+                padding: 16px 20px;
+                gap: 16px;
             }
             
             /* 4K TV optimizations */
             .slide:has(.announcements-slide),
             .slide.announcements-slide-container {
-                max-width: 92vw;
-                max-height: calc(100vh - 220px); /* Account for 4K header */
-                padding: 48px;
+                max-width: 98vw;
+                max-height: calc(100vh - 100px); /* Account for smaller header */
+                padding: 15px;
             }
             
             .slide {
-                max-height: calc(100vh - 260px); /* Account for 4K header */
+                max-height: calc(100vh - 110px); /* Account for smaller header */
             }
             
             .slide img {
-                max-height: calc(100vh - 360px); /* Account for 4K header + padding */
+                max-height: calc(100vh - 130px); /* Account for smaller header + padding */
             }
             
             .announcements-header {
@@ -1902,35 +1902,35 @@
 
         @media (max-width: 1400px) {
             .header {
-                padding: 20px 40px;
-                grid-template-columns: 240px 1fr 240px;
-                min-height: 80px;
+                padding: 10px 24px;
+                grid-template-columns: 200px 1fr 200px;
+                min-height: 45px;
             }
             
             .clock {
-                font-size: 3rem;
-                padding: 16px 24px;
+                font-size: 1.75rem;
+                padding: 8px 12px;
             }
         }
 
         @media (max-width: 1200px) {
             .header {
-                padding: 18px 32px;
-                grid-template-columns: 200px 1fr 200px;
-                min-height: 75px;
+                padding: 8px 20px;
+                grid-template-columns: 180px 1fr 180px;
+                min-height: 40px;
             }
             
             .clock {
-                font-size: 2.75rem;
-                padding: 14px 20px;
+                font-size: 1.5rem;
+                padding: 6px 10px;
             }
             
             .date {
-                font-size: 1.5rem;
+                font-size: 0.8rem;
             }
             
             .weather-temp {
-                font-size: 1.75rem;
+                font-size: 1.125rem;
             }
         }
 
