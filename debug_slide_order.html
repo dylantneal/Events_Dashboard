@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Slide Order</title>
+</head>
+<body>
+    <h1>Debug Slide Ordering</h1>
+    <div id="output"></div>
+
+    <script>
+        // Mock slides array from manifest
+        const slides = [
+            "calendar_2025_07.png",
+            "gantt_2025_07.png",
+            "gantt_2025_08.png",
+            "gantt_2025_09.png",
+            "gantt_2025_10.png",
+            "gantt_daily_2025_07_30.png",
+            "gantt_weekly_2025_07_28.png"
+        ];
+
+        function reorderSlides(slides) {
+            // Get slide order from configuration or use defaults
+            const slideOrder = {
+                'daily': 1,    // Happening Today
+                'weekly': 2,   // Happening This Week
+                'current': 3,  // This Month
+                'next': 4,     // Next Month
+                'third': 5,    // Third Month
+                'fourth': 6,   // Fourth Month
+                'calendar': 7  // Calendar
+            };
+            
+            // Get current date for month comparison
+            const currentDate = new Date();
+            const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-based
+            const currentYear = currentDate.getFullYear();
+            
+            console.log(`Current date: ${currentYear}-${currentMonth.toString().padStart(2, '0')}`);
+            
+            // Categorize and sort slides
+            const categorizedSlides = slides.map(slide => {
+                let category = 'other';
+                let order = 999;
+                
+                // Check slide type
+                if (slide.includes('gantt_daily')) {
+                    category = 'daily';
+                    order = slideOrder.daily;
+                } else if (slide.includes('gantt_weekly')) {
+                    category = 'weekly';
+                    order = slideOrder.weekly;
+                } else if (slide.includes('calendar')) {
+                    category = 'calendar';
+                    order = slideOrder.calendar;
+                } else if (slide.includes('gantt_')) {
+                    // Extract year and month from gantt filename (gantt_YYYY_MM.png)
+                    const match = slide.match(/gantt_(\d{4})_(\d{2})\.png/);
+                    if (match) {
+                        const slideYear = parseInt(match[1]);
+                        const slideMonth = parseInt(match[2]);
+                        
+                        // Calculate months difference
+                        const monthsDiff = (slideYear - currentYear) * 12 + (slideMonth - currentMonth);
+                        
+                        console.log(`${slide}: Year=${slideYear}, Month=${slideMonth}, Diff=${monthsDiff}`);
+                        
+                        if (monthsDiff === 0) {
+                            category = 'current';
+                            order = slideOrder.current;
+                        } else if (monthsDiff === 1) {
+                            category = 'next';
+                            order = slideOrder.next;
+                        } else if (monthsDiff === 2) {
+                            category = 'third';
+                            order = slideOrder.third;
+                        } else if (monthsDiff === 3) {
+                            category = 'fourth';
+                            order = slideOrder.fourth;
+                        }
+                    }
+                }
+                
+                return { slide, category, order };
+            });
+            
+            // Sort by order and return just the slide names
+            categorizedSlides.sort((a, b) => a.order - b.order);
+            const orderedSlides = categorizedSlides.map(item => item.slide);
+            
+            console.log('Slide reordering:');
+            categorizedSlides.forEach((item, index) => {
+                console.log(`  ${index + 1}. ${item.slide} (${item.category}, order: ${item.order})`);
+            });
+            
+            return orderedSlides;
+        }
+
+        // Run the test
+        const orderedSlides = reorderSlides(slides);
+        
+        // Display results
+        const output = document.getElementById('output');
+        output.innerHTML = '<h2>Original Order:</h2><ol>' + 
+            slides.map(slide => `<li>${slide}</li>`).join('') + 
+            '</ol><h2>Reordered:</h2><ol>' +
+            orderedSlides.map(slide => `<li>${slide}</li>`).join('') + 
+            '</ol>';
+    </script>
+</body>
+</html>
