@@ -2351,7 +2351,7 @@
             
             <form id="authForm">
                 <div class="auth-input-group">
-                    <input type="password" id="authPassword" class="auth-input" placeholder="Enter access code" required>
+                    <input type="password" id="authPassword" class="auth-input" placeholder="Enter access code" required value="">
                 </div>
                 <button type="submit" class="auth-button">ACCESS DASHBOARD</button>
                 <div class="auth-error" id="authError">Invalid access code. Please try again.</div>
@@ -4730,15 +4730,195 @@
             console.log('✅ Pi optimizations applied successfully');
         }
 
+        // Authentication System
+        function checkAuthentication() {
+            // Wait for config to be loaded
+            if (!window.CONFIG_LOADED) {
+                console.log('⏳ Waiting for config to load...');
+                setTimeout(checkAuthentication, 100);
+                return;
+            }
+            
+            const authConfig = window.DASHBOARD_CONFIG?.authentication;
+            
+            console.log('🔒 AUTH DEBUG: Config loaded, checking authentication...');
+            console.log('🔒 AUTH DEBUG: authConfig =', authConfig);
+            console.log('🔒 AUTH DEBUG: DASHBOARD_CONFIG =', window.DASHBOARD_CONFIG);
+            
+            // If authentication is disabled, show dashboard immediately
+            if (!authConfig || !authConfig.enabled) {
+                console.log('🔓 Authentication disabled, showing dashboard');
+                showDashboard();
+                return;
+            }
+            
+            // Check if user is already authenticated (session storage)
+            const isAuthenticated = sessionStorage.getItem('dashboard_authenticated');
+            const sessionTime = sessionStorage.getItem('dashboard_session_time');
+            
+            if (isAuthenticated && sessionTime) {
+                const sessionAge = Date.now() - parseInt(sessionTime);
+                const timeout = authConfig.sessionTimeout || 0;
+                
+                // If no timeout (0) or session hasn't expired, show dashboard
+                if (timeout === 0 || sessionAge < timeout) {
+                    console.log('🔓 Session valid, showing dashboard');
+                    showDashboard();
+                    return;
+                }
+            }
+            
+            // Show authentication overlay
+            console.log('🔒 Authentication required');
+            showAuthOverlay();
+        }
+        
+        function showAuthOverlay() {
+            const authOverlay = document.getElementById('authOverlay');
+            const mainContent = document.getElementById('mainContent');
+            
+            authOverlay.style.display = 'flex';
+            authOverlay.classList.remove('hidden');
+            mainContent.classList.remove('authenticated');
+            
+            // Focus on password input and clear any validation issues
+            setTimeout(() => {
+                const passwordField = document.getElementById('authPassword');
+                passwordField.focus();
+                passwordField.value = ''; // Clear field to reset validation
+                console.log('🔒 AUTH DEBUG: Auth overlay shown, password field focused');
+            }, 100);
+        }
+        
+        function showDashboard() {
+            const authOverlay = document.getElementById('authOverlay');
+            const mainContent = document.getElementById('mainContent');
+            
+            authOverlay.classList.add('hidden');
+            mainContent.classList.add('authenticated');
+            
+            // Hide overlay completely after transition
+            setTimeout(() => {
+                authOverlay.style.display = 'none';
+            }, 300);
+            
+            // Initialize dashboard if not already done
+            if (!window.dashboard) {
+                // Check if running on Raspberry Pi and apply optimizations
+                if (isRaspberryPi()) {
+                    applyPiOptimizations();
+                }
+                
+                dashboard = new Dashboard();
+                window.dashboard = dashboard;
+            }
+        }
+        
+        function handleAuth(event) {
+            event.preventDefault();
+            
+            const authConfig = window.DASHBOARD_CONFIG?.authentication;
+            const password = document.getElementById('authPassword').value;
+            const errorDiv = document.getElementById('authError');
+            
+            console.log('🔒 AUTH DEBUG: handleAuth called');
+            console.log('🔒 AUTH DEBUG: CONFIG_LOADED =', window.CONFIG_LOADED);
+            console.log('🔒 AUTH DEBUG: DASHBOARD_CONFIG =', window.DASHBOARD_CONFIG);
+            console.log('🔒 AUTH DEBUG: authConfig =', authConfig);
+            console.log('🔒 AUTH DEBUG: entered password =', password);
+            console.log('🔒 AUTH DEBUG: expected password =', authConfig?.password);
+            console.log('🔒 AUTH DEBUG: passwords match =', password === authConfig?.password);
+            
+            // Fallback: If config isn't loaded yet, wait and retry
+            if (!window.CONFIG_LOADED) {
+                console.log('🔒 AUTH DEBUG: Config not loaded yet, retrying in 500ms...');
+                setTimeout(() => handleAuth(event), 500);
+                return;
+            }
+            
+            // Fallback: If no config at all, allow access with default password
+            if (!window.DASHBOARD_CONFIG) {
+                console.log('🔒 AUTH DEBUG: No DASHBOARD_CONFIG found, using fallback');
+                if (password === 'dashboard123') {
+                    console.log('✅ Fallback authentication successful');
+                    showDashboard();
+                    return;
+                } else {
+                    console.log('❌ Fallback authentication failed');
+                    errorDiv.style.display = 'block';
+                    document.getElementById('authPassword').value = '';
+                    setTimeout(() => document.getElementById('authPassword').focus(), 100);
+                    return;
+                }
+            }
+            
+            if (!authConfig || !authConfig.enabled) {
+                console.log('🔒 AUTH DEBUG: Authentication disabled, showing dashboard');
+                showDashboard();
+                return;
+            }
+            
+            if (password === authConfig.password) {
+                // Successful authentication
+                console.log('✅ Authentication successful');
+                
+                // Store session
+                sessionStorage.setItem('dashboard_authenticated', 'true');
+                sessionStorage.setItem('dashboard_session_time', Date.now().toString());
+                
+                // Hide error if visible
+                errorDiv.style.display = 'none';
+                
+                // Clear password field
+                document.getElementById('authPassword').value = '';
+                
+                // Show dashboard
+                showDashboard();
+            } else {
+                // Failed authentication
+                console.log('❌ Authentication failed');
+                console.log('❌ Expected:', authConfig.password);
+                console.log('❌ Got:', password);
+                
+                // Show error
+                errorDiv.style.display = 'block';
+                
+                // Clear password field
+                document.getElementById('authPassword').value = '';
+                
+                // Refocus on input
+                setTimeout(() => {
+                    document.getElementById('authPassword').focus();
+                }, 100);
+            }
+        }
+
         // Initialize dashboard when page loads
         let dashboard;
         document.addEventListener('DOMContentLoaded', () => {
-            // Check if running on Raspberry Pi and apply optimizations
-            if (isRaspberryPi()) {
-                applyPiOptimizations();
+            console.log('🔒 AUTH DEBUG: DOM loaded, setting up authentication...');
+            
+            // Set up authentication form handler
+            const authForm = document.getElementById('authForm');
+            console.log('🔒 AUTH DEBUG: authForm element =', authForm);
+            
+            if (authForm) {
+                console.log('🔒 AUTH DEBUG: Adding submit event listener...');
+                authForm.addEventListener('submit', handleAuth);
+                
+                // Also test the form immediately
+                setTimeout(() => {
+                    console.log('🔒 AUTH DEBUG: Testing form setup...');
+                    const passwordField = document.getElementById('authPassword');
+                    console.log('🔒 AUTH DEBUG: Password field =', passwordField);
+                    console.log('🔒 AUTH DEBUG: Password field value =', passwordField?.value);
+                }, 1000);
+            } else {
+                console.error('🔒 AUTH DEBUG: authForm not found!');
             }
             
-            dashboard = new Dashboard();
+            // Check authentication status
+            checkAuthentication();
             
             // Make test functions available globally for debugging
             window.testChime = () => {
