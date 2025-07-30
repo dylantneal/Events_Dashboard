@@ -3792,11 +3792,11 @@
                 });
                 
                 // 5. ENHANCED SAVE WITH RETRY
-                const originalSyncToCloud = this.syncAnnouncementsToCloud.bind(this);
+                // Enhanced save method that uses the existing saveAnnouncements
                 this.syncAnnouncementsToCloud = async function() {
                     try {
-                        console.log('💾 Enhanced sync: Saving to cloud...');
-                        await originalSyncToCloud();
+                        console.log('💾 Enhanced sync: Saving announcements...');
+                        await this.saveAnnouncements();
                         console.log('✅ Enhanced sync: Save successful');
                         
                         // Force immediate sync to other browsers
@@ -3809,7 +3809,7 @@
                         console.warn('⚠️ Enhanced sync: Save failed, retrying...', error);
                         // Retry after 2 seconds
                         setTimeout(() => {
-                            originalSyncToCloud();
+                            this.syncAnnouncementsToCloud();
                         }, 2000);
                     }
                 }.bind(this);
