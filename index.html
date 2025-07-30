@@ -5684,6 +5684,103 @@
         }
     </script>
     
+    <!-- Emergency Edge/Safari Sync Fix -->
+    <script>
+        // Emergency fix for Edge/Safari announcement sync
+        console.log('🚨 EMERGENCY EDGE/SAFARI SYNC FIX LOADING...');
+
+        function waitForDashboard() {
+            return new Promise((resolve) => {
+                const checkInterval = setInterval(() => {
+                    if (window.dashboard) {
+                        clearInterval(checkInterval);
+                        resolve(window.dashboard);
+                    }
+                }, 100);
+            });
+        }
+
+        async function emergencyEdgeSafariFix() {
+            console.log('🔧 Starting emergency Edge/Safari sync fix...');
+            
+            try {
+                const dashboard = await waitForDashboard();
+                console.log('✅ Dashboard ready');
+                
+                // 1. FORCE CLOUD LOAD
+                console.log('🌐 Force loading from cloud...');
+                const cloudUrl = 'https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1/latest';
+                
+                const response = await fetch(cloudUrl);
+                if (!response.ok) {
+                    throw new Error(`Cloud fetch failed: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('📦 Cloud data loaded:', data);
+                
+                if (data.record && data.record.announcements) {
+                    const announcements = data.record.announcements;
+                    console.log('📋 Found', announcements.length, 'announcements in cloud');
+                    
+                    // 2. CHECK WHICH ARE ACTIVE RIGHT NOW
+                    const now = new Date();
+                    console.log('🕐 Current time:', now.toLocaleString());
+                    
+                    const activeAnnouncements = [];
+                    
+                    announcements.forEach(ann => {
+                        const startDateTime = new Date(ann.startDate + 'T' + ann.startTime);
+                        const endDateTime = new Date(ann.endDate + 'T' + ann.endTime);
+                        const isActive = now >= startDateTime && now <= endDateTime;
+                        
+                        console.log(`📋 "${ann.text}"`);
+                        console.log(`   Start: ${startDateTime.toLocaleString()}`);
+                        console.log(`   End: ${endDateTime.toLocaleString()}`);
+                        console.log(`   Active: ${isActive ? '✅ YES' : '❌ NO'}`);
+                        
+                        if (isActive) {
+                            activeAnnouncements.push(ann);
+                        }
+                    });
+                    
+                    console.log('🎯 Active announcements found:', activeAnnouncements.length);
+                    
+                    // 3. FORCE UPDATE DASHBOARD
+                    dashboard.announcements = announcements;
+                    
+                    // Save to localStorage
+                    localStorage.setItem('dashboard_announcements', JSON.stringify(announcements));
+                    console.log('💾 Saved to localStorage');
+                    
+                    // 4. FORCE DISPLAY UPDATE
+                    console.log('🎨 Forcing display update...');
+                    dashboard.updateAnnouncementsDisplay();
+                    
+                    // 5. FORCE SLIDE REFRESH
+                    if (dashboard.slides && dashboard.slides.length > 0) {
+                        console.log('🎯 Refreshing slides...');
+                        await dashboard.loadSlides();
+                    }
+                    
+                    console.log('✅ Emergency fix applied successfully!');
+                    console.log('📊 Dashboard now has:', dashboard.announcements.length, 'total announcements');
+                    console.log('📊 Active announcements:', activeAnnouncements.length);
+                    
+                } else {
+                    console.error('❌ Invalid cloud data format');
+                }
+                
+            } catch (error) {
+                console.error('❌ Emergency fix failed:', error);
+            }
+        }
+
+        // Run the fix after dashboard is ready
+        setTimeout(emergencyEdgeSafariFix, 3000);
+        console.log('⏳ Emergency Edge/Safari fix will run in 3 seconds...');
+    </script>
+    
     </div> <!-- End main-content -->
 </body>
 </html>
