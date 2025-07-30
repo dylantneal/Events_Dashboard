@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard v2.0</title>
+    <title>Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&family=Nunito:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- Load configuration file -->
     <script>
@@ -2505,7 +2505,6 @@
                 
                 await this.loadAnnouncements();
                 this.startCloudSync();
-                this.startEnhancedAnnouncementSync(); // Enhanced cross-browser sync
                 await this.loadWeather();
                 await this.loadSlides();
                 this.startSlideShow();
@@ -3633,25 +3632,13 @@
 
                 try {
                     this.syncInProgress = true;
-                    console.log('🌐 Checking for cloud updates...');
+                    console.log('Checking for cloud updates...');
                     
                     const cloudData = await this.loadFromCloud();
                     if (cloudData && Array.isArray(cloudData)) {
-                        console.log(`📥 Received ${cloudData.length} announcements from cloud`);
-                        
-                        // On first load (no local announcements), always use cloud data
-                        if (this.announcements.length === 0) {
-                            console.log('📱 First load - using cloud data directly');
-                            this.announcements = cloudData;
-                            localStorage.setItem('dashboard_announcements', JSON.stringify(this.announcements));
-                            this.updateAnnouncementsDisplay();
-                            this.lastSyncTime = Date.now();
-                            return;
-                        }
-                        
                         // Check if we should skip merge due to recent local changes
                         const timeSinceLastLocalSave = Date.now() - (this.lastLocalSaveTime || 0);
-                        if (timeSinceLastLocalSave < 3000) { // Reduced from 5 to 3 seconds
+                        if (timeSinceLastLocalSave < 5000) { // 5 seconds
                             console.log('🚫 Skipping cloud merge - recent local changes detected');
                             this.lastSyncTime = Date.now();
                             return;
@@ -3770,41 +3757,7 @@
                 }, 2000);
             }
 
-            startEnhancedAnnouncementSync() {
-                if (!this.cloudSyncEnabled) {
-                    console.log('⚠️ Cloud sync not enabled, skipping enhanced sync');
-                    return;
-                }
 
-                console.log('🚀 Starting reliable cross-browser sync v2.0...');
-                
-                // 1. IMMEDIATE SYNC - More aggressive initial sync
-                setTimeout(() => {
-                    console.log('🔄 Initial cloud sync...');
-                    this.syncAnnouncementsFromCloud();
-                }, 1000);
-                
-                // 2. REGULAR SYNC - Every 30 seconds (balance between responsiveness and API usage)
-                setInterval(() => {
-                    console.log('🔄 Regular cloud sync...');
-                    this.syncAnnouncementsFromCloud();
-                }, 30000);
-                
-                // 3. FOCUS TRIGGERS - Sync when user returns to tab/window
-                document.addEventListener('visibilitychange', () => {
-                    if (!document.hidden) {
-                        console.log('🔄 Tab focused - syncing...');
-                        setTimeout(() => this.syncAnnouncementsFromCloud(), 500);
-                    }
-                });
-                
-                window.addEventListener('focus', () => {
-                    console.log('🔄 Window focused - syncing...');
-                    setTimeout(() => this.syncAnnouncementsFromCloud(), 500);
-                });
-                
-                console.log('✅ Enhanced sync enabled: 30s intervals + focus triggers');
-            }
 
             createAnnouncementsSlideHTML() {
                                     return `
