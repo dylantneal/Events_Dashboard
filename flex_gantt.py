@@ -4,7 +4,7 @@ flex_gantt.py
 -------------
 Create month-by-month Gantt charts from the Marriott (or any similar) pipeline sheet.
 Enhanced for dashboard kiosk system with image optimization and manifest generation.
-Now supports rolling 3-month window for automatic dashboard updates and calendar views.
+Now supports rolling 4-month window for automatic dashboard updates and calendar views.
 
 Features:
 - Automatic event filtering for all charts: "Marriott In-House Events 2025" events are excluded from all views
@@ -12,7 +12,7 @@ Features:
 - Color-coded bars by sales team member (Darren=Green, Dylan=Orange, Sarah=Pink, Eder=Purple, David=Blue)
 - Enhanced visual styling with larger titles, better fonts, and professional appearance
 - Sales team legend automatically generated
-- Rolling 3-month window with automatic cleanup of old charts
+- Rolling 4-month window with automatic cleanup of old charts
 - Daily charts with hourly granularity for precise timing
 - Professional calendar views with event placement and owner color coding
 
@@ -30,7 +30,7 @@ python flex_gantt.py pipeline.xlsx --months 2 3 --year 2026 --outdir ./charts
 # Generate optimized slides for dashboard
 python flex_gantt.py pipeline.xlsx --months 7 8 9 10 11 12 --year 2025 --dashboard
 
-# Rolling 3-month window (automatically updates for current month +3)
+# Rolling 4-month window (automatically updates for current month +3)
 python flex_gantt.py pipeline.xlsx --rolling-window --dashboard
 
 # Generate calendar view for current month
@@ -78,14 +78,14 @@ def month_str_to_int(s: str) -> int:
 
 def get_rolling_months() -> tuple[list[int], int]:
     """
-    Get the current month and next 2 months (3 months total).
+    Get the current month and next 3 months (4 months total).
     Returns: (list of month numbers, list of years)
     """
     current_date = datetime.now()
     months = []
     years = []
     
-    for i in range(3):
+    for i in range(4):
         target_date = current_date + relativedelta(months=i)  # Start from current month (i=0)
         months.append(target_date.month)
         years.append(target_date.year)
@@ -130,7 +130,7 @@ def get_current_day() -> tuple[pd.Timestamp, pd.Timestamp]:
 
 def cleanup_old_charts(outdir: Path, current_months: list[int], current_years: list[int], preserve_weekly: bool = True, preserve_daily: bool = True) -> None:
     """
-    Remove chart files that are not in the current 3-month rolling window.
+    Remove chart files that are not in the current 4-month rolling window.
     Optionally preserves the weekly and daily charts.
     """
     # Get all gantt chart files
@@ -227,7 +227,7 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument(
         "--rolling-window",
         action="store_true",
-        help="Generate charts for rolling 3-month window (next 3 months from current date)",
+        help="Generate charts for rolling 4-month window (current month + next 3 months from current date)",
     )
     ap.add_argument(
         "--calendar",
@@ -353,7 +353,7 @@ def gantt_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path, month
     """Draw + save a single month's chart, clipping multi-month events.
     
     Args:
-        month_position: Position in rolling window (0=current, 1=next, 2=third) for color coding
+        month_position: Position in rolling window (0=current, 1=next, 2=third, 3=fourth) for color coding
     """
     mname = calendar.month_name[month]
     mstart = pd.Timestamp(year, month, 1)
@@ -467,6 +467,8 @@ def gantt_for_month(df: pd.DataFrame, year: int, month: int, outdir: Path, month
             title_color = '#22c55e'  # Green for next month
         elif month_position == 2:
             title_color = '#3b82f6'  # Blue for third month
+        elif month_position == 3:
+            title_color = '#8b5cf6'  # Purple for fourth month
         else:
             title_color = '#0f172a'  # Default dark color
     else:
@@ -1349,7 +1351,7 @@ def main() -> None:
     # Handle rolling window mode
     elif args.rolling_window:
         months, years = get_rolling_months()
-        print(f"Rolling window mode: generating charts for current month + next 2 months")
+        print(f"Rolling window mode: generating charts for current month + next 3 months")
         for i, (month, year) in enumerate(zip(months, years)):
             month_name = calendar.month_name[month]
             print(f"  {i+1}. {month_name} {year}")
@@ -1365,7 +1367,7 @@ def main() -> None:
             month_start = pd.Timestamp(year, month, 1)
             month_end = pd.Timestamp(year, month, calendar.monthrange(year, month)[1])
             month_df = df[(df["Event End Date"] >= month_start) & (df["Event Start Date"] <= month_end)]
-            # Pass the month position for color coding (0=current, 1=next, 2=third)
+            # Pass the month position for color coding (0=current, 1=next, 2=third, 3=fourth)
             gantt_for_month(month_df, year, month, outdir, month_position=i)
         
     else:

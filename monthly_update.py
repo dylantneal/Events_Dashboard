@@ -3,7 +3,7 @@
 monthly_update.py
 -----------------
 Automated monthly update script for the dashboard.
-This script should be run monthly (e.g., via cron) to maintain the rolling 3-month window and update the calendar.
+This script should be run monthly (e.g., via cron) to maintain the rolling 4-month window and update the calendar.
 
 Usage:
     python monthly_update.py
@@ -165,7 +165,7 @@ def main():
     if rolling_success and calendar_success:
         logger.info(f"\n✅ Monthly update completed successfully in {duration}")
         logger.info("Dashboard is now updated with:")
-        logger.info("  • Next 3 months of Gantt charts (rolling window)")
+        logger.info("  • Current month + next 3 months of Gantt charts (rolling window)")
         logger.info(f"  • {current_month} calendar view")
         
         # Auto-commit and push changes to GitHub

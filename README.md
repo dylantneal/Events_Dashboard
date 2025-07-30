@@ -45,7 +45,7 @@ This system is designed as three cooperating layers:
 
 3. **Generate slides:**
    
-   **Option A: Rolling 3-month window (recommended for monthly automation):**
+   **Option A: Rolling 4-month window (recommended for monthly automation):**
    ```bash
    python3 flex_gantt.py pipeline.xlsx --rolling-window --dashboard
    ```
@@ -75,7 +75,7 @@ This system is designed as three cooperating layers:
    ./setup_cron.sh
    ```
    This will test your setup and let you choose between:
-   - Monthly updates (3-month rolling window)
+   - Monthly updates (4-month rolling window)
    - Weekly updates ("Happening This Week" chart)
    - Daily updates ("Happening Today" chart)
    - Various combinations (recommended for complete automation)
@@ -101,17 +101,18 @@ All generated images are automatically committed and pushed to GitHub, ensuring:
 
 See `AUTOMATED_IMAGE_SYNC.md` for detailed setup instructions.
 
-### 🗓️ Rolling 3-Month Window (Monthly Updates)
+### 🗓️ Rolling 4-Month Window (Monthly Updates)
 
-Always shows the next 3 months of events, automatically rotating as time progresses.
+Always shows the current month and next 3 months of events, automatically rotating as time progresses.
 
 **How It Works:**
-- **Automatic calculation**: Generates charts for the next 3 months from current date
-- **Monthly rotation**: When July arrives, removes June's chart and adds October's chart  
+- **Automatic calculation**: Generates charts for current month + next 3 months from current date
+- **Monthly rotation**: When August arrives, removes July's chart and adds November's chart  
 - **Smart cleanup**: Automatically removes old chart files that are no longer needed
+- **Color coding**: Current month (Orange), Next month (Green), Third month (Blue), Fourth month (Purple)
 - **Example timeline**:
-  - June 2025 → Shows: July, August, September
-  - July 2025 → Shows: August, September, October (removes July)
+  - July 2025 → Shows: July (Orange), August (Green), September (Blue), October (Purple)
+  - August 2025 → Shows: August (Orange), September (Green), October (Blue), November (Purple)
 
 **Manual Usage:**
 ```bash
@@ -176,7 +177,7 @@ python3 calendar_update.py
 ```
 
 Choose from:
-1. **Monthly only**: 3-month rolling window + calendar updates
+1. **Monthly only**: 4-month rolling window + calendar updates
 2. **Weekly only**: "Happening This Week" updates
 3. **Daily only**: "Happening Today" updates
 4. **Calendar only**: Professional calendar view updates
@@ -289,7 +290,7 @@ EncoreDashboard/
 ├── index.html                # Presentation layer
 ├── slides/                   # Generated content
 │   ├── slides.json           # Manifest file
-│   ├── gantt_YYYY_MM.png     # Monthly charts (rolling 3-month window)
+│   ├── gantt_YYYY_MM.png     # Monthly charts (rolling 4-month window)
 │   ├── calendar_YYYY_MM.png  # Professional calendar views
 │   ├── gantt_weekly_*.png    # Weekly "Happening This Week" chart
 │   └── gantt_daily_*.png     # Daily "Happening Today" chart

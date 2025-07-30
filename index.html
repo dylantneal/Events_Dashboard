@@ -3118,7 +3118,8 @@
                     'current': 3,  // This Month
                     'next': 4,     // Next Month
                     'third': 5,    // Third Month
-                    'calendar': 6  // Calendar
+                    'fourth': 6,   // Fourth Month
+                    'calendar': 7  // Calendar
                 };
                 
                 // Get current date for month comparison
@@ -3160,6 +3161,9 @@
                             } else if (monthsDiff === 2) {
                                 category = 'third';
                                 order = slideOrder.third;
+                            } else if (monthsDiff === 3) {
+                                category = 'fourth';
+                                order = slideOrder.fourth;
                             }
                         }
                     }

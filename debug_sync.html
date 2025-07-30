@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Sync Issue</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .log { background: #000; color: #0f0; padding: 20px; font-family: monospace; height: 400px; overflow-y: auto; }
+        button { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .error { color: #f00; }
+        .success { color: #0f0; }
+        .warning { color: #ff0; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Debug Announcement Sync Issue</h1>
+    <button onclick="testCloudConfig()">Test Cloud Config</button>
+    <button onclick="testSaveToCloud()">Test Save to Cloud</button>
+    <button onclick="testLoadFromCloud()">Test Load from Cloud</button>
+    <button onclick="testFullFlow()">Test Full Flow</button>
+    <button onclick="clearLog()">Clear</button>
+    
+    <div id="log" class="log"></div>
+
+    <script>
+        const log = document.getElementById('log');
+        
+        function logMessage(msg, type = 'info') {
+            const colors = { info: '#0ff', success: '#0f0', error: '#f00', warning: '#ff0' };
+            log.innerHTML += `<span style="color: ${colors[type]}">[${new Date().toLocaleTimeString()}] ${msg}</span>\n`;
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function clearLog() {
+            log.innerHTML = '';
+        }
+        
+        async function testCloudConfig() {
+            logMessage('🔧 Testing cloud configuration...', 'info');
+            
+            try {
+                // Load the dashboard config
+                const configResponse = await fetch('https://www.marquisdashboard.com/config.js');
+                const configText = await configResponse.text();
+                
+                logMessage('✅ Config file loaded', 'success');
+                
+                // Check if cloud sync is enabled
+                const hasCloudSync = configText.includes('cloudSync');
+                const hasEnabled = configText.includes('enabled: true');
+                const hasUrl = configText.includes('api.jsonbin.io');
+                
+                logMessage(`Cloud sync section: ${hasCloudSync ? '✅' : '❌'}`, hasCloudSync ? 'success' : 'error');
+                logMessage(`Enabled: ${hasEnabled ? '✅' : '❌'}`, hasEnabled ? 'success' : 'error');
+                logMessage(`URL present: ${hasUrl ? '✅' : '❌'}`, hasUrl ? 'success' : 'error');
+                
+                if (hasCloudSync && hasEnabled && hasUrl) {
+                    logMessage('✅ Cloud configuration is correct', 'success');
+                } else {
+                    logMessage('❌ Cloud configuration has issues', 'error');
+                }
+                
+            } catch (error) {
+                logMessage(`❌ Config test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testLoadFromCloud() {
+            logMessage('📥 Testing load from cloud...', 'info');
+            
+            try {
+                const url = 'https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1/latest';
+                logMessage(`Fetching: ${url}`, 'info');
+                
+                const response = await fetch(url);
+                logMessage(`Response: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    logMessage('✅ Cloud data loaded successfully', 'success');
+                    
+                    if (data.record && data.record.announcements) {
+                        logMessage(`Found ${data.record.announcements.length} announcements`, 'success');
+                        
+                        data.record.announcements.forEach((ann, i) => {
+                            logMessage(`  ${i+1}. "${ann.text}" (${ann.startDate})`, 'info');
+                        });
+                    } else {
+                        logMessage('❌ Invalid data format', 'error');
+                    }
+                } else {
+                    logMessage(`❌ Failed to load: ${response.status}`, 'error');
+                }
+                
+            } catch (error) {
+                logMessage(`❌ Load test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testSaveToCloud() {
+            logMessage('💾 Testing save to cloud...', 'info');
+            
+            try {
+                const testAnnouncement = {
+                    id: 'debug_test_' + Date.now(),
+                    text: 'Debug Test - ' + new Date().toLocaleTimeString(),
+                    startDate: new Date().toISOString().split('T')[0],
+                    startTime: '00:00',
+                    endDate: new Date().toISOString().split('T')[0],
+                    endTime: '23:59',
+                    createdAt: new Date().toISOString(),
+                    lastModified: new Date().toISOString()
+                };
+                
+                logMessage(`Created test announcement: "${testAnnouncement.text}"`, 'info');
+                
+                // Get current data first
+                const getCurrentUrl = 'https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1/latest';
+                const currentResponse = await fetch(getCurrentUrl);
+                const currentData = await currentResponse.json();
+                
+                // Add our test announcement
+                const announcements = currentData.record.announcements || [];
+                announcements.push(testAnnouncement);
+                
+                logMessage(`Saving ${announcements.length} total announcements...`, 'info');
+                
+                // Save to cloud
+                const saveUrl = 'https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1';
+                const saveResponse = await fetch(saveUrl, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ announcements })
+                });
+                
+                logMessage(`Save response: ${saveResponse.status} ${saveResponse.statusText}`, saveResponse.ok ? 'success' : 'error');
+                
+                if (saveResponse.ok) {
+                    logMessage('✅ Save to cloud successful!', 'success');
+                    
+                    // Verify it was saved
+                    setTimeout(async () => {
+                        const verifyResponse = await fetch(getCurrentUrl);
+                        const verifyData = await verifyResponse.json();
+                        const found = verifyData.record.announcements.some(ann => ann.id === testAnnouncement.id);
+                        logMessage(`Verification: ${found ? '✅ Found' : '❌ Not found'}`, found ? 'success' : 'error');
+                    }, 1000);
+                    
+                } else {
+                    const errorText = await saveResponse.text();
+                    logMessage(`❌ Save failed: ${errorText}`, 'error');
+                }
+                
+            } catch (error) {
+                logMessage(`❌ Save test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFullFlow() {
+            logMessage('🚀 Testing full announcement flow...', 'info');
+            
+            await testCloudConfig();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testLoadFromCloud();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testSaveToCloud();
+            
+            logMessage('🎯 Full flow test complete', 'info');
+        }
+        
+        logMessage('🔧 Debug tool ready - click buttons to test sync components', 'info');
+    </script>
+</body>
+</html>

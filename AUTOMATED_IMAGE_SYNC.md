@@ -38,7 +38,7 @@ The Encore Dashboard now supports **automatic image synchronization** ensuring a
 |------------|----------|------------------|-------------|
 | Daily | Every midnight | Happening Today chart | ✓ Automatic |
 | Weekly | Monday midnight | Happening This Week chart | ✓ Automatic |
-| Monthly | 1st at 6 AM | 3-month rolling window + Calendar | ✓ Automatic |
+| Monthly | 1st at 6 AM | 4-month rolling window + Calendar | ✓ Automatic |
 
 ## Initial Setup
 

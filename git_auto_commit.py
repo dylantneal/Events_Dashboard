@@ -153,7 +153,7 @@ def main():
     if args.type and not args.message:
         now = datetime.now()
         update_types = {
-            "monthly": f"Monthly rolling window and calendar update - {now.strftime('%B %Y')}",
+            "monthly": f"Monthly 4-month rolling window and calendar update - {now.strftime('%B %Y')}",
             "weekly": f"Weekly 'Happening This Week' update - {now.strftime('%Y-%m-%d')}",
             "daily": f"Daily 'Happening Today' update - {now.strftime('%A, %B %d, %Y')}",
             "calendar": f"Monthly calendar view update - {now.strftime('%B %Y')}"

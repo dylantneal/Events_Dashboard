@@ -1,15 +1,16 @@
 # Dashboard Automation Setup Guide
 
-This guide explains how to set up and use both the rolling 3-month window and weekly "Happening This Week" functionality for your dashboard.
+This guide explains how to set up and use both the rolling 4-month window and weekly "Happening This Week" functionality for your dashboard.
 
 ## Overview
 
 The system now supports three types of automated chart generation:
 
-### 🗓️ Rolling 3-Month Window (Monthly Updates)
-- **Current behavior**: Shows the next 3 months from today's date
+### 🗓️ Rolling 4-Month Window (Monthly Updates)
+- **Current behavior**: Shows current month + next 3 months from today's date
 - **Monthly updates**: Automatically removes old charts and adds new ones
-- **Example**: In July, it shows August, September, and October charts
+- **Color coding**: Current month (Orange), Next month (Green), Third month (Blue), Fourth month (Purple)
+- **Example**: In July, it shows July (Orange), August (Green), September (Blue), and October (Purple) charts
 
 ### 📅 "Happening This Week" (Weekly Updates)
 - **Current behavior**: Shows events for the current week (Monday to Sunday)
@@ -24,7 +25,7 @@ The system now supports three types of automated chart generation:
 ## Manual Usage
 
 ### Generate Current Rolling Window
-To manually generate the current 3-month window:
+To manually generate the current 4-month window:
 
 ```bash
 python3 flex_gantt.py pipeline.xlsx --rolling-window --dashboard
@@ -55,7 +56,7 @@ python3 flex_gantt.py pipeline.xlsx --months 7 8 9 --year 2025 --dashboard
 
 ### Option 1: Using the Automation Scripts
 
-**Monthly rolling window update:**
+**Monthly rolling window update (4-month):**
 ```bash
 python3 monthly_update.py
 ```
@@ -71,7 +72,7 @@ python3 daily_update.py
 ```
 
 These scripts will:
-1. Generate appropriate charts (monthly rolling window, weekly, or daily)
+1. Generate appropriate charts (monthly 4-month rolling window, weekly, or daily)
 2. Remove old charts that are no longer needed
 3. Optimize images for dashboard display
 4. Update the slides manifest

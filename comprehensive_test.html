@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Comprehensive Announcement System Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .test-section { background: white; margin: 20px 0; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .test-header { background: #007bff; color: white; padding: 15px; margin: -20px -20px 20px -20px; border-radius: 8px 8px 0 0; }
+        .result { padding: 10px; margin: 5px 0; border-radius: 4px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button.danger { background: #dc3545; }
+        button.danger:hover { background: #c82333; }
+        .log { background: #000; color: #0f0; font-family: monospace; padding: 15px; height: 300px; overflow-y: auto; border-radius: 4px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .status { font-weight: bold; padding: 5px 10px; border-radius: 20px; color: white; }
+        .status.pass { background: #28a745; }
+        .status.fail { background: #dc3545; }
+        .status.pending { background: #ffc107; color: #000; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 Comprehensive Announcement System Test</h1>
+        <p>This will thoroughly test the announcement system from creation to cross-browser sync.</p>
+        
+        <div class="test-section">
+            <div class="test-header">
+                <h2>Test Control Panel</h2>
+            </div>
+            <button onclick="runFullTest()">🚀 Run Full Test Suite</button>
+            <button onclick="testCloudAccess()">1. Test Cloud Access</button>
+            <button onclick="testDashboardSite()">2. Test Dashboard Site</button>
+            <button onclick="testAnnouncementFlow()">3. Test Announcement Flow</button>
+            <button onclick="testCrossBrowserSync()">4. Test Cross-Browser Sync</button>
+            <button onclick="clearAllTests()">🧹 Clear Results</button>
+        </div>
+        
+        <div class="grid">
+            <div class="test-section">
+                <div class="test-header">
+                    <h3>Test Results</h3>
+                </div>
+                <div id="testResults"></div>
+            </div>
+            
+            <div class="test-section">
+                <div class="test-header">
+                    <h3>Test Status</h3>
+                </div>
+                <div id="testStatus">
+                    <div>Cloud Access: <span id="cloudStatus" class="status pending">PENDING</span></div>
+                    <div>Dashboard Load: <span id="dashboardStatus" class="status pending">PENDING</span></div>
+                    <div>Announcement Creation: <span id="createStatus" class="status pending">PENDING</span></div>
+                    <div>Cross-Browser Sync: <span id="syncStatus" class="status pending">PENDING</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-header">
+                <h3>Real-Time Test Log</h3>
+            </div>
+            <div id="log" class="log"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-header">
+                <h3>Current Cloud Data</h3>
+            </div>
+            <pre id="cloudData">Click "Test Cloud Access" to load...</pre>
+        </div>
+    </div>
+
+    <script>
+        const log = document.getElementById('log');
+        const results = document.getElementById('testResults');
+        const cloudData = document.getElementById('cloudData');
+        
+        function logMessage(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = { info: '#0ff', success: '#0f0', error: '#f00', warning: '#ff0' };
+            log.innerHTML += `<div style="color: ${colors[type] || '#0ff'}">[${timestamp}] ${message}</div>\n`;
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            results.appendChild(div);
+        }
+        
+        function setStatus(statusId, status) {
+            const element = document.getElementById(statusId);
+            element.className = `status ${status}`;
+            element.textContent = status.toUpperCase();
+        }
+        
+        function clearAllTests() {
+            log.innerHTML = '';
+            results.innerHTML = '';
+            ['cloudStatus', 'dashboardStatus', 'createStatus', 'syncStatus'].forEach(id => {
+                setStatus(id, 'pending');
+            });
+            cloudData.textContent = 'Click "Test Cloud Access" to load...';
+            logMessage('🧹 All tests cleared', 'info');
+        }
+        
+        async function testCloudAccess() {
+            logMessage('🌐 Testing cloud access...', 'info');
+            addResult('Testing JSONBin cloud access...', 'info');
+            
+            try {
+                const cloudUrl = 'https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1/latest';
+                logMessage('📡 Fetching: ' + cloudUrl, 'info');
+                
+                const response = await fetch(cloudUrl);
+                logMessage(`📊 Response: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    logMessage('✅ Cloud data received!', 'success');
+                    addResult('✅ Cloud access successful', 'success');
+                    setStatus('cloudStatus', 'pass');
+                    
+                    if (data.record && data.record.announcements) {
+                        const announcements = data.record.announcements;
+                        logMessage(`📋 Found ${announcements.length} announcements`, 'success');
+                        addResult(`Found ${announcements.length} announcements in cloud`, 'success');
+                        
+                        cloudData.textContent = JSON.stringify(data, null, 2);
+                        
+                        // Test each announcement
+                        const now = new Date();
+                        announcements.forEach((ann, i) => {
+                            const start = new Date(ann.startDate + 'T' + ann.startTime);
+                            const end = new Date(ann.endDate + 'T' + ann.endTime);
+                            const isActive = now >= start && now <= end;
+                            
+                            logMessage(`  ${i+1}. "${ann.text}" - ${isActive ? '✅ ACTIVE' : '❌ Inactive'}`, isActive ? 'success' : 'warning');
+                            addResult(`Announcement ${i+1}: "${ann.text}" - ${isActive ? 'ACTIVE' : 'Inactive'}`, isActive ? 'success' : 'warning');
+                        });
+                        
+                        return { success: true, announcements };
+                    } else {
+                        throw new Error('Invalid data format');
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                logMessage(`❌ Cloud test failed: ${error.message}`, 'error');
+                addResult(`❌ Cloud access failed: ${error.message}`, 'error');
+                setStatus('cloudStatus', 'fail');
+                return { success: false, error: error.message };
+            }
+        }
+        
+        async function testDashboardSite() {
+            logMessage('🌐 Testing dashboard site...', 'info');
+            addResult('Testing dashboard site access...', 'info');
+            
+            try {
+                const dashboardUrl = 'https://www.marquisdashboard.com';
+                logMessage('📡 Fetching dashboard...', 'info');
+                
+                const response = await fetch(dashboardUrl);
+                const html = await response.text();
+                
+                if (response.ok) {
+                    logMessage('✅ Dashboard accessible', 'success');
+                    addResult('✅ Dashboard site accessible', 'success');
+                    setStatus('dashboardStatus', 'pass');
+                    
+                    // Check for key components
+                    const checks = [
+                        { name: 'Cloud sync enabled', test: html.includes('cloudSync') },
+                        { name: 'Announcement system', test: html.includes('loadAnnouncements') },
+                        { name: 'JSONBin URL', test: html.includes('api.jsonbin.io') },
+                        { name: 'Sync function', test: html.includes('syncAnnouncementsFromCloud') },
+                        { name: 'Save function', test: html.includes('saveAnnouncements') }
+                    ];
+                    
+                    checks.forEach(check => {
+                        logMessage(`  ${check.test ? '✅' : '❌'} ${check.name}`, check.test ? 'success' : 'error');
+                        addResult(`${check.test ? '✅' : '❌'} ${check.name}`, check.test ? 'success' : 'error');
+                    });
+                    
+                    return { success: true, html };
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                logMessage(`❌ Dashboard test failed: ${error.message}`, 'error');
+                addResult(`❌ Dashboard test failed: ${error.message}`, 'error');
+                setStatus('dashboardStatus', 'fail');
+                return { success: false, error: error.message };
+            }
+        }
+        
+        async function testAnnouncementFlow() {
+            logMessage('📝 Testing announcement creation flow...', 'info');
+            addResult('Testing announcement creation and save...', 'info');
+            
+            try {
+                // Test data
+                const testAnnouncement = {
+                    id: 'test_' + Date.now(),
+                    text: 'Test Announcement - ' + new Date().toLocaleTimeString(),
+                    startDate: new Date().toISOString().split('T')[0],
+                    startTime: '00:00',
+                    endDate: new Date().toISOString().split('T')[0],
+                    endTime: '23:59',
+                    createdAt: new Date().toISOString(),
+                    lastModified: new Date().toISOString()
+                };
+                
+                logMessage(`📝 Created test announcement: "${testAnnouncement.text}"`, 'info');
+                
+                // Test saving to cloud
+                const cloudUrl = 'https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1';
+                
+                // First get current data
+                const getCurrentResponse = await fetch(cloudUrl + '/latest');
+                const currentData = await getCurrentResponse.json();
+                
+                // Add our test announcement
+                const announcements = currentData.record.announcements || [];
+                announcements.push(testAnnouncement);
+                
+                // Save updated data
+                const saveResponse = await fetch(cloudUrl, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ announcements })
+                });
+                
+                if (saveResponse.ok) {
+                    logMessage('✅ Announcement saved to cloud', 'success');
+                    addResult('✅ Announcement creation and save successful', 'success');
+                    setStatus('createStatus', 'pass');
+                    
+                    // Verify it was saved
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    const verifyResponse = await fetch(cloudUrl + '/latest');
+                    const verifyData = await verifyResponse.json();
+                    
+                    const found = verifyData.record.announcements.some(ann => ann.id === testAnnouncement.id);
+                    if (found) {
+                        logMessage('✅ Announcement verified in cloud storage', 'success');
+                        addResult('✅ Announcement verified in cloud storage', 'success');
+                    } else {
+                        throw new Error('Announcement not found after save');
+                    }
+                    
+                    return { success: true, testAnnouncement };
+                } else {
+                    throw new Error(`Save failed: ${saveResponse.status}`);
+                }
+            } catch (error) {
+                logMessage(`❌ Announcement flow failed: ${error.message}`, 'error');
+                addResult(`❌ Announcement flow failed: ${error.message}`, 'error');
+                setStatus('createStatus', 'fail');
+                return { success: false, error: error.message };
+            }
+        }
+        
+        async function testCrossBrowserSync() {
+            logMessage('🔄 Testing cross-browser sync simulation...', 'info');
+            addResult('Testing cross-browser sync behavior...', 'info');
+            
+            try {
+                // Simulate what happens when a new browser loads
+                logMessage('🌐 Simulating fresh browser load...', 'info');
+                
+                const cloudUrl = 'https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1/latest';
+                const response = await fetch(cloudUrl);
+                const data = await response.json();
+                
+                if (data.record && data.record.announcements) {
+                    const announcements = data.record.announcements;
+                    logMessage(`📥 Fresh browser would receive ${announcements.length} announcements`, 'success');
+                    
+                    // Test filtering logic
+                    const now = new Date();
+                    const activeAnnouncements = announcements.filter(ann => {
+                        const start = new Date(ann.startDate + 'T' + ann.startTime);
+                        const end = new Date(ann.endDate + 'T' + ann.endTime);
+                        return now >= start && now <= end;
+                    });
+                    
+                    logMessage(`🎯 ${activeAnnouncements.length} announcements would be active`, 'success');
+                    addResult(`Cross-browser sync would show ${activeAnnouncements.length} active announcements`, 'success');
+                    
+                    if (activeAnnouncements.length > 0) {
+                        logMessage('✅ Cross-browser sync would work correctly', 'success');
+                        addResult('✅ Cross-browser sync simulation successful', 'success');
+                        setStatus('syncStatus', 'pass');
+                    } else {
+                        logMessage('⚠️ No active announcements found for sync', 'warning');
+                        addResult('⚠️ No active announcements found for sync', 'warning');
+                        setStatus('syncStatus', 'pass'); // Still pass as the sync mechanism works
+                    }
+                    
+                    return { success: true, active: activeAnnouncements.length };
+                } else {
+                    throw new Error('Invalid cloud data format');
+                }
+            } catch (error) {
+                logMessage(`❌ Cross-browser sync test failed: ${error.message}`, 'error');
+                addResult(`❌ Cross-browser sync test failed: ${error.message}`, 'error');
+                setStatus('syncStatus', 'fail');
+                return { success: false, error: error.message };
+            }
+        }
+        
+        async function runFullTest() {
+            logMessage('🚀 Starting comprehensive test suite...', 'info');
+            addResult('=== STARTING COMPREHENSIVE TEST SUITE ===', 'info');
+            
+            const tests = [
+                { name: 'Cloud Access', func: testCloudAccess },
+                { name: 'Dashboard Site', func: testDashboardSite },
+                { name: 'Announcement Flow', func: testAnnouncementFlow },
+                { name: 'Cross-Browser Sync', func: testCrossBrowserSync }
+            ];
+            
+            let passed = 0;
+            let failed = 0;
+            
+            for (const test of tests) {
+                logMessage(`\n🧪 Running ${test.name} test...`, 'info');
+                try {
+                    const result = await test.func();
+                    if (result.success) {
+                        passed++;
+                        logMessage(`✅ ${test.name} test PASSED`, 'success');
+                    } else {
+                        failed++;
+                        logMessage(`❌ ${test.name} test FAILED`, 'error');
+                    }
+                } catch (error) {
+                    failed++;
+                    logMessage(`❌ ${test.name} test ERROR: ${error.message}`, 'error');
+                }
+                
+                // Small delay between tests
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            logMessage(`\n🎯 Test Suite Complete: ${passed} passed, ${failed} failed`, passed === tests.length ? 'success' : 'error');
+            addResult(`=== TEST SUITE COMPLETE: ${passed}/${tests.length} tests passed ===`, passed === tests.length ? 'success' : 'error');
+            
+            if (passed === tests.length) {
+                addResult('🎉 ALL TESTS PASSED - Announcement system is working correctly!', 'success');
+            } else {
+                addResult('⚠️ Some tests failed - see log for details', 'error');
+            }
+        }
+        
+        // Initialize
+        logMessage('🔬 Comprehensive test system ready', 'info');
+        addResult('Test system initialized. Click "Run Full Test Suite" to begin.', 'info');
+    </script>
+</body>
+</html>

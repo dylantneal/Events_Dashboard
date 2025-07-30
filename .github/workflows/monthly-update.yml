@@ -49,7 +49,7 @@ jobs:
         if git diff --staged --quiet; then
           echo "No changes to commit"
         else
-          git commit -m "🤖 Auto-update: Monthly dashboard - $(date +'%B %Y') rolling window + calendar"
+          git commit -m "🤖 Auto-update: Monthly dashboard - $(date +'%B %Y') 4-month rolling window + calendar"
           git push origin main
         fi
         
@@ -58,4 +58,4 @@ jobs:
         echo "✅ Monthly update completed successfully"
         echo "🌐 Live at: https://www.marquisdashboard.com"
         echo "📅 Generated new calendar view"
-        echo "📊 Updated 3-month rolling window" 
+        echo "📊 Updated 4-month rolling window" 
