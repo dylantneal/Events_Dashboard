@@ -2505,6 +2505,7 @@
                 
                 await this.loadAnnouncements();
                 this.startCloudSync();
+                this.startEnhancedAnnouncementSync(); // Enhanced cross-browser sync
                 await this.loadWeather();
                 await this.loadSlides();
                 this.startSlideShow();
@@ -3755,6 +3756,65 @@
                 setTimeout(() => {
                     this.syncAnnouncementsFromCloud();
                 }, 2000);
+            }
+
+            startEnhancedAnnouncementSync() {
+                if (!this.cloudSyncEnabled) {
+                    return;
+                }
+
+                console.log('🚀 Starting enhanced cross-browser announcement sync...');
+                
+                // 1. IMMEDIATE SYNC ON STARTUP
+                setTimeout(() => {
+                    console.log('🔄 Enhanced sync: Initial cloud pull...');
+                    this.syncAnnouncementsFromCloud();
+                }, 500); // Even faster initial sync
+                
+                // 2. FREQUENT SYNC INTERVAL (15 seconds)
+                setInterval(() => {
+                    console.log('🔄 Enhanced sync: Regular sync...');
+                    this.syncAnnouncementsFromCloud();
+                }, 15000); // Every 15 seconds instead of 60
+                
+                // 3. SYNC ON BROWSER TAB FOCUS
+                document.addEventListener('visibilitychange', () => {
+                    if (!document.hidden) {
+                        console.log('🔄 Enhanced sync: Tab focused, syncing...');
+                        this.syncAnnouncementsFromCloud();
+                    }
+                });
+                
+                // 4. SYNC ON WINDOW FOCUS
+                window.addEventListener('focus', () => {
+                    console.log('🔄 Enhanced sync: Window focused, syncing...');
+                    this.syncAnnouncementsFromCloud();
+                });
+                
+                // 5. ENHANCED SAVE WITH RETRY
+                const originalSyncToCloud = this.syncAnnouncementsToCloud.bind(this);
+                this.syncAnnouncementsToCloud = async function() {
+                    try {
+                        console.log('💾 Enhanced sync: Saving to cloud...');
+                        await originalSyncToCloud();
+                        console.log('✅ Enhanced sync: Save successful');
+                        
+                        // Force immediate sync to other browsers
+                        setTimeout(() => {
+                            console.log('🔄 Enhanced sync: Broadcasting change...');
+                            this.syncAnnouncementsFromCloud();
+                        }, 1000);
+                        
+                    } catch (error) {
+                        console.warn('⚠️ Enhanced sync: Save failed, retrying...', error);
+                        // Retry after 2 seconds
+                        setTimeout(() => {
+                            originalSyncToCloud();
+                        }, 2000);
+                    }
+                }.bind(this);
+                
+                console.log('✅ Enhanced cross-browser announcement sync initialized');
             }
 
             createAnnouncementsSlideHTML() {
