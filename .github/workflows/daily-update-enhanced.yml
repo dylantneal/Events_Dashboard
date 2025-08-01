@@ -2,8 +2,8 @@ name: Enhanced Daily Dashboard Update
 
 on:
   schedule:
-    # Runs every day at midnight UTC
-    - cron: '0 0 * * *'
+    # Runs every day at 3:15 AM UTC (off-peak) = 10:15 PM CDT
+    - cron: '15 3 * * *'
   workflow_dispatch: # Allows manual triggering
 
 permissions:
@@ -13,6 +13,7 @@ permissions:
 jobs:
   update-daily-enhanced:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     
     steps:
     - name: Checkout repository
@@ -25,6 +26,14 @@ jobs:
       with:
         python-version: '3.9'
         
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -58,8 +67,17 @@ jobs:
           echo "No changes to commit"
         else
           git commit -m "🎯 Auto-update: Daily refresh with Today markers - $(date +'%A, %B %d, %Y')"
-          git push origin main
+          git push origin main || {
+            echo "Push failed, retrying in 30 seconds..."
+            sleep 30
+            git push origin main
+          }
         fi
+        
+    - name: Verify generated files
+      run: |
+        echo "Checking generated files..."
+        ls -la slides/ | grep $(date +'%Y_%m_%d') || echo "Warning: No files with today's date found"
         
     - name: Log completion
       run: |
@@ -67,3 +85,4 @@ jobs:
         echo "🌐 Live at: https://www.marquisdashboard.com"
         echo "📍 Updated all charts with current Today markers"
         echo "📊 Generated: Daily, Weekly, Monthly, and Calendar views"
+        echo "🕰️ Completed at: $(date)"

@@ -2,8 +2,8 @@ name: Monthly Dashboard Update
 
 on:
   schedule:
-    # Runs on the 1st of every month at 6 AM UTC
-    - cron: '0 6 1 * *'
+    # Runs on the 1st of every month at 3:45 AM UTC (off-peak) = 10:45 PM CDT previous day
+    - cron: '45 3 1 * *'
   workflow_dispatch: # Allows manual triggering
 
 permissions:
@@ -13,6 +13,7 @@ permissions:
 jobs:
   update-monthly:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     
     steps:
     - name: Checkout repository
@@ -25,6 +26,14 @@ jobs:
       with:
         python-version: '3.9'
         
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -50,7 +59,11 @@ jobs:
           echo "No changes to commit"
         else
           git commit -m "🤖 Auto-update: Monthly dashboard - $(date +'%B %Y') 4-month rolling window + calendar"
-          git push origin main
+          git push origin main || {
+            echo "Push failed, retrying in 30 seconds..."
+            sleep 30
+            git push origin main
+          }
         fi
         
     - name: Log completion
