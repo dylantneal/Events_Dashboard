@@ -5,12 +5,10 @@
     "gantt_2025_09.png",
     "gantt_2025_10.png",
     "gantt_2025_11.png",
-    "gantt_daily_2025_08_01.png",
     "gantt_daily_2025_08_12.png",
-    "gantt_weekly_2025_07_28.png",
     "gantt_weekly_2025_08_11.png"
   ],
-  "generated": "2025-08-12T10:13:44.587564",
-  "count": 9,
+  "generated": "2025-08-12T10:27:01.352354",
+  "count": 7,
   "note": "Auto-generated manifest of all PNG files in slides directory"
 }
