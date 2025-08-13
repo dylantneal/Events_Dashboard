@@ -1,7 +1,13 @@
-// EMERGENCY RESYNC SCRIPT
-// This will force a complete refresh and clear any sync conflicts
+// EMERGENCY RESYNC SCRIPT - DISABLED DURING PHASE 2 CLEANUP
+// This script was too aggressive and could cause data loss
+// Disabled to allow original system to work properly
 
-console.log('🚨 EMERGENCY RESYNC STARTING...');
+console.log('⚠️ EMERGENCY RESYNC: DISABLED - Using original system instead');
+// Early return to prevent any interference
+if (true) {
+    console.log('🚫 emergency_resync.js is disabled - original sync system handles conflicts safely');
+    // Exit immediately without making any changes
+}
 
 async function emergencyResync() {
     try {

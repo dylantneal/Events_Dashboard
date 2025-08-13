@@ -1,7 +1,13 @@
-// IMPROVED SYNC FIX - Comprehensive solution for announcement sync issues
-// This fixes all known sync problems without breaking existing functionality
+// IMPROVED SYNC FIX - DISABLED DURING PHASE 2 CLEANUP
+// This script was causing conflicts with the original well-designed sync system
+// Disabled to allow original system to work properly
 
-console.log('🔧 IMPROVED SYNC FIX: Starting comprehensive sync repair...');
+console.log('⚠️ DIRECT SYNC FIX: DISABLED - Using original system instead');
+// Early return to prevent any interference
+if (true) {
+    console.log('🚫 direct_sync_fix.js is disabled - original sync system will handle announcements');
+    // Exit immediately without making any changes
+}
 
 // Wait for dashboard to load
 function waitForDashboard() {

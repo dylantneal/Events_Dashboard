@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Announcement Backup Utility</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #1a1a2e; color: white; }
+        .container { max-width: 800px; margin: 0 auto; }
+        button { padding: 12px 24px; margin: 10px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        button:hover { background: #2563eb; }
+        .backup-area { background: #2a2a3e; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        textarea { width: 100%; height: 300px; background: #1a1a2e; color: white; border: 1px solid #444; padding: 10px; border-radius: 4px; }
+        .status { padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .success { background: #10b981; }
+        .error { background: #ef4444; }
+        .info { background: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Announcement Backup Utility</h1>
+        <p>This tool will help you safely backup your current announcements before we fix the sync issues.</p>
+        
+        <div class="backup-area">
+            <h3>Step 1: Export Current Announcements</h3>
+            <button onclick="exportLocalStorage()">Export from localStorage</button>
+            <button onclick="exportFromCloud()">Export from Cloud</button>
+            <button onclick="checkBothSources()">Compare Local vs Cloud</button>
+            
+            <div id="status"></div>
+            
+            <h4>Backup Data (save this!):</h4>
+            <textarea id="backupData" placeholder="Your announcement backup will appear here..."></textarea>
+            
+            <button onclick="copyToClipboard()">Copy to Clipboard</button>
+            <button onclick="downloadBackup()">Download as File</button>
+        </div>
+
+        <div class="backup-area">
+            <h3>Step 2: Cloud Storage Check</h3>
+            <button onclick="checkCloudDirectly()">Check Cloud Storage Directly</button>
+            <div id="cloudStatus"></div>
+            <textarea id="cloudData" placeholder="Cloud data will appear here..."></textarea>
+        </div>
+
+        <div class="backup-area">
+            <h3>Step 3: System Information</h3>
+            <button onclick="gatherSystemInfo()">Gather System Info</button>
+            <div id="systemInfo"></div>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function showCloudStatus(message, type = 'info') {
+            const status = document.getElementById('cloudStatus');
+            status.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function exportLocalStorage() {
+            try {
+                const announcements = localStorage.getItem('dashboard_announcements');
+                if (announcements) {
+                    const parsed = JSON.parse(announcements);
+                    const backup = {
+                        source: 'localStorage',
+                        exportTime: new Date().toISOString(),
+                        count: parsed.length,
+                        announcements: parsed
+                    };
+                    document.getElementById('backupData').value = JSON.stringify(backup, null, 2);
+                    showStatus(`✅ Exported ${parsed.length} announcements from localStorage`, 'success');
+                } else {
+                    showStatus('⚠️ No announcements found in localStorage', 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Error exporting from localStorage: ${error.message}`, 'error');
+            }
+        }
+
+        async function exportFromCloud() {
+            try {
+                showStatus('🌐 Fetching from cloud...', 'info');
+                const cloudUrl = 'https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1/latest';
+                
+                const response = await fetch(cloudUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Raw cloud data:', data);
+                
+                let announcements = [];
+                if (data.record && data.record.announcements && Array.isArray(data.record.announcements)) {
+                    announcements = data.record.announcements;
+                } else if (data.record && Array.isArray(data.record)) {
+                    announcements = data.record;
+                } else if (Array.isArray(data)) {
+                    announcements = data;
+                } else if (data.announcements && Array.isArray(data.announcements)) {
+                    announcements = data.announcements;
+                }
+                
+                const backup = {
+                    source: 'cloud',
+                    exportTime: new Date().toISOString(),
+                    count: announcements.length,
+                    rawCloudData: data,
+                    announcements: announcements
+                };
+                
+                document.getElementById('backupData').value = JSON.stringify(backup, null, 2);
+                showStatus(`✅ Exported ${announcements.length} announcements from cloud`, 'success');
+                
+            } catch (error) {
+                showStatus(`❌ Error exporting from cloud: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkBothSources() {
+            try {
+                showStatus('🔍 Comparing local vs cloud data...', 'info');
+                
+                // Get local data
+                const localData = localStorage.getItem('dashboard_announcements');
+                const localAnnouncements = localData ? JSON.parse(localData) : [];
+                
+                // Get cloud data
+                const cloudUrl = 'https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1/latest';
+                const response = await fetch(cloudUrl);
+                const cloudResponse = await response.json();
+                
+                let cloudAnnouncements = [];
+                if (cloudResponse.record && cloudResponse.record.announcements) {
+                    cloudAnnouncements = cloudResponse.record.announcements;
+                } else if (cloudResponse.record && Array.isArray(cloudResponse.record)) {
+                    cloudAnnouncements = cloudResponse.record;
+                } else if (Array.isArray(cloudResponse)) {
+                    cloudAnnouncements = cloudResponse;
+                } else if (cloudResponse.announcements) {
+                    cloudAnnouncements = cloudResponse.announcements;
+                }
+                
+                const comparison = {
+                    comparison: 'local_vs_cloud',
+                    exportTime: new Date().toISOString(),
+                    local: {
+                        count: localAnnouncements.length,
+                        announcements: localAnnouncements
+                    },
+                    cloud: {
+                        count: cloudAnnouncements.length,
+                        announcements: cloudAnnouncements,
+                        rawResponse: cloudResponse
+                    },
+                    differences: {
+                        countDifference: localAnnouncements.length - cloudAnnouncements.length,
+                        localOnly: localAnnouncements.filter(local => 
+                            !cloudAnnouncements.find(cloud => cloud.id === local.id)
+                        ),
+                        cloudOnly: cloudAnnouncements.filter(cloud => 
+                            !localAnnouncements.find(local => local.id === cloud.id)
+                        )
+                    }
+                };
+                
+                document.getElementById('backupData').value = JSON.stringify(comparison, null, 2);
+                
+                if (localAnnouncements.length === cloudAnnouncements.length && comparison.differences.localOnly.length === 0) {
+                    showStatus(`✅ Local and cloud in sync: ${localAnnouncements.length} announcements`, 'success');
+                } else {
+                    showStatus(`⚠️ Sync mismatch: Local=${localAnnouncements.length}, Cloud=${cloudAnnouncements.length}`, 'error');
+                }
+                
+            } catch (error) {
+                showStatus(`❌ Error comparing sources: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkCloudDirectly() {
+            try {
+                showCloudStatus('🌐 Checking cloud storage directly...', 'info');
+                
+                const cloudUrl = 'https://api.jsonbin.io/v3/b/686350a78a456b7966b930b1/latest';
+                const response = await fetch(cloudUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                document.getElementById('cloudData').value = JSON.stringify(data, null, 2);
+                
+                showCloudStatus(`✅ Cloud storage accessible. Response size: ${JSON.stringify(data).length} characters`, 'success');
+                
+            } catch (error) {
+                showCloudStatus(`❌ Error accessing cloud: ${error.message}`, 'error');
+            }
+        }
+
+        function gatherSystemInfo() {
+            const info = {
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                url: window.location.href,
+                localStorage: {
+                    available: typeof(Storage) !== "undefined",
+                    announcementsKey: localStorage.getItem('dashboard_announcements') ? 'exists' : 'missing'
+                },
+                browserInfo: {
+                    name: navigator.appName,
+                    version: navigator.appVersion,
+                    cookieEnabled: navigator.cookieEnabled,
+                    onLine: navigator.onLine
+                }
+            };
+            
+            document.getElementById('systemInfo').innerHTML = `<pre>${JSON.stringify(info, null, 2)}</pre>`;
+        }
+
+        function copyToClipboard() {
+            const textarea = document.getElementById('backupData');
+            textarea.select();
+            document.execCommand('copy');
+            showStatus('✅ Copied to clipboard!', 'success');
+        }
+
+        function downloadBackup() {
+            const data = document.getElementById('backupData').value;
+            if (!data) {
+                showStatus('❌ No data to download', 'error');
+                return;
+            }
+            
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `announcements_backup_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showStatus('✅ Backup downloaded!', 'success');
+        }
+
+        // Auto-gather system info on load
+        window.onload = function() {
+            gatherSystemInfo();
+        };
+    </script>
+</body>
+</html>

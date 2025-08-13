@@ -1,7 +1,13 @@
-// Fix for announcement synchronization issues
-// This script patches the existing dashboard to ensure proper cloud sync and timing
+// Fix for announcement synchronization issues - DISABLED DURING PHASE 2 CLEANUP
+// This script was creating aggressive sync timing that may cause rate limits
+// Disabled to allow original system to work properly
 
-console.log('🔧 APPLYING ANNOUNCEMENT SYNC FIXES...');
+console.log('⚠️ ANNOUNCEMENT SYNC FIX: DISABLED - Using original system instead');
+// Early return to prevent any interference
+if (true) {
+    console.log('🚫 fix_announcement_sync.js is disabled - original sync system has proper timing');
+    // Exit immediately without making any changes
+}
 
 // Wait for dashboard to be ready
 function waitForDashboard() {
