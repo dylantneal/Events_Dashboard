@@ -1,10 +1,10 @@
 {
   "slides": [
-    "calendar_2025_10.png",
-    "gantt_2025_10.png",
+    "calendar_2025_11.png",
     "gantt_2025_11.png",
     "gantt_2025_12.png",
     "gantt_2026_01.png",
+    "gantt_2026_02.png",
     "gantt_daily_2025_08_13.png",
     "gantt_daily_2025_08_14.png",
     "gantt_daily_2025_08_15.png",
@@ -85,6 +85,7 @@
     "gantt_daily_2025_10_29.png",
     "gantt_daily_2025_10_30.png",
     "gantt_daily_2025_10_31.png",
+    "gantt_daily_2025_11_01.png",
     "gantt_weekly_2025_08_11.png",
     "gantt_weekly_2025_08_18.png",
     "gantt_weekly_2025_08_25.png",
@@ -98,7 +99,7 @@
     "gantt_weekly_2025_10_20.png",
     "gantt_weekly_2025_10_27.png"
   ],
-  "generated": "2025-10-31T03:52:28.533839",
-  "count": 97,
+  "generated": "2025-11-01T03:51:05.497614",
+  "count": 98,
   "note": "Auto-generated manifest of all PNG files in slides directory"
 }
