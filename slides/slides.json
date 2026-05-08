@@ -273,6 +273,7 @@
     "gantt_daily_2026_05_05.png",
     "gantt_daily_2026_05_06.png",
     "gantt_daily_2026_05_07.png",
+    "gantt_daily_2026_05_08.png",
     "gantt_weekly_2025_08_11.png",
     "gantt_weekly_2025_08_18.png",
     "gantt_weekly_2025_08_25.png",
@@ -311,7 +312,7 @@
     "gantt_weekly_2026_04_27.png",
     "gantt_weekly_2026_05_04.png"
   ],
-  "generated": "2026-05-07T04:32:52.462570",
-  "count": 310,
+  "generated": "2026-05-08T04:27:48.376626",
+  "count": 311,
   "note": "Auto-generated manifest of all PNG files in slides directory"
 }
